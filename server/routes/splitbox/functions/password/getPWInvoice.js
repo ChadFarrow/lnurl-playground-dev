@@ -1,4 +1,4 @@
-export default async function getInvoice(address, amount, comment) {
+export default async function getPWInvoice(address, amount, comment) {
   const [name, server] = address.split("@");
   const paymentUrl = `https://${server}/.well-known/lnurlp/${name}`;
 
@@ -14,7 +14,7 @@ export default async function getInvoice(address, amount, comment) {
       `${data.callback}?amount=${amount}${comment ? `&comment=${comment}` : ""}`
     );
     const invoiceData = await invoiceRes.json();
-    return invoiceData.pr;
+    return invoiceData;
   } catch (error) {
     return { success: false };
   }
