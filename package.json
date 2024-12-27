@@ -6,12 +6,13 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix client\" \"nodemon server/index.js\""
+    "dev": "concurrently \"npm run dev --prefix client\" \"cross-env NODE_ENV=development nodemon server/index.js\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cross-env": "^7.0.3",
     "mongodb": "^6.12.0",
     "qrcode": "^1.5.4"
   }

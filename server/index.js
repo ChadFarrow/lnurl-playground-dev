@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cookie from "cookie";
+import cookieParser from "cookie-parser";
 import cors from "cors"; // Import the CORS package
 
 import albyRoutes from "./routes/alby/albyRoutes.js";
@@ -12,6 +13,7 @@ const app = express();
 
 dotenv.config();
 
+app.use(cookieParser());
 // Enable CORS for localhost:5173
 app.use(
   cors({
@@ -30,17 +32,12 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  req.cookies = cookie.parse(req.headers.cookie || "");
-  next();
-});
-
 let tempTokens = {};
 if (process.env.ALBY_JWT) {
   app.use("/alby", albyRoutes(tempTokens));
 }
 
-app.use("/splitbox", splitBoxRouter);
+app.use("/", splitBoxRouter);
 
 // Start the server
 app.listen(PORT, () => {

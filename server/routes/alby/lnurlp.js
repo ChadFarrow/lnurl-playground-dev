@@ -12,8 +12,6 @@ const lnurlp = async (req, res) => {
 
     let alby = cookies.awt ? jwt.verify(cookies.awt, ALBY_JWT) : undefined;
 
-    console.log(body);
-
     if (alby && body) {
       pendingPayments = pendingPayments.concat(
         body.recipients.map((v) => {
@@ -36,7 +34,6 @@ const lnurlp = async (req, res) => {
 };
 
 async function processPayments(payment, alby) {
-  console.log(payment);
   const [name, server] = payment.lnaddress.split("@");
   const paymentUrl = `https://${server}/.well-known/lnurlp/${name}`;
 
@@ -55,8 +52,6 @@ async function processPayments(payment, alby) {
     );
     const invoiceData = await invoiceRes.json();
     const invoice = invoiceData.pr;
-
-    console.log(invoice);
 
     const paymentRes = await axios.post(
       "https://api.getalby.com/payments/bolt11",

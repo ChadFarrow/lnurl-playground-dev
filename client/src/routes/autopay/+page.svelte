@@ -2,41 +2,55 @@
   import { onMount } from "svelte";
   import tlv from "./tlv.js";
 
-  let recipient = { lnaddress: "steven@getalby.com", amount: 100 };
+  import {
+    remoteServer,
+    albyRedirectUrl,
+    albyClientId,
+  } from "$lib/state.svelte.js";
+
+  let address;
+  let recipient = { lnaddress: "thesplitbox@getalby.com", amount: 100 };
   let albyLoginUrl = "";
   let invoice = "";
   let payload = {
     type: "bitcoin-lightning",
     metadata: tlv,
   };
+  let status = [];
 
   onMount(() => {
-    const albyClientId = "v9yF7pxXjE";
-    albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${window.location.href.split("?")[0]}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
+    albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${albyRedirectUrl}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
     loadAlby();
-    console.log("DOM is fully loaded");
   });
 
   async function getInvoice(payload) {
+    status = [`Press F12 to view uupdates in console.`];
+    status = status;
     try {
       payload.metadata.value_msat_total = recipient.amount * 1000;
       payload = payload;
 
-      let res = await fetch(
-        `http://localhost:3000/splitbox/invoice?address=${recipient.lnaddress}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      let invoiceRoute = `${remoteServer}/invoice?address=${recipient.lnaddress}`;
+
+      status.push(`fetching invoice from ${invoiceRoute}`);
+      status = status;
+
+      let res = await fetch(invoiceRoute, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       const invoice = await res.json();
       console.log(invoice);
+      status.push(`paying Invoice`);
+      status = status;
       let payment = await sendSats(invoice);
       console.log(payment);
+      status.push(`invoice paid.`);
+      status = status;
       handlePaid(payment.info);
     } catch (error) {
       console.log(error);
@@ -62,7 +76,12 @@
 
   async function handlePaid(paymentInfo) {
     console.log(paymentInfo);
-    let res = await fetch("http://localhost:3000/splitbox/webhook-sync", {
+    let webhookRoute = `${remoteServer}/webhook-sync`;
+    status.push(
+      `sending payment info to ${webhookRoute} and sending out splits`
+    );
+    status = status;
+    let res = await fetch(webhookRoute, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,34 +91,19 @@
 
     let data = await res.json();
     console.log(data);
+    status.push(`splits sent. View split status in console.`);
+    status = status;
   }
 
   async function loadAlby() {
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get("code");
-    if (code) {
-      const redirect_uri = "http://localhost:5173/splitbox/autopay";
-      try {
-        const res = await fetch(
-          `http://localhost:3000/alby/auth5173?code=${code}&redirect_uri=${redirect_uri}`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await res.json();
-        console.log(data);
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      try {
-        const res = await fetch("http://localhost:3000/alby/refresh5173", {
-          credentials: "include",
-        });
-        const data = await res.json();
-        console.log(data);
-      } catch (err) {}
-    }
+    try {
+      const res = await fetch(`${remoteServer}/alby/refresh`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      console.log(data);
+      address = data.lightning_address;
+    } catch (err) {}
   }
 
   function updatePayload(e) {
@@ -110,9 +114,14 @@
 
 <main>
   <h1>Split Box Autopay Demo</h1>
-  <h2>
-    Log in with <a id="alby-login" href={albyLoginUrl}>Alby</a>
-  </h2>
+
+  {#if address}
+    <h2>Paying from {address}</h2>
+  {:else}
+    <h2>
+      Log in with <a id="alby-login" href={albyLoginUrl}>Alby</a>
+    </h2>
+  {/if}
 
   <div class="recipient">
     <label for="control-lnaddress">Lightning Address:</label>
@@ -137,6 +146,10 @@
   <button type="button" on:click={getInvoice.bind(this, payload)}
     >Get Invoice</button
   >
+
+  {#each status as note}
+    <p>{note}</p>
+  {/each}
 
   <h2>Simulated Payload to The Split Box</h2>
   <p>{JSON.stringify(payload, null, 2)}</p>

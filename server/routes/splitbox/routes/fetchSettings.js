@@ -1,15 +1,16 @@
 import getAddressFromCookies from "../functions/settings/getAddressFromCookies.js";
-function saveSettings(storeMetadata) {
+
+async function fetchSettings(storeMetadata) {
   return async (req, res) => {
-    const settings = req.body;
     let address = await getAddressFromCookies(req);
+
     if (address) {
       try {
-        await storeMetadata.saveSettings(address, settings);
+        let settings = await storeMetadata.fetchSettings(address);
 
-        res.json({ status: "saved" });
+        res.json(settings);
       } catch (error) {
-        console.error("saveSettings error: ", error.message);
+        console.error("fetchSettings error: ", error.message);
         res.status(500).send("Internal server error");
       }
     } else {
@@ -18,4 +19,4 @@ function saveSettings(storeMetadata) {
   };
 }
 
-export default saveSettings;
+export default fetchSettings;

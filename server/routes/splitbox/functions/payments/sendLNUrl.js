@@ -1,15 +1,6 @@
 import axios from "axios";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-if (!process.env.ALBY_ACCESS_TOKEN) {
-  dotenv.config();
-}
-
-const { ALBY_ACCESS_TOKEN } = process.env;
-
-export default function sendLNUrl({ recipient, metaID }) {
+export default function sendLNUrl({ accessToken, recipient, metaID }) {
   return new Promise(async (resolve, reject) => {
     try {
       const [name, server] = recipient["@_address"].split("@");
@@ -34,7 +25,7 @@ export default function sendLNUrl({ recipient, metaID }) {
         "https://api.getalby.com/payments/bolt11",
         { invoice },
         {
-          headers: { Authorization: `Bearer ${ALBY_ACCESS_TOKEN}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
 

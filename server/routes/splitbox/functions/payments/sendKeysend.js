@@ -1,16 +1,7 @@
 import axios from "axios";
 import clone from "just-clone";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-if (!process.env.ALBY_ACCESS_TOKEN) {
-  dotenv.config();
-}
-
-const { ALBY_ACCESS_TOKEN } = process.env;
-
-export default function sendKeysend({ recipient, metadata }) {
+export default function sendKeysend({ accessToken, recipient, metadata }) {
   let record = {
     destination: recipient["@_address"],
     amount: recipient.amount,
@@ -44,7 +35,7 @@ export default function sendKeysend({ recipient, metadata }) {
           "https://api.getalby.com/payments/keysend",
           record,
           {
-            headers: { Authorization: `Bearer ${ALBY_ACCESS_TOKEN}` },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
 

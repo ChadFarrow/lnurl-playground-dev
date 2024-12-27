@@ -11,13 +11,11 @@ const boost = async (req, res) => {
     let bodyJson;
     try {
       // Convert the body object to a JSON string with indentation
-      console.log(body.map((v) => JSON.parse(v.customRecords["7629169"])));
       bodyJson = JSON.stringify(
         body.map((v) => JSON.parse(v.customRecords["7629169"])),
         null,
         2
       );
-      console.log(bodyJson);
       // Append the JSON string to the file
       fs.appendFile("tlv.json", bodyJson + "\n", (err) => {
         if (err) throw err;

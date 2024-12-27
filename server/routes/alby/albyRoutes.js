@@ -1,8 +1,6 @@
 import express from "express";
 import auth from "./auth.js";
-import auth5173 from "./auth5173.js";
 import refresh from "./refresh.js";
-import refresh5173 from "./refresh5173.js";
 import boost from "./boost.js";
 import logout from "./logout.js";
 import lnurlp from "./lnurlp.js";
@@ -19,9 +17,7 @@ const albyRoutes = (tempTokens) => {
   });
 
   router.get("/auth", auth);
-  router.get("/auth5173", auth5173);
   router.get("/refresh", refresh);
-  router.get("/refresh5173", refresh5173);
   router.get("/account", refresh);
   router.post("/boost", bodyParser.json(), boost);
   router.post("/invoice", bodyParser.json(), invoice);

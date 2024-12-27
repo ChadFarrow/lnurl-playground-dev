@@ -18,7 +18,7 @@
         metadata: tlv,
       };
       let res = await fetch(
-        `http://localhost:3000/splitbox/invoice?address=${recipient.lnaddress}`,
+        `http://localhost:3000/invoice?address=${recipient.lnaddress}`,
         {
           method: "POST",
           headers: {

@@ -1,58 +1,85 @@
 <script>
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { dev } from "$app/environment";
+  import {
+    userState,
+    remoteServer,
+    albyRedirectUrl,
+    albyClientId,
+  } from "$lib/state.svelte.js";
+  let name = userState.name;
 
-  let recipient = { lnaddress: "steven@getalby.com", amount: 100 };
   let albyLoginUrl = "";
-  let invoice = "";
   let loggedIn = false;
   let loading = true;
   let address;
+  let albyAccessToken = "";
+  let tokenSaved = false;
+  let approvedGuids = [""];
 
   onMount(async () => {
-    const albyClientId = "TGu2U0ptCn";
-    albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${window.location.href.split("?")[0]}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
+    albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${albyRedirectUrl}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
     await loadAlby();
     loading = false;
     console.log("DOM is fully loaded");
   });
 
   async function loadAlby() {
+    console.log(remoteServer);
     address = null;
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     if (code) {
-      const redirect_uri = "http://localhost:5173/settings";
       try {
         const res = await fetch(
-          `http://localhost:3000/alby/auth5173?code=${code}&redirect_uri=${redirect_uri}`,
+          `${remoteServer}/alby/auth?code=${code}&redirect_uri=${albyRedirectUrl}`,
           {
             credentials: "include",
           }
         );
         const data = await res.json();
-        console.log(data);
         address = data.lightning_address;
+
+        const url = new URL(window.location);
+        url.searchParams.delete("code");
+        goto(url.pathname + url.search, { replaceState: true });
+        await fetchSettings();
       } catch (err) {
         console.error(err);
       }
     } else {
       try {
-        const res = await fetch("http://localhost:3000/alby/refresh5173", {
+        const res = await fetch(`${remoteServer}/alby/refresh`, {
           credentials: "include",
         });
         const data = await res.json();
-        console.log(data);
+
         address = data.lightning_address;
+        await fetchSettings();
       } catch (err) {}
     }
   }
 
+  async function fetchSettings() {
+    try {
+      const res = await fetch(`${remoteServer}/fetch-settings`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      console.log(data);
+      tokenSaved = data.albyAccessToken;
+      approvedGuids = data.approvedGuids;
+    } catch (err) {}
+  }
+
   async function saveSettings() {
     console.log("Reset password for:", address);
-    const payload = { albyAuthKey, guid };
-    console.log(payload);
-    let res = await fetch(`http://localhost:3000/splitbox/save-settings`, {
+    const payload = { albyAccessToken, approvedGuids };
+
+    let res = await fetch(remoteServer + "/save-settings", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -60,32 +87,65 @@
     });
 
     const data = await res.json();
-    console.log(data);
+    if (data.status === "saved") {
+      tokenSaved = true;
+      alert("Setting Saved");
+    }
   }
-
-  let albyAuthKey = "fdfsahoer";
-  let guid = 1234;
 </script>
 
 {#if loading}
   <h1>Loading...</h1>
 {:else if address}
   <h1>{address}</h1>
+  <div>
+    <button on:click={saveSettings}>Save Settings</button>
+  </div>
   <div class="input-group">
-    <label for="lightning">Lightning Address</label>
-    <input type="password" id="lightning" bind:value={albyAuthKey} />
+    <label for="alby-access-token">Alby Access Token</label>
+    <input
+      type="password"
+      id="alby-access-token"
+      bind:value={albyAccessToken}
+    />
+    <span>{tokenSaved ? "saved" : ""}</span>
   </div>
 
-  <div class="input-group">
-    <label for="password">Password</label>
-    <input type="password" id="password" bind:value={guid} />
+  <h3>Approved Podcast GUIDs</h3>
+  <div>
+    <button
+      on:click={() => {
+        approvedGuids.unshift("");
+        approvedGuids = approvedGuids;
+      }}>Add GUID</button
+    >
   </div>
-
-  <div class="button-group">
-    <button on:click={saveSettings} class="reset">Save Settings</button>
-  </div>
+  {#each approvedGuids as guid, i}
+    <div class="input-group">
+      <label for={`guid=${i}`}>Podcast GUID</label>
+      <input type="text" id={`guid=${i}`} bind:value={guid} />
+    </div>
+  {/each}
 {:else}
   <h2>
     Log in with <a id="alby-login" href={albyLoginUrl}>Alby</a>
   </h2>
 {/if}
+
+<style>
+  span {
+    color: green;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 8px 0 0 0;
+  }
+
+  h3 {
+    margin: 8px 0 0 0;
+  }
+  button {
+    margin: 8px;
+  }
+</style>
