@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(express.static(path.join(process.cwd(), "/server/public")));
 } else {
   // Serve static files from 'public' folder
-  app.use(express.static(path.join(process.cwd(), "/server/public")));
+  app.use(express.static(path.join(process.cwd(), "/public")));
 }
 
 app.use(express.json()); // Parse JSON request bodies
