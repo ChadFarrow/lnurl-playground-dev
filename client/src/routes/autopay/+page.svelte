@@ -59,7 +59,7 @@
 
   async function sendSats(invoice) {
     try {
-      const res = await fetch("http://localhost:3000/alby/invoice", {
+      const res = await fetch(`${remoteServer}/alby/invoice`, {
         method: "POST",
         credentials: "include",
         headers: {

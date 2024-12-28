@@ -1,6 +1,7 @@
 <script>
   import QRCode from "qrcode";
   import { onMount } from "svelte";
+  import { remoteServer } from "$lib/state.svelte.js";
 
   import tlv from "./tlv.js";
 
@@ -18,7 +19,7 @@
         metadata: tlv,
       };
       let res = await fetch(
-        `http://localhost:3000/invoice?address=${recipient.lnaddress}`,
+        `${remoteServer}/alby/invoice?address=${recipient.lnaddress}`,
         {
           method: "POST",
           headers: {
