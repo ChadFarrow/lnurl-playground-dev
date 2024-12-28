@@ -20,10 +20,12 @@ function webhookSync(storeMetadata) {
           let account = await storeMetadata.fetchAccessToken(
             "thesplitbox@getalby.com"
           );
+          console.log(account);
           let completedPayments = await processPayments({
             accessToken: account.albyAccessToken || account.strikeAccessToken,
             splits,
             metadata,
+            id,
           });
           await storeMetadata.updateByInvoice(invoice, { completedPayments });
           res.json({ completedPayments, id });

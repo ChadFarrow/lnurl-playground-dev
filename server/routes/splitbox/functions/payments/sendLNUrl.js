@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default function sendLNUrl({ accessToken, recipient, metaID }) {
+export default function sendLNUrl({ accessToken, recipient, id }) {
   return new Promise(async (resolve, reject) => {
     try {
       const [name, server] = recipient["@_address"].split("@");
@@ -14,9 +14,7 @@ export default function sendLNUrl({ accessToken, recipient, metaID }) {
       }
 
       const invoiceRes = await fetch(
-        `${data.callback}?amount=${
-          recipient["@_split"] * 1000
-        }&comment=${metaID}`
+        `${data.callback}?amount=${recipient["@_split"] * 1000}&comment=${id}`
       );
       const invoiceData = await invoiceRes.json();
       const invoice = invoiceData.pr;

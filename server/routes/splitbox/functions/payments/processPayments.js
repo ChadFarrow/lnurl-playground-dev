@@ -5,13 +5,14 @@ export default async function processPayments({
   accessToken,
   splits,
   metadata,
-  metaID,
+  id,
 }) {
   let paymentAttempts = splits.map((recipient) => {
+    console.log(recipient);
     if (recipient?.["@_type"] === "node") {
       return sendKeysend({ accessToken, recipient, metadata });
     } else if (recipient?.["@_type"] === "lnaddress") {
-      return sendLNUrl({ accessToken, recipient, metaID });
+      return sendLNUrl({ accessToken, recipient, id });
     } else {
       return Promise.resolve({ status: "skipped", recipient });
     }
