@@ -21,18 +21,19 @@ export default async function getSplits(metadata) {
   let VTS;
   let remoteItemFromRSS;
   let remoteItemFromIndex;
+  let remotePercentage = 0;
 
-  if (metadata.feed_guid) {
+  if (metadata.guid) {
     const channelResponse = await fetchChannelFromIndex({
-      guid: metadata.feed_guid,
+      guid: metadata.guid,
     });
-    channel = channelResponse.feed;
+    channel = channelResponse?.feed;
     RSS = await fetchRSSFeed(channel.url);
 
-    if (metadata.item_guid) {
+    if (metadata.episode_guid) {
       // const item = await fetchItemFromIndex({
-      //   feedGuid: metadata.feed_guid,
-      //   itemGuid: metadata.item_guid,
+      //   feedGuid: metadata.guid,
+      //   itemGuid: metadata.episode_guid,
       // });
 
       itemFromRSS = getItemFromRSS(RSS, metadata);
@@ -42,35 +43,40 @@ export default async function getSplits(metadata) {
         metadata.ts
       );
 
-      const remoteChannelResponse = await fetchChannelFromIndex({
-        guid:
-          VTS["podcast:remoteItem"]["@_feedGuid"] || metadata.remote_feed_guid,
-      });
-      remoteChannel = remoteChannelResponse.feed;
-      remoteRSS = await fetchRSSFeed(remoteChannel.url);
-      itemFromRemoteRSS = getItemFromRSS(remoteRSS, {
-        item_guid: VTS["podcast:remoteItem"]["@_itemGuid"],
-      });
+      if (VTS) {
+        remotePercentage = Number(VTS["@_remotePercentage"]) || null;
+        const remoteChannelResponse = await fetchChannelFromIndex({
+          guid:
+            VTS?.["podcast:remoteItem"]["@_feedGuid"] ||
+            metadata?.remote_feed_guid,
+        });
+        remoteChannel = remoteChannelResponse?.feed;
+        remoteRSS = await fetchRSSFeed(remoteChannel?.url);
+        itemFromRemoteRSS = getItemFromRSS(remoteRSS, {
+          item_guid: VTS?.["podcast:remoteItem"]?.["@_itemGuid"],
+        });
 
-      // remoteItemFromIndex = await fetchItemFromIndex({
-      //   feedGuid:
-      //     VTS["podcast:remoteItem"]["@_feedGuid"] || metadata.remote_feed_guid,
-      //   itemGuid:
-      //     VTS["podcast:remoteItem"]["@_itemGuid"] || metadata.remote_item_guid,
-      // });
+        // remoteItemFromIndex = await fetchItemFromIndex({
+        //   feedGuid:
+        //     VTS?.["podcast:remoteItem"]?.["@_feedGuid"] || metadata?.remote_feed_guid,
+        //   itemGuid:
+        //     VTS?.["podcast:remoteItem"]?.["@_itemGuid"] || metadata?.remote_item_guid,
+        // });
 
-      let remotePercentage = Number(VTS["@_remotePercentage"]) || null;
-      let mainPercentage = remotePercentage ? 100 - remotePercentage : 100;
+        destinations.remoteSplits = normalizeSplits(
+          itemFromRemoteRSS?.["podcast:value"]?.["podcast:valueRecipient"] ||
+            remoteRSS?.["podcast:value"]?.["podcast:valueRecipient"],
+          remotePercentage
+        );
+      } else {
+        destinations.remoteSplits = normalizeSplits([], remotePercentage);
+      }
+
+      let mainPercentage = 100 - remotePercentage;
       destinations.mainSplits = normalizeSplits(
         itemFromRSS?.["podcast:value"]?.["podcast:valueRecipient"] ||
           RSS?.["podcast:value"]?.["podcast:valueRecipient"],
         mainPercentage
-      );
-
-      destinations.remoteSplits = normalizeSplits(
-        itemFromRemoteRSS?.["podcast:value"]?.["podcast:valueRecipient"] ||
-          remoteRSS?.["podcast:value"]?.["podcast:valueRecipient"],
-        remotePercentage
       );
 
       splits = combineSplits(destinations, metadata.value_msat_total / 1000);

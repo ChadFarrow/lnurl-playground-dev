@@ -2,7 +2,7 @@ import clone from "just-clone";
 
 //helper functions to convert shares to percentages
 export default function normalizeSplits(destinations, percentage = 100) {
-  if (!destinations || destinations.length === 0) {
+  if (!destinations || destinations?.length === 0) {
     return { feesDestinations: [], splitsDestinations: [] };
   }
   destinations = [].concat(destinations);

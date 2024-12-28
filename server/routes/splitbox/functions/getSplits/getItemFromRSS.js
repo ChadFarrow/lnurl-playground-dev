@@ -3,7 +3,7 @@ export default function getItemFromRSS(feed, metadata) {
     .concat(feed?.item)
     .find(
       (v) =>
-        metadata?.item_guid === v?.guid ||
-        metadata?.item_guid === v?.guid?.["#text"]
+        metadata?.episode_guid === v?.guid ||
+        metadata?.episode_guid === v?.guid?.["#text"]
     );
 }

@@ -39,6 +39,11 @@ const auth = async (req, res, next) => {
     formData.append("redirect_uri", redirect_uri);
     formData.append("grant_type", "authorization_code");
 
+    console.log(code);
+    console.log(redirect_uri);
+    console.log(ALBY_ID);
+    console.log(ALBY_SECRET);
+
     const resolve = await axios({
       method: "POST",
       url: "https://api.getalby.com/oauth/token",
@@ -58,6 +63,8 @@ const auth = async (req, res, next) => {
     if (!resolve) {
       return res.status(401).json({ message: "Authorization failed" });
     }
+
+    console.log(resolve.data);
 
     const newToken = jwt.sign(resolve.data, process.env.ALBY_JWT, {
       expiresIn: "10d",

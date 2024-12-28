@@ -11,6 +11,7 @@ function saveSettings(_collection) {
     settings.approvedGuids = settings.approvedGuids.filter(
       (guid) => guid && guid.trim() !== ""
     );
+
     // If albyAccessToken is not blank, encrypt and update it
     if (settings.albyAccessToken && settings.albyAccessToken.trim() !== "") {
       settings.albyAccessToken = encrypt(token, settings.albyAccessToken);

@@ -1,6 +1,8 @@
 export default function combineSplits(destinations, amount) {
   const { mainSplits, remoteSplits } = destinations;
 
+  console.log(remoteSplits);
+
   let runningAmount = amount;
 
   // Combine fees and splits from mainSplits

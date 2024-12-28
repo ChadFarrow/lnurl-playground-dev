@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
-import cookie from "cookie";
+import path from "path";
 import cookieParser from "cookie-parser";
 import cors from "cors"; // Import the CORS package
 
@@ -14,14 +14,23 @@ const app = express();
 dotenv.config();
 
 app.use(cookieParser());
-// Enable CORS for localhost:5173
-app.use(
-  cors({
-    origin: "http://localhost:5173", // Allow only this origin
-    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
-    credentials: true, // Allow credentials (cookies, headers, etc.)
-  })
-);
+
+if (process.env.NODE_ENV === "development") {
+  // Enable CORS for localhost:5173
+  app.use(
+    cors({
+      origin: "http://localhost:5173", // Allow only this origin
+      methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+      credentials: true, // Allow credentials (cookies, headers, etc.)
+    })
+  );
+
+  // Serve static files from 'public' folder
+  app.use(express.static(path.join(process.cwd(), "/server/public")));
+} else {
+  // Serve static files from 'public' folder
+  app.use(express.static(path.join(process.cwd(), "/server/public")));
+}
 
 app.use(express.json()); // Parse JSON request bodies
 

@@ -20,7 +20,7 @@ export default function sendKeysend({ accessToken, recipient, metadata }) {
     customRecords[recipient["@_customKey"]] = recipient["@_customValue"];
   }
 
-  if (Object.keys(customRecords).length > 0) {
+  if (Object.keys(customRecords)?.length > 0) {
     record.custom_records = customRecords;
   }
 

@@ -1,19 +1,21 @@
 const tlv = {
-  podcast: "Boostagram Ball",
-  feed_guid: "6dfbd8e4-f9f3-5ea1-98a1-574134999b3b",
-  item_guid: "bball-27",
-  episode: "Boostagram Ball - Episode 27",
+  podcast: "CurioCaster",
+  episode: "Alt Enclosure Test",
+  guid: "58183156-a6ae-5e36-8875-a1be2ab691bd",
+  episode_guid: "CC00e",
+  feedID: 4935828,
+  itemID: 7133051987,
+  ts: 10,
+  speed: "1",
   action: "boost",
-  ts: 107,
   app_name: "CurioCaster",
-  app_version: 531800807734,
-  url: "https://mp3s.nashownotes.com/bballrss.xml",
-  value_msat_total: 100000,
-  message: "This is a test of The Split Box",
+  value_msat_total: 10000,
+  url: "https://curiocaster.com/rss/feed.xml",
   sender_name: "Steven B",
-  speed: 1.25,
+  sender_id: "steven@getalby.com",
   reply_address:
     "035ad2c954e264004986da2d9499e1732e5175e1dcef2453c921c6cdcc3536e9d8",
+  message: "This is a test of The Split Box",
 };
 
 export default tlv;

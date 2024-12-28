@@ -1,5 +1,5 @@
 export default function findVTS(data, timestamp) {
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data?.length; i++) {
     const current = data[i];
     const next = data[i + 1];
 

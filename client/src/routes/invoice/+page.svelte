@@ -37,16 +37,14 @@
   }
 
   async function generateQRCode(code) {
-    console.log(code);
-    console.log(qrCodeCanvas);
     if (!qrCodeCanvas) {
       return;
     }
-    console.log(code);
     try {
       await QRCode.toCanvas(qrCodeCanvas, code, {
         width: 200,
       });
+      invoice = code;
     } catch (err) {
       console.error(err);
     }

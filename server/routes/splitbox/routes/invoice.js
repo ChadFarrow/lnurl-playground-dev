@@ -20,9 +20,9 @@ function invoice(storeMetadata) {
 
     // process TLV from the POST, if there's a feedGuid, then do the rest.
     let settings = await storeMetadata.fetchSettings(address);
-    if (tlv.feed_guid) {
-      //check to see if tlv has a feed_guid that's allowed to send sats. Prevents storing undesired data.
-      if (settings.approvedGuids.find((v) => v === tlv.feed_guid)) {
+    if (tlv.guid) {
+      //check to see if tlv has a guid that's allowed to send sats. Prevents storing undesired data.
+      if (settings.approvedGuids.find((v) => v === tlv.guid)) {
         try {
           const metaID = uuidv4();
           const invoice = await getInvoice(address, tlv.value_msat_total);
@@ -46,7 +46,7 @@ function invoice(storeMetadata) {
         });
       }
     } else {
-      res.json({ error: "No feed_guid in TLV record" });
+      res.json({ error: "No guid in TLV record" });
     }
   };
 }
