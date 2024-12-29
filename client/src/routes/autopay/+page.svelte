@@ -18,8 +18,12 @@
     metadata: tlv,
   };
   let status = [];
+  let id = "";
+  let jsonData = null;
+  let error = null;
 
   async function getInvoice(payload) {
+    id = "";
     status = [`Press F12 to view updates in console`];
     status = status;
     try {
@@ -85,7 +89,11 @@
 
     let data = await res.json();
     console.log(data);
+    id = data.id;
     status.push(`Splits sent. View split status in console`);
+    status.push(
+      `Click this to see the stored metadata at ${remoteServer}/metadata/${id}`
+    );
     status = status;
   }
 
@@ -93,6 +101,18 @@
     payload.metadata.value_msat_total = e.target.value * 1000;
     payload = payload;
   }
+
+  const fetchData = async () => {
+    error = null;
+    jsonData = null;
+    try {
+      const res = await fetch(`${remoteServer}/metadata/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch data");
+      jsonData = await res.json();
+    } catch (err) {
+      error = err.message;
+    }
+  };
 </script>
 
 <main>
@@ -123,6 +143,20 @@
       <p>Step {i + 1}. {note}</p>
     {/each}
 
+    {#if id}
+      <div>
+        <button on:click={fetchData}>Fetch Metaboost Data </button>
+      </div>
+      <div>
+        {#if error}
+          <p>Error: {error}</p>
+        {:else if jsonData}
+          <pre>{JSON.stringify(jsonData, null, 2)}</pre>
+        {/if}
+      </div>
+    {/if}
+
+    <h2>This is what you'll see in a feed.</h2>
     <pre>
         <code>
           {`
@@ -176,6 +210,7 @@
     border-radius: 5px;
     overflow-x: auto;
     display: inline-block;
+    margin: 0;
   }
   code {
     font-family: "Courier New", monospace;
@@ -188,5 +223,8 @@
     border-radius: 3px;
     font-weight: 500;
     font-size: 0.9em;
+  }
+  h2 {
+    margin: 16px 0 0 0;
   }
 </style>

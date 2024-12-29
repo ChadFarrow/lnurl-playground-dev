@@ -1,10 +1,20 @@
 ALBY_ID = get your client id from https://getalby.com/developer oauth keys
 ALBY_SECRET = get your client secret from https://getalby.com/developer oauth keys
+
+ALBY_ID_5173 = use this if you're developing your server locally, client is localhost:5173
+ALBY_SECRET_5173 = use this if you're developing your server locally, client is localhost:5173
+
 ALBY_JWT = this is a random 36 character string to encode the alby refresh token
+
+WEBHOOK = this is your Alby webhook secret
+
 ALBY_ACCESS_TOKEN_ENCRYPT = this is a random 32 character string to encrypt/decrypt the Alby Access Token
 COOKIE_ENCRYPT = this is a random 32 character string to encrypt/decrypt cookies
 
 PI_API_SECRET = API secret for the Podcast Index
 PI_API_KEY = API key for the Podcast Index
+
 MONGO_URI = the connection uri if you're using MongoDB
 MONGO_DB = the DB you're connecting to
+
+WEBHOOK_SERVER = your server route

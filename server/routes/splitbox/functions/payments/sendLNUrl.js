@@ -1,4 +1,9 @@
 import axios from "axios";
+import dotenv from "dotenv";
+
+if (!process.env.WEBHOOK_SERVER) {
+  dotenv.config();
+}
 
 export default function sendLNUrl({ accessToken, recipient, id }) {
   return new Promise(async (resolve, reject) => {
@@ -16,7 +21,7 @@ export default function sendLNUrl({ accessToken, recipient, id }) {
       const invoiceRes = await fetch(
         `${data.callback}?amount=${
           recipient["@_split"] * 1000
-        }&comment=${`${server}/metadata/${id}`}`
+        }&comment=${`${process.env.WEBHOOK_SERVER}/metadata/${id}`}`
       );
       const invoiceData = await invoiceRes.json();
       const invoice = invoiceData.pr;
