@@ -7,6 +7,7 @@ import webhookSync from "./routes/webhookSync.js";
 import webhookAsync from "./routes/webhookAsync.js";
 import saveSettings from "./routes/saveSettings.js";
 import fetchSettings from "./routes/fetchSettings.js";
+import getById from "./routes/getById.js";
 
 //change this to whatever your preferred data storage is
 const storeMetadata = mongoStore;
@@ -31,5 +32,11 @@ router.post("/save-settings", async (req, res) =>
 router.get("/fetch-settings", async (req, res) =>
   handle(fetchSettings, req, res)
 );
+
+router.get("/metadata/:id", (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  handle((store) => getById(store, id), req, res);
+});
 
 export default router;

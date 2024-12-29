@@ -7,7 +7,6 @@
 
   let recipient = { lnaddress: "steven@getalby.com", amount: 100 };
   let boostagram = "Boost";
-  let albyLoginUrl = "";
   let invoice = "";
   let qrCodeCanvas;
 
@@ -19,7 +18,7 @@
         metadata: tlv,
       };
       let res = await fetch(
-        `${remoteServer}/alby/invoice?address=${recipient.lnaddress}`,
+        `${remoteServer}/invoice?address=${recipient.lnaddress}`,
         {
           method: "POST",
           headers: {
@@ -64,6 +63,7 @@
 </script>
 
 <main>
+  <a href="/">Back</a>
   <h1>Split Box Invoice Demo</h1>
 
   <div class="recipient">

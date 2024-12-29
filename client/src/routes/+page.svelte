@@ -1,14 +1,17 @@
-<script>
-  import { userState } from "$lib/state.svelte.js";
-  let name = userState.name;
-</script>
+<ul>
+  <li>
+    <a href="/settings"> Settings </a>
+  </li>
+  <li>
+    <a href="/autopay"> Autopay Example </a>
+  </li>
+  <li>
+    <a href="/lookup"> GUID Lookup </a>
+  </li>
+</ul>
 
-<input bind:value={name} />
-<p>User name: {userState.name}</p>
-<button
-  onclick={() => {
-    userState.name = name;
-  }}
->
-  change name
-</button>
+<style>
+  li {
+    list-style: none;
+  }
+</style>

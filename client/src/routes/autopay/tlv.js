@@ -3,8 +3,6 @@ const tlv = {
   episode: "Alt Enclosure Test",
   guid: "58183156-a6ae-5e36-8875-a1be2ab691bd",
   episode_guid: "CC00e",
-  feedID: 4935828,
-  itemID: 7133051987,
   ts: 10,
   speed: "1",
   action: "boost",

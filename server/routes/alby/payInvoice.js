@@ -1,11 +1,11 @@
 import axios from "axios";
 import jwt from "jsonwebtoken";
 
-const invoice = async (req, res) => {
+const payInvoice = async (req, res) => {
   const { ALBY_JWT } = process.env;
 
   try {
-    const { invoice, id } = req.body;
+    const { invoice } = req.body;
 
     const cookies = req.cookies;
 
@@ -23,7 +23,6 @@ const invoice = async (req, res) => {
       res.json({
         success: true,
         info: paymentRes.data,
-        id,
       });
     } else {
       res.json([]);
@@ -34,4 +33,4 @@ const invoice = async (req, res) => {
   }
 };
 
-export default invoice;
+export default payInvoice;

@@ -4,7 +4,7 @@ import refresh from "./refresh.js";
 import boost from "./boost.js";
 import logout from "./logout.js";
 import lnurlp from "./lnurlp.js";
-import invoice from "./invoice.js";
+import payInvoice from "./payInvoice.js";
 
 import bodyParser from "body-parser";
 
@@ -19,9 +19,9 @@ const albyRoutes = (tempTokens) => {
   router.get("/auth", auth);
   router.get("/refresh", refresh);
   router.get("/account", refresh);
-  router.post("/boost", bodyParser.json(), boost);
-  router.post("/invoice", bodyParser.json(), invoice);
-  router.post("/lnurlp", bodyParser.json(), lnurlp);
+  router.post("/boost", boost);
+  router.post("/pay-invoice", payInvoice);
+  router.post("/lnurlp", lnurlp);
   router.get("/logout", logout);
 
   return router;
