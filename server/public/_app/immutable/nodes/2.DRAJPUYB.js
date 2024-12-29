@@ -1,0 +1,1 @@
+import{a as e,t}from"../chunks/disclose-version.D2fD36qC.js";import"../chunks/legacy.DDnI4mLS.js";var o=t('<ul><li class="svelte-1hvby1l"><a href="/settings">Settings</a></li> <li class="svelte-1hvby1l"><a href="/autopay">Autopay Example</a></li> <li class="svelte-1hvby1l"><a href="/lookup">GUID Lookup</a></li></ul>');function i(a){var l=o();e(a,l)}export{i as component};
