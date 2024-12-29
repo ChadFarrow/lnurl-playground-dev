@@ -1,6 +1,6 @@
 <script>
   import { remoteServer } from "$lib/state.svelte.js";
-  let guid = "9325d046-c0fd-4988-9704-86ed62b68390";
+  let id = "9325d046-c0fd-4988-9704-86ed62b68390";
   let jsonData = null;
   let error = null;
 
@@ -8,7 +8,7 @@
     error = null;
     jsonData = null;
     try {
-      const res = await fetch(`${remoteServer}/metadata/${guid}`);
+      const res = await fetch(`${remoteServer}/metadata/${id}`);
       if (!res.ok) throw new Error("Failed to fetch data");
       jsonData = await res.json();
     } catch (err) {
@@ -19,7 +19,7 @@
 
 <main>
   <div>
-    <input type="text" bind:value={guid} placeholder="Enter GUID" />
+    <input type="text" bind:value={id} placeholder="Enter GUID" />
     <button on:click={fetchData}>Fetch JSON</button>
   </div>
 

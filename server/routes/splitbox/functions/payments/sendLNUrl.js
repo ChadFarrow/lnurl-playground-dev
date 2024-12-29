@@ -14,7 +14,9 @@ export default function sendLNUrl({ accessToken, recipient, id }) {
       }
 
       const invoiceRes = await fetch(
-        `${data.callback}?amount=${recipient["@_split"] * 1000}&comment=${id}`
+        `${data.callback}?amount=${
+          recipient["@_split"] * 1000
+        }&comment=${`${server}/metadata/${id}`}`
       );
       const invoiceData = await invoiceRes.json();
       const invoice = invoiceData.pr;
