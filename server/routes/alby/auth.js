@@ -51,15 +51,13 @@ const auth = async (req, res, next) => {
         "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
       },
     }).catch((error) => {
-      console.log("alby auth error: ", error.response?.data || error.message);
+      console.error("alby auth error: ", error.response?.data || error.message);
       throw error;
     });
 
     if (!resolve) {
       return res.status(401).json({ message: "Authorization failed" });
     }
-
-    console.log(resolve.data);
 
     const newToken = jwt.sign(resolve.data, process.env.ALBY_JWT, {
       expiresIn: "10d",
@@ -75,7 +73,7 @@ const auth = async (req, res, next) => {
         headers: { Authorization: `Bearer ${resolve.data.access_token}` },
       }),
     ]).catch((error) => {
-      console.log(
+      console.error(
         "alby data fetch error: ",
         error.response?.data || error.message
       );
@@ -104,7 +102,7 @@ const auth = async (req, res, next) => {
 
     res.status(200).json(user);
   } catch (err) {
-    console.log("albyauth error: ", err.message);
+    console.error("albyauth error: ", err.message);
     return res.status(500).json({ message: "Server Error" });
   }
 };

@@ -50,5 +50,5 @@ app.use("/", splitBoxRouter);
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`MetaBoost API is running on http://localhost:${PORT}`);
+  console.log(`The Split Box is running on http://localhost:${PORT}`);
 });

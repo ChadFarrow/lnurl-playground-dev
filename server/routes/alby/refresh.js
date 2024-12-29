@@ -33,7 +33,7 @@ const refresh = async (req, res) => {
         ? jwt.verify(cookies.awt, process.env.ALBY_JWT)
         : undefined;
     } catch (error) {
-      console.log("JWT verify error: ", error.message);
+      console.error("JWT verify error: ", error.message);
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
@@ -86,7 +86,7 @@ const refresh = async (req, res) => {
 
     res.status(200).json(user);
   } catch (err) {
-    console.log("Alby refresh error: ", err.response?.data || err.message);
+    console.error("Alby refresh error: ", err.response?.data || err.message);
     res.status(500).json({ message: "Server Error" });
   }
 };

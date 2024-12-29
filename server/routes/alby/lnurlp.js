@@ -28,7 +28,7 @@ const lnurlp = async (req, res) => {
       res.json([]);
     }
   } catch (err) {
-    console.log("alby lnurlp: " + err);
+    console.error("alby lnurlp: " + err);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -67,7 +67,7 @@ async function processPayments(payment, alby) {
       lnaddress: payment.lnaddress,
     };
   } catch (error) {
-    console.log("Payment Process Error:", error.message || error);
+    console.error("Payment Process Error:", error.message || error);
     return { success: false };
   }
 }

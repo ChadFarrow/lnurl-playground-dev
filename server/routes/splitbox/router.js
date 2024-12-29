@@ -35,7 +35,6 @@ router.get("/fetch-settings", async (req, res) =>
 
 router.get("/metadata/:id", (req, res) => {
   const { id } = req.params;
-  console.log(id);
   handle((store) => getById(store, id), req, res);
 });
 

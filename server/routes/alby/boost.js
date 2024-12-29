@@ -19,7 +19,7 @@ const boost = async (req, res) => {
       // Append the JSON string to the file
       fs.appendFile("tlv.json", bodyJson + "\n", (err) => {
         if (err) throw err;
-        console.log('The "body" was appended to file!');
+        console.error('The "body" was appended to file!');
       });
     } catch (error) {}
 
@@ -34,7 +34,7 @@ const boost = async (req, res) => {
         headers: { Authorization: `Bearer ${alby.access_token}` },
         data: { keysends: body },
       }).catch((error) => {
-        console.log("alby boost error: ", error.response.data);
+        console.error("alby boost error: ", error.response.data);
         throw error; // Propagate error up to outer catch block
       });
 
@@ -43,7 +43,7 @@ const boost = async (req, res) => {
       res.json([]);
     }
   } catch (err) {
-    console.log("albyauth: " + err);
+    console.err("albyauth: " + err);
     res.status(500).json({ message: "Server Error" });
   }
 };

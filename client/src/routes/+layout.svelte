@@ -14,11 +14,9 @@
   onMount(async () => {
     albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${albyRedirectUrl}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
     await loadAlby();
-    console.log("DOM is fully loaded");
   });
 
   async function loadAlby() {
-    console.log(remoteServer);
     user.address = "";
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");

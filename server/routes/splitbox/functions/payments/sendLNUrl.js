@@ -20,7 +20,7 @@ export default function sendLNUrl({ accessToken, recipient, id }) {
 
       const invoiceRes = await fetch(
         `${data.callback}?amount=${
-          recipient["@_split"] * 1000
+          recipient.amount * 1000
         }&comment=${`${process.env.WEBHOOK_SERVER}/metadata/${id}`}`
       );
       const invoiceData = await invoiceRes.json();

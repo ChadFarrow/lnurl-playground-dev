@@ -28,7 +28,7 @@ const payInvoice = async (req, res) => {
       res.json([]);
     }
   } catch (err) {
-    console.log("alby lnurlp: " + err);
+    console.error("alby lnurlp: " + err);
     res.status(500).json({ message: "Server Error" });
   }
 };

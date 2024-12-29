@@ -17,7 +17,7 @@ const account = async (req, res) => {
           headers: { Authorization: `Bearer ${alby.access_token}` },
         });
       } catch (error) {
-        console.log("alby account error: ", error.response.data);
+        console.error("alby account error: ", error.response.data);
         return res.status(500).json({ message: error.response.data });
       }
 
@@ -28,7 +28,7 @@ const account = async (req, res) => {
       res.status(200).json(resolve.data);
     }
   } catch (err) {
-    console.log("alby account error: " + err);
+    console.error("alby account error: " + err);
     return res.status(500).json({ message: "Server Error" });
   }
 };
