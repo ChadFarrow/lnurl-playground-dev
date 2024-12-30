@@ -15,11 +15,9 @@ function webhookSync(storeMetadata) {
           await storeMetadata.updateByInvoice(invoice, { settled: true });
 
           const data = await storeMetadata.getByInvoice(invoice);
-          const { metadata, id } = data;
+          const { metadata, id, parentAddress } = data;
           let splits = await getSplits(metadata);
-          let account = await storeMetadata.fetchAccessToken(
-            "thesplitbox@getalby.com"
-          );
+          let account = await storeMetadata.fetchAccessToken(parentAddress);
           let completedPayments = await processPayments({
             accessToken: account.albyAccessToken || account.strikeAccessToken,
             splits,

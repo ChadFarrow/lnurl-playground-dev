@@ -28,6 +28,7 @@ function invoice(storeMetadata) {
           const invoice = await getInvoice(address, tlv.value_msat_total);
           const newMetadata = {
             id: metaID,
+            parentAddress: address,
             invoice,
             ...payload,
           };

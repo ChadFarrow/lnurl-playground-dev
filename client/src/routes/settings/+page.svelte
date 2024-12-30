@@ -28,7 +28,6 @@
   }
 
   async function saveSettings() {
-    console.log("Reset password for:", address);
     const payload = { albyAccessToken, approvedGuids };
 
     let res = await fetch(remoteServer + "/save-settings", {
