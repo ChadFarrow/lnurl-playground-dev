@@ -8,6 +8,9 @@
   <li>
     <a href="/lookup"> GUID Lookup </a>
   </li>
+  <li>
+    <a href="/goals"> Goals </a>
+  </li>
 </ul>
 
 <style>

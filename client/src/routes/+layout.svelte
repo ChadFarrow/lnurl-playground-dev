@@ -57,9 +57,8 @@
     </li>
   </ul>
 </nav>
-{#if user.address}
-  <slot />
-{/if}
+
+<slot />
 
 <style>
   ul {
