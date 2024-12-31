@@ -33,16 +33,6 @@
       status.push(`Fetching invoice from ${invoiceRoute}`);
       status = status;
 
-      let res = await fetch(invoiceRoute, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const invoice = await res.json();
-      console.log(invoice);
       status.push(`Paying Invoice`);
       status = status;
       let payment = await sendSats(invoice);
