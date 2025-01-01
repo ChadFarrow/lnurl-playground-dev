@@ -150,15 +150,17 @@
       TSB server handles all the remote item stuff.
     </li>
     <li>
-      I am willing to budget on the Podcaster Wallet thing, but the hosts and
+      I am willing to budge on the Podcaster Wallet thing, but the hosts and
       podcasters have had plenty of time to figure this out, and if we're going
       to shake the apple cart with wallets, we might as well go through all the
       pain at once and get everyone on board with the new way of doing things.
+      We should stop catering to those that don't want to innovate.
     </li>
     <li>
       If the address supports keysend, TSB will update the TLV accordingly for
       each split, then make the payment using keysend and sending the TLV
-      record.
+      record. Even with lnaddress, TSB looks for a .well-known/keysend route
+      first, because keysend rules!
     </li>
     <li>
       If the address is lnurlp only, TSB will store the TLV record, then send a
