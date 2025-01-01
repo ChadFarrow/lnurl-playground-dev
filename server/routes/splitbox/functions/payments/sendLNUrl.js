@@ -17,12 +17,17 @@ export default function sendLNUrl({ accessToken, recipient, id }) {
       if (!data.callback) {
         throw new Error("Callback URL missing in LNURLP response");
       }
-
+      console.log(
+        `${data.callback}?amount=${
+          recipient.amount * 1000
+        }&comment=${`${process.env.WEBHOOK_SERVER}/metadata/${id}`}`
+      );
       const invoiceRes = await fetch(
         `${data.callback}?amount=${
           recipient.amount * 1000
         }&comment=${`${process.env.WEBHOOK_SERVER}/metadata/${id}`}`
       );
+
       const invoiceData = await invoiceRes.json();
       const invoice = invoiceData.pr;
 
