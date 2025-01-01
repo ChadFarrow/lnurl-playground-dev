@@ -10,7 +10,7 @@
 
 <section>
   <p>
-    Sending splits is hard in a Podcasting 2.0 app is hard. It's by far the most
+    Sending splits in a Podcasting 2.0 app is hard. It's by far the most
     complicated part of my code. And there's a lot of bakers making this cake.
     The podcaster has to add their splits to the feed, but not all hosting
     companies support the value block. The Podcast Index decided to put in value
@@ -42,9 +42,9 @@
     Another problem with multiple wallets is not every wallet makes it easy for
     a listener to seamlessly send payments. That requires an API the apps are
     allowed to access. But is an app developer now required to support every
-    wallet API out there, or just the four major ones. This starts to feel more
+    wallet API out there, or just the four major ones? This starts to feel more
     and more like Google, Apple, Facebook, and Twitter getting their mitts into
-    every app there is. And widespread solution is to show a QR code and the
+    every app there is. An widespread solution is to show a QR code and the
     listener can copy/paste or scan it from their wallet of choice, but this is
     hardly seamless. Copying a code from your podcast app, opening your wallet,
     pasting the code in, pushing send... yeah, it works, but it's a hassle.
@@ -70,7 +70,7 @@
     Alby has a single endpoint an app can send all of the splits to, and Alby
     will make all the payments and send back a single response with all of the
     payment details. This works great for mobile app devs who are worried about
-    battery life and bandwidth. The new wallet methods don't all that. The way
+    battery life and bandwidth. The new wallet methods don't allow that. The way
     the new wallet methods work is the app needs to send three requests PER
     SPLIT to make all of the payments. For a feed with 12 splits, you're looking
     at 36 requests PER BOOST. It's a difficult situation for them to be in
@@ -97,21 +97,78 @@
     through their hosting company.
   </p>
 
-  <h2>The Split Box is my solution.</h2>
+  <h3>The Split Box is my solution.</h3>
   <p>
     It's one of many possibilities. It's flawed, there are things about it I
     don't like. Any issues you have, I probably also have. I'm not interested in
     arguing anymore. If you don't like this solution, don't use it. Or fork it
-    and make it better.
+    and make it better. I'm open to suggestions for improvements, but I'm not
+    interested in bitching about why this doesn't do something you want it to or
+    why it's flawed in this way or that way. I know it is. This is the
+    compromise I've built. My preference is to continue using keysend, but I'm
+    not a Wallet Provider, I write WebApps, so I'm at the mercy of the direction
+    the Wallet Providers go. If you want it to do something else, make it do
+    something else. It's all open for you guys to make it your own.
   </p>
 
-  <h3>Goals with The Split Box (TSB):</h3>
+  <h3>Here are my goals with The Split Box (TSB)</h3>
   <ul>
-    <li>TSB is not a company, it's an idea.</li>
-    <li>A single URL to send metadata to.</li>
-    <li>Existing apps make three calls per boost.</li>
-    <li>The feed is the source of truth.</li>
-    <li>Keysend for TLV records.</li>
-    <li>Support for lnurlp with TLV comments.</li>
+    <li>
+      TSB is not a company, it's an idea. It's an open source server anyone can
+      host for themselves and/or others. I don't want to handle your payments,
+      and if I end up doing so, I will take a 10% cut off the top to encourage
+      you to handle them yourself. I'll be running a server for a while for
+      demonstration, and to help out some of the people that support me, but if
+      it gets too expensive, I'll pull the plug on it. v4v baby.
+    </li>
+    <li>A single url to send the metadata to.</li>
+    <li>
+      The metadata will be the TLV record we've been sending for the last four
+      years. This means any existing app doesn't need to do much to change their
+      existing code.
+    </li>
+    The existing apps will need to make three calls per boost. One to send the TLV
+    record and get the invoice, one for the listener to pay the invoice, and one
+    to send the payment details from the paid invoice back to the Split Box to verify
+    payment.
+    <li>
+      Once payment is verified, TSB will forward the percentage of each split to
+      each split. This solves the problem for PWA and serverless apps not having
+      a back end. The podcaster will provide there own payment back end, either
+      their own or a third party, preferrably their hosting company.
+    </li>
+    <li>
+      The feed is the source of truth. This means the Podcaster Wallet would go
+      away. A podcaster puts their desired splits into their feed, The Split Box
+      looks up the feed and episode from the TLV record, then finds the
+      appropriate value block. If a timestamp is included in the TLV record, The
+      Split Box will also look up any Value Time Splits for that episode and
+      adjust the splits accordingly. In the future, I hope this simplifies
+      things for the app devs so they don't have to figure out
+      remote_feed_guids, remote_item_guids, Value Time Stamps, etc. They would
+      just need to send the feed_guid, item_guid, feed_url, and Timestamp and
+      TSB server handles all the remote item stuff.
+    </li>
+    <li>
+      I am willing to budget on the Podcaster Wallet thing, but the hosts and
+      podcasters have had plenty of time to figure this out, and if we're going
+      to shake the apple cart with wallets, we might as well go through all the
+      pain at once and get everyone on board with the new way of doing things.
+    </li>
+    <li>
+      If the address supports keysend, TSB will update the TLV accordingly for
+      each split, then make the payment using keysend and sending the TLV
+      record.
+    </li>
+    <li>
+      If the address is lnurlp only, TSB will store the TLV record, then send a
+      payment with a comment. That comment will be a link to retreive the TLV
+      record. You'll have to work with your own wallet provider if they don't
+      allow comments, and to see the comments. I'd also encourage you to find a
+      wallet provider that supports webhooks, so when you get a payment in, you
+      can have those comments sent to your own server so you can fetch and store
+      the TLV records. But hey, if you're going to have a server that fetches
+      and stores TLV records, you might as well run your own Split Box.
+    </li>
   </ul>
 </section>
