@@ -19,16 +19,19 @@ async function handle(fn, req, res) {
   handler(req, res);
 }
 
+router.options("/invoice", cors(corsOptions)); // Preflight
 router.post("/invoice", cors(corsOptions), (req, res) =>
   handle(invoice, req, res)
 );
 
+router.options("/webhook-sync", cors(corsOptions)); // Preflight
 router.post("/webhook-sync", cors(corsOptions), (req, res) =>
   handle(webhookSync, req, res)
 );
 
+router.options("/webhook-async", cors(corsOptions)); // Preflight
 router.post("/webhook-async", cors(corsOptions), (req, res) =>
-  handle(storeMetadata, req, res)
+  handle(webhookAsync, req, res)
 );
 
 router.post("/save-settings", async (req, res) =>
