@@ -26,9 +26,10 @@ router.post("/test", (req, res) => {
 });
 
 router.options("/webhook-test", cors(corsOptions)); // Preflight
-router.post("/webhook-test", cors(corsOptions), (req, res) =>
-  handle(webhookTest, req, res)
-);
+router.post("/webhook-test", cors(corsOptions), (req, res) => {
+  console.log("test from Strike");
+  return handle(webhookTest, req, res);
+});
 
 router.options("/webhook-test-alby", cors(corsOptions)); // Preflight
 router.post("/webhook-test-alby", cors(corsOptions), (req, res) =>

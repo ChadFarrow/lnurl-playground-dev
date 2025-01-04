@@ -4,7 +4,7 @@ import axios from "axios";
 dotenv.config();
 
 let data = JSON.stringify({
-  webhookUrl: "https://thesplitbox.com/strike/webhook-test",
+  webhookUrl: "https://thesplitbox.com/strike/webhook-test-alby",
   webhookVersion: "v1",
   secret: "testtesttest",
   enabled: true,
