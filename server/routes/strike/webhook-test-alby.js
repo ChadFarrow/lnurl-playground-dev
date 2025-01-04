@@ -1,6 +1,6 @@
 import fs from "fs";
 
-function webhookTest() {
+function webhookTestAlby() {
   return async (req, res) => {
     fs.readFile("strike-test.json", (err, data) => {
       let content = [];
@@ -18,7 +18,7 @@ function webhookTest() {
 
       // Write updated array back to file
       fs.writeFile(
-        "strike-webhook-test.json",
+        "alby-webhook-test.json",
         JSON.stringify(content, null, 2),
         (writeErr) => {
           if (writeErr) {
@@ -31,4 +31,4 @@ function webhookTest() {
   };
 }
 
-export default webhookTest;
+export default webhookTestAlby;

@@ -1,7 +1,14 @@
 import express from "express";
-import fs from "fs";
+
+import cors from "cors";
 
 const router = express.Router();
+const corsOptions = { origin: "*" };
+
+async function handle(fn, req, res) {
+  const handler = await fn(storeMetadata);
+  handler(req, res);
+}
 
 // Hello World route
 router.post("/", (req, res) => {
@@ -14,47 +21,10 @@ router.post("/test", (req, res) => {
   res.send("Hello World");
 });
 
-// Handle preflight CORS
-router.options("/webhook-test", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.sendStatus(200);
-});
-
-// Webhook-test route with CORS
-router.post("/webhook-test", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "POST");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-
-  fs.readFile("strike-test.json", (err, data) => {
-    let content = [];
-
-    if (!err && data.length) {
-      try {
-        content = JSON.parse(data);
-      } catch (parseErr) {
-        return res.status(500).send("Failed to parse existing file");
-      }
-    }
-
-    // Append new request body
-    content.push(req.body);
-
-    // Write updated array back to file
-    fs.writeFile(
-      "strike-test.json",
-      JSON.stringify(content, null, 2),
-      (writeErr) => {
-        if (writeErr) {
-          return res.status(500).send("Failed to save file");
-        }
-        res.send("Webhook received and saved");
-      }
-    );
-  });
-});
+router.options("/webhook-test", cors(corsOptions)); // Preflight
+router.post("/webhook-test", cors(corsOptions), (req, res) =>
+  handle(invoice, req, res)
+);
 
 const strikeRoutes = router;
 
