@@ -26,9 +26,6 @@ let data = JSON.stringify({
   ],
 });
 
-process.env.STRIKE_WEBHOOK_TOKEN =
-  "7BBE9C25B145B6BFA7B2B96B2BDFF9417AF67C493E88503013CCC92D70D21D30";
-let subscriptionId = "01943288-e456-77e8-968e-3873f86443f5";
 let config = {
   method: "patch",
   url: `https://api.strike.me/v1/subscriptions/${subscriptionId}`,
