@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
+import mongoStore from "../../stores/mongo/store.js";
 
 import webhookTest from "./webhook-test.js";
 import webhookTestAlby from "./webhook-test-alby.js";
 
+const storeMetadata = mongoStore;
 const router = express.Router();
 const corsOptions = { origin: "*" };
 
