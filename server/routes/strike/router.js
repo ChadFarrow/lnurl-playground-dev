@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 
-import webhookTest from "./webhook-test";
-import webhookTestAlby from "./webhook-test-alby";
+import webhookTest from "./webhook-test.js";
+import webhookTestAlby from "./webhook-test-alby.js";
 
 const router = express.Router();
 const corsOptions = { origin: "*" };
