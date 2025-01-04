@@ -14,6 +14,14 @@ router.post("/test", (req, res) => {
   res.send("Hello World");
 });
 
+// Handle preflight CORS
+router.options("/webhook-test", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "POST");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.sendStatus(200);
+});
+
 // Webhook-test route with CORS
 router.post("/webhook-test", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
