@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
+import sendLNUrl from "./sendLNUrl.js";
 
 dotenv.config();
 
@@ -21,7 +22,8 @@ async function webhook() {
       }
 
       // Append new request body
-      content.push(req.body);
+      let newData = req.body;
+      content.push(newData);
 
       // Write updated array back to file
       await fs.writeFile(filePath, JSON.stringify(content, null, 2));
@@ -33,11 +35,26 @@ async function webhook() {
 
       try {
         // Verify the signature
-        const verifiedPayload = wh.verify(JSON.stringify(payload), headers);
+        const verifiedPayload = await wh.verify(
+          JSON.stringify(payload),
+          headers
+        );
         console.log("Webhook verified");
 
         // Process the webhook payload here
         res.status(200).send("Webhook received");
+
+        let amount = newData.amount * 1000 - 5000;
+        let recipients = [
+          { "@_address": "sjb@strike.me", amount: Math.floor(amount * 0.25) },
+          {
+            "@_address": "adamcurry@strike.me",
+            amount: Math.floor(amount * 0.25),
+          },
+        ];
+
+        let paid = Promise.all(recipients.map((v) => sendLNUrl(v)));
+        console.log(paid);
       } catch (err) {
         console.error("Invalid webhook signature");
         res.status(200).send("Invalid signature");
