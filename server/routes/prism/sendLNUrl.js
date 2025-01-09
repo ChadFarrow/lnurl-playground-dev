@@ -21,7 +21,7 @@ export default function sendLNUrl({ accessToken, recipient, id }) {
       const invoiceRes = await fetch(
         `${data.callback}?amount=${
           recipient.amount * 1000
-        }&comment=If you're seeing this, then Prism payments are working`
+        }&comment=If you're seeing this, then Prism payments are working. Can you let Steven B. know?`
       );
 
       const invoiceData = await invoiceRes.json();
