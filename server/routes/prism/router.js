@@ -24,7 +24,7 @@ router.post("/webhook", cors(corsOptions), (req, res) => {
   return handle(webhook, req, res);
 });
 
-router.post("/webhook", cors(corsOptions), (req, res) => {
+router.get("/webhook", cors(corsOptions), (req, res) => {
   return handle(getPrismWebhook, req, res);
 });
 
