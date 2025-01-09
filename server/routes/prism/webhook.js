@@ -53,13 +53,12 @@ async function webhook() {
           },
         ];
 
-        let paid = Promise.all(recipients.map((v) => sendLNUrl(v)));
+        let paid = await Promise.all(recipients.map((v) => sendLNUrl(v)));
         console.log(paid);
       } catch (err) {
         console.error("Invalid webhook signature");
         res.status(200).send("Invalid signature");
       }
-      res.send("Webhook received and saved");
     } catch (err) {
       console.error(err);
       res.status(500).send("Failed to process the request");
