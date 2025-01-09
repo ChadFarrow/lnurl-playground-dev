@@ -1,34 +1,32 @@
-import fs from "fs";
+import fs from "fs/promises";
 
-function webhookTestAlby() {
-  return async (req, res) => {
-    fs.readFile("strike-test.json", (err, data) => {
-      let content = [];
+async function webhookTest(req, res) {
+  const filePath = "alby-webhook-test.json";
 
-      if (!err && data.length) {
-        try {
-          content = JSON.parse(data);
-        } catch (parseErr) {
-          return res.status(500).send("Failed to parse existing file");
-        }
+  try {
+    // Read existing file
+    let content = [];
+    try {
+      const data = await fs.readFile(filePath, "utf-8");
+      if (data.length) {
+        content = JSON.parse(data);
       }
+    } catch (err) {
+      if (err.code !== "ENOENT") throw err; // Ignore file-not-found errors
+    }
 
-      // Append new request body
-      content.push(req.body);
+    // Append new request body
+    content.push(req.body);
 
-      // Write updated array back to file
-      fs.writeFile(
-        "alby-webhook-test.json",
-        JSON.stringify(content, null, 2),
-        (writeErr) => {
-          if (writeErr) {
-            return res.status(500).send("Failed to save file");
-          }
-          res.send("Webhook received and saved");
-        }
-      );
-    });
-  };
+    // Write updated array back to file
+    await fs.writeFile(filePath, JSON.stringify(content, null, 2));
+    res.send("Webhook received and saved");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to process the request");
+  }
 }
 
-export default webhookTestAlby;
+export default webhookTest;
+
+("alby-webhook-test.json");
