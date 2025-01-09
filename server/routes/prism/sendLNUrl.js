@@ -5,7 +5,7 @@ if (!process.env.WEBHOOK_SERVER) {
   dotenv.config();
 }
 
-export default function sendLNUrl({ accessToken, recipient, id }) {
+export default function sendLNUrl(recipient) {
   return new Promise(async (resolve, reject) => {
     try {
       const [name, server] = recipient["@_address"].split("@");
