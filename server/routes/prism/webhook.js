@@ -44,7 +44,7 @@ async function webhook() {
         // Process the webhook payload here
         res.status(200).send("Webhook received");
 
-        let amount = newData.amount * 1000 - 5000;
+        let amount = newData.amount - 5; //hold on to 5 sats for fees
         let recipients = [
           { "@_address": "sjb@strike.me", amount: Math.floor(amount * 0.25) },
           {
