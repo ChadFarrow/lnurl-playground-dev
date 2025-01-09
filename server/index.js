@@ -9,6 +9,7 @@ import albyRoutes from "./routes/alby/albyRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
 import strikeRoutes from "./routes/strike/router.js";
 import wellknownRoutes from "./routes/wellknown/wellknownRoutes.js";
+import prismRoutes from "./routes/prism/router.js";
 
 const PORT = 3000; // Server port
 const app = express();
@@ -59,6 +60,8 @@ app.use("/strike", strikeRoutes);
 app.use("/", splitBoxRouter);
 
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
+
+app.use("/prism", prismRoutes);
 
 // Start the server
 app.listen(PORT, () => {
