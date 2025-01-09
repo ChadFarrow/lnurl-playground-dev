@@ -19,6 +19,7 @@ router.get("/test", (req, res) => {
 
 router.options("/webhook", cors(corsOptions)); // Preflight
 router.post("/webhook", cors(corsOptions), (req, res) => {
+  console.log("prism webhook test");
   return handle(webhook, req, res);
 });
 
