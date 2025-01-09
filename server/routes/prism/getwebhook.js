@@ -2,7 +2,7 @@ import fs from "fs/promises";
 
 async function getPrismWebhook() {
   return async (req, res) => {
-    const filePath = "../../prism-webhook.json";
+    const filePath = "prism-webhook.json";
 
     try {
       // Read the file content
