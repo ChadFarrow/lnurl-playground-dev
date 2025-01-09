@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoStore from "../../stores/mongo/store.js";
 
 import webhook from "./webhook.js";
+import getPrismWebhook from "./getwebhook.js";
 
 const storeMetadata = mongoStore;
 const router = express.Router();
@@ -21,6 +22,10 @@ router.options("/webhook", cors(corsOptions)); // Preflight
 router.post("/webhook", cors(corsOptions), (req, res) => {
   console.log("prism webhook test");
   return handle(webhook, req, res);
+});
+
+router.post("/webhook", cors(corsOptions), (req, res) => {
+  return handle(getPrismWebhook, req, res);
 });
 
 const prismRoutes = router;

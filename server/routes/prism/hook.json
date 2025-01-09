@@ -1,0 +1,72 @@
+{
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-09T03:09:05.017Z",
+    "creation_date": 1736392145,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "758b511928bbd95d05a566a062232a7be0f6bbf8a62351aae8f15962e5d22a25",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-19T06:18:10.000Z",
+    "expiry": 1736478545,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 2,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "PpXSouEnRDK1gpDBSUEaUgdc",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736392146,
+        "id": "5201515d852c217ffd7aed0c272ae32d45ced457d051231f3c7edcd2b35015f7",
+        "kind": 9734,
+        "pubkey": "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403",
+        "sig": "5306cc147bfd6f3757dfef7401953e72d6434dd5d65b9f1625ee9e5fca046f155e8ea904cfa2cca0905bf6e63cb5bae9a9a0be58ca1b18a6991eda3fabcab5a0",
+        "tags": [
+          [
+            "p",
+            "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],[
+            "e",
+            "8dbf20737b824882e6703df71a4a1807028fbce67dca58e6173b714728f8ce6d",
+            "wss://relay.nostr.band/"
+          ],
+          [
+            "lnurl",
+            "https://getalby.com/lnurlp/prism/callback"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736392146,\"content\":\"\",\"tags\":[[\"p\",\"23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403\"],[\"amount\",\"21000\"],[\">
+    },
+    "payer_email": null,
+    "payer_name": "StevenB",
+    "payer_pubkey": "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403",
+    "payment_hash": "0fac7943f3564013c322b9d744269e785610433bee8407a6316d309d2f074109",
+    "payment_request": "lnbc210n1pnh70w3dqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5p7k8jsln2eqp8sezh8t5gf570ptpqsema6zq0f33d5cf6tc8gyyssp5v3qhcgjnrskrwxpqv6d329p3zq>
+    "preimage": "ae21eca4f02e1b411bd9a970a564e46cc8f44995a2b4c3a2b391d753cb133943",
+    "r_hash_str": "0fac7943f3564013c322b9d744269e785610433bee8407a6316d309d2f074109",
+    "settled": true,
+    "settled_at": "2025-01-09T03:09:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  }
+]
