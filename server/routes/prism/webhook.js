@@ -44,16 +44,24 @@ async function webhook() {
         // Process the webhook payload here
         res.status(200).send("Webhook received");
 
-        let amount = newData.amount - 5; //hold on to 5 sats for fees
+        let amount = newData.amount;
         let recipients = [
-          { "@_address": "sjb@strike.me", amount: Math.floor(amount * 0.25) },
-          {
-            "@_address": "adamcurry@strike.me",
-            amount: Math.floor(amount * 0.25),
-          },
+          "sjb@strike.me",
+          "adamcurry@strike.me",
+          "jb55@sendsats.lol",
+          "dergigi@npub.cash",
+          "jack@primal.net",
+          "hzrd149@minibits.cash",
         ];
 
-        let paid = await Promise.all(recipients.map((v) => sendLNUrl(v)));
+        let routes = recipients.map((v) => {
+          return {
+            "@_address": v,
+            amount: Math.floor(amount / recipients.length),
+          };
+        });
+
+        let paid = await Promise.all(routes.map((v) => sendLNUrl(v)));
         console.log(paid);
       } catch (err) {
         console.error("Invalid webhook signature");
