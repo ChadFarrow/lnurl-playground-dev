@@ -1,0 +1,9 @@
+{
+  "content": "{\"name\":\"podcast_test_account\",\"display_name\":\"Podcast Test Account\",\"about\":\"This is a test account to see if I can set up splitable zaps for podcasters. \",\"created_at\":1736475385,\"lud16\":\"pc.856cd618-7f34-57ea-9b84-3600f1f65e7f@thesplitbox.com\"}",
+  "created_at": 1736475450,
+  "id": "059de987d1dbb7010cdf59486d21302494e573c8f217430f4bea96ea5128fc12",
+  "kind": 0,
+  "pubkey": "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849",
+  "sig": "b7ef7fd5a9f8dd8feecb9281e7a6d5f4924789a8d8504d4b98efe18de396f6a1cf09c28e19b3456cd271f41b300eb2d1e298e9d5b687b686820a12997a30b471",
+  "tags": []
+}

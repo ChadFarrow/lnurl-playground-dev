@@ -43,26 +43,41 @@ async function webhook() {
 
         // Process the webhook payload here
         res.status(200).send("Webhook received");
+        let lnurl = null;
+        const tags = data.metadata?.zap_request?.tags;
+
+        if (tags) {
+          const lnurlTag = tags.find((tag) => tag[0] === "lnurl");
+          if (lnurlTag) {
+            lnurl = lnurlTag[1];
+          }
+        }
+
+        let route = lnurl?.split("#")?.[1];
 
         let amount = newData.amount;
-        let recipients = [
-          "sjb@strike.me",
-          "adamcurry@strike.me",
-          "jb55@sendsats.lol",
-          "dergigi@npub.cash",
-          "jack@primal.net",
-          "hzrd149@minibits.cash",
-        ];
+        if (route) {
+          console.log(route);
+        } else {
+          let recipients = [
+            "sjb@strike.me",
+            "adamcurry@strike.me",
+            "jb55@sendsats.lol",
+            "dergigi@npub.cash",
+            "jack@primal.net",
+            "hzrd149@minibits.cash",
+          ];
 
-        let routes = recipients.map((v) => {
-          return {
-            "@_address": v,
-            amount: Math.floor(amount / recipients.length),
-          };
-        });
+          let lnRoutes = recipients.map((v) => {
+            return {
+              "@_address": v,
+              amount: Math.floor(amount / recipients.length),
+            };
+          });
 
-        let paid = await Promise.all(routes.map((v) => sendLNUrl(v)));
-        console.log(paid);
+          let paid = await Promise.all(lnRoutes.map((v) => sendLNUrl(v)));
+          console.log(paid);
+        }
       } catch (err) {
         console.error("Invalid webhook signature");
         res.status(200).send("Invalid signature");
