@@ -57,7 +57,7 @@ async function webhook() {
 
         let amount = newData.amount;
         if (route) {
-          console.log(route);
+          console.log(`${new Date().getTime()}:  ${route}`);
         } else {
           let recipients = [
             "sjb@strike.me",
@@ -79,7 +79,7 @@ async function webhook() {
           console.log(paid);
         }
       } catch (err) {
-        console.error("Invalid webhook signature");
+        console.error(err);
         res.status(200).send("Invalid signature");
       }
     } catch (err) {
