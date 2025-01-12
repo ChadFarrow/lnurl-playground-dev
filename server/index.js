@@ -4,6 +4,8 @@ import helmet from "helmet";
 import path from "path";
 import cookieParser from "cookie-parser";
 import cors from "cors"; // Import the CORS package
+import fs from "fs";
+import axios from "axios";
 
 import albyRoutes from "./routes/alby/albyRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
@@ -62,6 +64,38 @@ app.use("/", splitBoxRouter);
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
 
 app.use("/prism", prismRoutes);
+
+app.get("/lnurlp/:name/callback/", async (req, res) => {
+  const { name } = req.params;
+  const queries = req.query;
+  const filePath = "callbackData.json"; // File to store JSON data
+
+  try {
+    // Read or initialize the JSON file
+    let data = [];
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      data = JSON.parse(fileContent);
+    }
+
+    // Update the file with the new entry
+    const newEntry = { callBackName: name, queries };
+    data.push(newEntry);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+    // Send the queries to the external API
+    const response = await axios.get(
+      "https://getalby.com/lnurlp/prism/callback",
+      { params: queries }
+    );
+
+    // Return the response from the external API
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {

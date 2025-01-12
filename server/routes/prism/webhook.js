@@ -44,7 +44,7 @@ async function webhook() {
         // Process the webhook payload here
         res.status(200).send("Webhook received");
         let lnurl = null;
-        const tags = data.metadata?.zap_request?.tags;
+        const tags = newData.metadata?.zap_request?.tags;
 
         if (tags) {
           const lnurlTag = tags.find((tag) => tag[0] === "lnurl");

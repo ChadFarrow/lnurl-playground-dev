@@ -17,7 +17,7 @@ router.get("/lnurlp/prism", (req, res) => {
       pubkey: { mandatory: false },
     },
     nostrPubkey:
-      "79f00d3f5a19ec806189fcab03c1be4ff81d18ee4f653c88fac41fe03570f432",
+      "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403",
     allowsNostr: true,
   });
 });
@@ -30,7 +30,7 @@ router.get("/lnurlp/:name", (req, res) => {
     status: "OK",
     tag: "payRequest",
     commentAllowed: 255,
-    callback: `https://getalby.com/lnurlp/prism/callback#${name}`, // Use the dynamic name
+    callback: `https://thesplitbox.com/lnurlp/${name}/callback`, // Use the dynamic name
     metadata: `[["text/identifier","prism@getalby.com"],["text/plain","Sats for ${name}"]]`,
     minSendable: 1000,
     maxSendable: 10000000000,
