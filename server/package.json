@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix svelte-demo\" \"nodemon index.js\""
+    "dev": "concurrently \"npm run dev --prefix svelte-demo\" \"nodemon --ignore '*.json' index.js\""
   },
   "author": "",
   "license": "ISC",

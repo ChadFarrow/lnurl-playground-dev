@@ -6,6 +6,13 @@ import cookieParser from "cookie-parser";
 import cors from "cors"; // Import the CORS package
 import fs from "fs";
 import axios from "axios";
+import fetch from "node-fetch";
+
+import {
+  finalizeEvent,
+  generateSecretKey,
+  getPublicKey,
+} from "nostr-tools/pure";
 
 import albyRoutes from "./routes/alby/albyRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
@@ -67,7 +74,8 @@ app.use("/prism", prismRoutes);
 
 app.get("/lnurlp/:name/callback/", async (req, res) => {
   const { name } = req.params;
-  const queries = req.query;
+  const { amount, comment } = req.query;
+  let { nostr } = req.query;
   const filePath = "callbackData.json"; // File to store JSON data
 
   try {
@@ -78,19 +86,42 @@ app.get("/lnurlp/:name/callback/", async (req, res) => {
       data = JSON.parse(fileContent);
     }
 
+    if (nostr) {
+      try {
+        nostr = JSON.parse(nostr);
+        const tags = nostr?.tags;
+
+        if (tags) {
+          tags.push(["splitbox", name]);
+        }
+        console.log(nostr);
+      } catch (error) {}
+      nostr = encodeURI(JSON.stringify(nostr));
+    }
+    console.log(nostr);
+
     // Update the file with the new entry
-    const newEntry = { callBackName: name, queries };
+    const newEntry = { callBackName: name, amount, nostr };
     data.push(newEntry);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
     // Send the queries to the external API
     const response = await axios.get(
       "https://getalby.com/lnurlp/prism/callback",
-      { params: queries }
+      { params: { amount, comment, nostr } }
     );
 
     // Return the response from the external API
     res.json(response.data);
+
+    // const response = await fetch(
+    //   `https://getalby.com/lnurlp/prism/callback?amount=${amount}&nostr=${nostr}`
+    // );
+
+    // const invoice = await response.json();
+
+    // console.log(invoice);
+    // return invoice;
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
