@@ -2,9 +2,9 @@ import express from "express";
 const router = express.Router();
 
 router.get("/lnurlp/:name", (req, res) => {
-  console.log("well-known: ", name);
   const { name } = req.params; // Extract the dynamic part from the route
 
+  console.log("well-known: ", name);
   res.json({
     status: "OK",
     tag: "payRequest",
