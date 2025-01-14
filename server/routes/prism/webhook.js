@@ -57,25 +57,23 @@ async function webhook() {
         if (splitbox) {
           console.log(`${new Date().getTime()}:  ${splitbox}`);
         } else {
-          console.log("prism split");
-          let recipients = [
-            "sjb@strike.me",
-            "adamcurry@strike.me",
-            "jb55@sendsats.lol",
-            "dergigi@npub.cash",
-            "jack@primal.net",
-            "hzrd149@minibits.cash",
-          ];
-
-          let lnRoutes = recipients.map((v) => {
-            return {
-              "@_address": v,
-              amount: Math.floor(amount / recipients.length),
-            };
-          });
-
-          let paid = await Promise.all(lnRoutes.map((v) => sendLNUrl(v)));
-          console.log(paid);
+          // console.log("prism split");
+          // let recipients = [
+          //   "sjb@strike.me",
+          //   "adamcurry@strike.me",
+          //   "jb55@sendsats.lol",
+          //   "dergigi@npub.cash",
+          //   "jack@primal.net",
+          //   "hzrd149@minibits.cash",
+          // ];
+          // let lnRoutes = recipients.map((v) => {
+          //   return {
+          //     "@_address": v,
+          //     amount: Math.floor(amount / recipients.length),
+          //   };
+          // });
+          // let paid = await Promise.all(lnRoutes.map((v) => sendLNUrl(v)));
+          // console.log(paid);
         }
       } catch (err) {
         console.error(err);
