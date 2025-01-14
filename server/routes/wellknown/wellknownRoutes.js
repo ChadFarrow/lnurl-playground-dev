@@ -24,7 +24,6 @@ router.get("/lnurlp/prism", (req, res) => {
 
 router.get("/lnurlp/:name", (req, res) => {
   const { name } = req.params; // Extract the dynamic part from the route
-  console.log(name); // Log the dynamic name
 
   res.json({
     status: "OK",

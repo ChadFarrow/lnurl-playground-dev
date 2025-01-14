@@ -74,7 +74,7 @@ app.use("/prism", prismRoutes);
 
 app.get("/lnurlp/:name/callback/", async (req, res) => {
   const { name } = req.params;
-  const { amount, comment } = req.query;
+  const { amount } = req.query;
   let { nostr } = req.query;
   const filePath = "callbackData.json"; // File to store JSON data
 
@@ -85,20 +85,30 @@ app.get("/lnurlp/:name/callback/", async (req, res) => {
       const fileContent = fs.readFileSync(filePath, "utf-8");
       data = JSON.parse(fileContent);
     }
-
     if (nostr) {
       try {
         nostr = JSON.parse(nostr);
+        delete nostr.id;
+        delete nostr.sig;
         const tags = nostr?.tags;
 
+        console.log(tags);
+
         if (tags) {
-          tags.push(["splitbox", name]);
+          if (tags) {
+            tags.push(["splitbox", name]);
+          } else {
+            nostr.tags = [["splitbox", name]];
+          }
         }
-        console.log(nostr);
       } catch (error) {}
-      nostr = encodeURI(JSON.stringify(nostr));
+      console.log(nostr);
+
+      let sk = generateSecretKey();
+
+      nostr = finalizeEvent(nostr, sk);
+      nostr = JSON.stringify(nostr);
     }
-    console.log(nostr);
 
     // Update the file with the new entry
     const newEntry = { callBackName: name, amount, nostr };
@@ -108,20 +118,11 @@ app.get("/lnurlp/:name/callback/", async (req, res) => {
     // Send the queries to the external API
     const response = await axios.get(
       "https://getalby.com/lnurlp/prism/callback",
-      { params: { amount, comment, nostr } }
+      { params: { amount, nostr } }
     );
 
     // Return the response from the external API
     res.json(response.data);
-
-    // const response = await fetch(
-    //   `https://getalby.com/lnurlp/prism/callback?amount=${amount}&nostr=${nostr}`
-    // );
-
-    // const invoice = await response.json();
-
-    // console.log(invoice);
-    // return invoice;
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });

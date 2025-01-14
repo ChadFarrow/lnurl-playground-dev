@@ -43,6 +43,7 @@
               "p",
               "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849",
             ],
+            ["splitbox", "Eat at Joes"],
             [
               "relays",
               "wss://relay.damus.io",
