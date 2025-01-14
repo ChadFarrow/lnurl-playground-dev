@@ -72,7 +72,7 @@ app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
 
 app.use("/prism", prismRoutes);
 
-app.get("/lnurlp/:name/callback/", async (req, res) => {
+app.get("/lnurlp/:name/callback/", cors({ origin: "*" }), async (req, res) => {
   const { name } = req.params;
   const { amount } = req.query;
   let { nostr } = req.query;
