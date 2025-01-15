@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { SimplePool } from "nostr-tools";
-import { useWebSocketImplementation } from "nostr-tools/relay";
+import { useWebSocketImplementation } from "nostr-tools/pool";
 import { relayUrls } from "./relayUrls.js";
 
 useWebSocketImplementation(WebSocket);
@@ -22,6 +22,7 @@ async function fetchEvent(eventId, publicKey) {
         {
           // Event handler for received events
           onevent(event) {
+            console.log("evt: ", event);
             resolve(event.tags); // Resolve the promise with event tags
           },
 
@@ -33,6 +34,7 @@ async function fetchEvent(eventId, publicKey) {
         }
       );
     } catch (error) {
+      console.log("err: ", error);
       reject(error); // Reject the promise if an error occurs
     }
   });

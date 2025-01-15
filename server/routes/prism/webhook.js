@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import dotenv from "dotenv";
 import sendLNUrl from "./sendLNUrl.js";
 import fetchEvent from "../../functions/nostr/fetchEvent.js";
+import fetchChannel from "../splitbox/functions/getSplits/fetchChannelFromIndex.js";
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ async function webhook() {
       const payload = req.body;
       const headers = req.headers;
 
-      const wh = new Webhook(process.env.PRISM_WEBHOOK);
+      // const wh = new Webhook(process.env.PRISM_WEBHOOK);
 
       try {
         // Verify the signature
@@ -43,7 +44,7 @@ async function webhook() {
         console.log("Webhook verified");
 
         // Process the webhook payload here
-        res.status(200).send("Webhook received");
+        // res.status(200).send("Webhook received");
         let feedGuid = null;
         let itemGuid = null;
         let eventId = null;
@@ -56,6 +57,7 @@ async function webhook() {
 
           if (eventId && publicKey) {
             let evt = await fetchEvent(eventId, publicKey);
+            console.log(evt);
 
             feedGuid = evt.find((tag) => tag[0] === "feed_guid")?.[1];
             itemGuid = evt.find((tag) => tag[0] === "item_guid")?.[1];
@@ -69,6 +71,9 @@ async function webhook() {
           console.log(eventId);
           console.log(publicKey);
           console.log();
+          let channel = await fetchChannel({ guid: feedGuid });
+          console.log(channel);
+          res.status(200).send(channel);
         } else {
           // console.log("prism split");
           // let recipients = [
@@ -87,6 +92,8 @@ async function webhook() {
           // });
           // let paid = await Promise.all(lnRoutes.map((v) => sendLNUrl(v)));
           // console.log(paid);
+          console.log("hi");
+          res.status(200).send("dude");
         }
       } catch (err) {
         console.error(err);
