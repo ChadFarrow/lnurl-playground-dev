@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
 import sendLNUrl from "./sendLNUrl.js";
-import fetchEvent from "../../functions/crypto/nostr/fetchEvent.js";
+import fetchEvent from "../../functions/nostr/fetchEvent.js";
 
 dotenv.config();
 
