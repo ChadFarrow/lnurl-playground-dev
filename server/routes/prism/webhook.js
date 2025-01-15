@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
 import sendLNUrl from "./sendLNUrl.js";
+import fetchEvent from "../../functions/crypto/nostr/fetchEvent.js";
 
 dotenv.config();
 
@@ -43,19 +44,31 @@ async function webhook() {
 
         // Process the webhook payload here
         res.status(200).send("Webhook received");
-        let splitbox = null;
+        let feedGuid = null;
+        let itemGuid = null;
+        let eventId = null;
+        let publicKey = null;
         const tags = newData.metadata?.zap_request?.tags;
 
         if (tags) {
-          const splitboxTag = tags.find((tag) => tag[0] === "splitbox");
-          if (splitboxTag) {
-            splitbox = splitboxTag[1];
+          eventId = tags.find((tag) => tag[0] === "e")?.[1];
+          publicKey = tags.find((tag) => tag[0] === "p")?.[1];
+
+          if (eventId && publicKey) {
+            let evt = await fetchEvent(eventId, publicKey);
+
+            feedGuid = evt.find((tag) => tag[0] === "feed_guid")?.[1];
+            itemGuid = evt.find((tag) => tag[0] === "item_guid")?.[1];
           }
         }
 
         let amount = newData.amount;
-        if (splitbox) {
-          console.log(`${new Date().getTime()}:  ${splitbox}`);
+        if (feedGuid && itemGuid) {
+          console.log(feedGuid);
+          console.log(itemGuid);
+          console.log(eventId);
+          console.log(publicKey);
+          console.log();
         } else {
           // console.log("prism split");
           // let recipients = [

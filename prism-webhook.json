@@ -333,5 +333,1039 @@
     "state": "SETTLED",
     "type": "incoming",
     "value": 33
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 50,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-14T05:48:27.098Z",
+    "creation_date": 1736833707,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "76b1ddd5879b8b5536152c5de214b9c88e3b9ecd3982a131afb8da695d132db0",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-29T11:36:54.000Z",
+    "expiry": 1736920107,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 5,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "AhrXnfGE4bUtqKTZQXmWf935",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736833706,
+        "id": "f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d",
+        "kind": 9734,
+        "pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+        "sig": "21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2",
+        "tags": [
+          [
+            "p",
+            "4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849"
+          ],
+          [
+            "relays",
+            "wss://welcome.nostr.wine/",
+            "wss://relay.damus.io/",
+            "wss://nos.lol/",
+            "wss://nostr.bitcoiner.social/"
+          ],
+          [
+            "amount",
+            "50000"
+          ],
+          [
+            "e",
+            "d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b"
+          ],
+          [
+            "splitbox",
+            "856cd618-7f34-57ea-9b84-3600f1f65e7f"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"kind\":9734,\"created_at\":1736833706,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"relays\",\"wss://welcome.nostr.wine/\",\"wss://relay.damus.io/\",\"wss://nos.lol/\",\"wss://nostr.bitcoiner.social/\"],[\"amount\",\"50000\"],[\"e\",\"d3b2a0f9b4f0333a8aa181f8a1e385cb3e28322976e831a6d43eb3713f13c54b\"],[\"splitbox\",\"856cd618-7f34-57ea-9b84-3600f1f65e7f\"]],\"pubkey\":\"4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8\",\"id\":\"f3000fb423f083339bb0799f3677622f5029f4737c9b66314821fbf89e0cdc0d\",\"sig\":\"21504ca3d92354d31d042e2b288e638b2f2399f11842958680c6c86f8a349b2a9a1964d21f0330a073098110f8732560b94585cca707c404dfa189eeca3dc3a2\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "4a0141b4314663a3d08c61b82bd347311724e20649df138d1ad7c81f825a9cf8",
+    "payment_hash": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "payment_request": "lnbc500n1pnct74tdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5dcmj9yr4dnqed98dk5a979lhkdwyrgqurespaet658uqlmse7kvssp5f54ns636ul3fs9603c0j4r08syvhxc0kkpusej9xv98eflgehwws9qyysgqcqpcxqyz5vq8r7rqm82wts2fpfn0ctzx83kppvzcs53ghejqsxa5ps2pzgf0vy32qqfgmpg92hl33yg7fq7legp35yz4p6j5uvxxr38q8h65kx6e4qp8t7ec8",
+    "preimage": "ce4bab7e9cd989a91a7fa87e50c9dfd8878fa6a7da0671cc16b014c7f6c929cf",
+    "r_hash_str": "6e372290756cc19694edb53a5f17f7b35c41a01c1e601ee57aa1f80fee19f599",
+    "settled": true,
+    "settled_at": "2025-01-14T05:48:36.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 50
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
+  },
+  {
+    "amount": 21,
+    "boostagram": null,
+    "comment": "",
+    "created_at": "2025-01-15T04:15:07.419Z",
+    "creation_date": 1736914507,
+    "currency": "BTC",
+    "custom_records": {},
+    "description_hash": "365f8b5ce90c335432ebe6b8a1036d6f44bec45dcc933fb41b5723c2fd8278ed",
+    "destination_alias": null,
+    "destination_pubkey": null,
+    "expires_at": "2080-01-31T08:30:14.000Z",
+    "expiry": 1737000907,
+    "fee": 0,
+    "fiat_currency": "USD",
+    "fiat_in_cents": 3,
+    "first_route_hint_alias": null,
+    "first_route_hint_pubkey": null,
+    "identifier": "E2uUpaViQU58x1uVaNoLfYX8",
+    "keysend_message": null,
+    "memo": null,
+    "metadata": {
+      "comment": null,
+      "zap_request": {
+        "content": "",
+        "created_at": 1736914507,
+        "id": "9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa",
+        "kind": 9734,
+        "pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+        "sig": "34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe",
+        "tags": [
+          [
+            "p",
+            "b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3"
+          ],
+          [
+            "amount",
+            "21000"
+          ],
+          [
+            "relays",
+            "wss://strfry.iris.to/",
+            "wss://relay.damus.io/",
+            "wss://relay.nostr.band/",
+            "wss://relay.snort.social/"
+          ],
+          [
+            "e",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436",
+            "wss://strfry.iris.to/"
+          ],
+          [
+            "lnurl",
+            "https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback"
+          ],
+          [
+            "splitbox",
+            "73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436"
+          ]
+        ]
+      },
+      "zap_request_raw": "{\"created_at\":1736914507,\"content\":\"\",\"tags\":[[\"p\",\"b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3\"],[\"amount\",\"21000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback\"],[\"splitbox\",\"73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436\"]],\"kind\":9734,\"pubkey\":\"867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f\",\"id\":\"9f7a4c881c50b4474c1d8d4b24d0d575b5cd5a1b84e37458d9ffbcd992ccf1fa\",\"sig\":\"34b5192532b38cf0b6a4bd76503b3fc340a49e868df224c5c4928410328e44e427ce8bc45ea975dee6b722c4e81d8eefbc42495c2cfb4122b3d803e32489efbe\"}"
+    },
+    "payer_email": null,
+    "payer_name": null,
+    "payer_pubkey": "867ed9eae02530e3d5efb1f596dd37f7db9054a1d9ca3cbae6720ec740278f3f",
+    "payment_hash": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "payment_request": "lnbc210n1pncwdjtdqqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp5rctf4y22njq28jxrhqaqx3jqag7fl9nwdxnljjuwygnjp7sggn7ssp50hz45eqk5rwrpt63qwjgessdunhxuly9kdtp2jqgd9af9a2ft5vq9qyysgqcqpcxqyz5vqjrhk8xz99rm6fup460r9z7cqner42tjjp9lwfygp2y6gzjadvrl8uu5lfcttt9jj5xzzusqemgtmh0p4xu9ldu4wfqdm8p6gdmnvx0sqa7wlfr",
+    "preimage": "89c2bf3b1d7ed88b83f34bc9726c5431d6264feabf63825f5a395280ad760aad",
+    "r_hash_str": "1e169a914a9c80a3c8c3b83a034640ea3c9f966e69a7f94b8e222720fa0844fd",
+    "settled": true,
+    "settled_at": "2025-01-15T04:15:10.000Z",
+    "state": "SETTLED",
+    "type": "incoming",
+    "value": 21
   }
 ]

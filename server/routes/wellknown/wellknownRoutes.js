@@ -4,13 +4,14 @@ const router = express.Router();
 router.get("/lnurlp/:name", (req, res) => {
   const { name } = req.params; // Extract the dynamic part from the route
 
-  console.log("well-known: ", name);
   res.json({
     status: "OK",
     tag: "payRequest",
     commentAllowed: 255,
-    callback: `https://thesplitbox.com/lnurlp/${name}/callback`, // Use the dynamic name
-    metadata: `[["text/identifier","${name}@thesplitbox.com"],["text/plain","Sats for ${name}"]]`,
+    // callback: `https://thesplitbox.com/lnurlp/${name}/callback`, // Use the dynamic name
+    // metadata: `[["text/identifier","${name}@thesplitbox.com"],["text/plain","Sats for ${name}"]]`,,
+    callback: `https://getalby.com/lnurlp/prism/callback`, // Use the dynamic name
+    metadata: `[["text/identifier","prism@getalby.com"],["text/plain","Sats for ${name}"]]`,
     minSendable: 1000,
     maxSendable: 10000000000,
     payerData: {
