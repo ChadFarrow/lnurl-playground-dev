@@ -17,18 +17,15 @@ async function webhook() {
     const payload = req.body;
     const headers = req.headers;
 
-    // const wh = new Webhook(process.env.PRISM_WEBHOOK);
+    const wh = new Webhook(process.env.PRISM_WEBHOOK);
 
     try {
       // Verify the signature
-      // const verifiedPayload = await wh.verify(
-      //   JSON.stringify(payload),
-      //   headers
-      // );
+      const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
       console.log("Webhook verified");
 
       // Process the webhook payload here
-      // res.status(200).send("Webhook received");
+      res.status(200).send("Webhook received");
       let newData = req.body;
       let feedUrl = null;
       let feedGuid = null;
@@ -94,9 +91,9 @@ async function webhook() {
             nostr: newData?.metadata?.zap_request_raw,
           });
           console.log(paid);
-          res.status(200).send(feedUrl);
+          // res.status(200).send(feedUrl);
         } else {
-          res.status(200).json(channel);
+          // res.status(200).json(channel);
         }
       }
     } catch (err) {
