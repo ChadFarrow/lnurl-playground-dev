@@ -1,11 +1,12 @@
 import axios from "axios";
-import dotenv from "dotenv";
 
-if (!process.env.WEBHOOK_SERVER) {
-  dotenv.config();
-}
-
-export default function sendLNUrl(recipient) {
+export default function sendLNUrl({
+  accessToken,
+  recipient,
+  id,
+  message,
+  nostr,
+}) {
   return new Promise(async (resolve, reject) => {
     try {
       const [name, server] = recipient["@_address"].split("@");
@@ -18,11 +19,13 @@ export default function sendLNUrl(recipient) {
         throw new Error("Callback URL missing in LNURLP response");
       }
 
-      const invoiceRes = await fetch(
-        `${data.callback}?amount=${
-          recipient.amount * 1000
-        }&comment=nostr note13dh30sgj9e2zfkpakws0s37fsrmelew494lzrvdg2qctlullkjlqwep3up`
-      );
+      let cb = `${data.callback}?amount=${recipient.amount * 1000}${
+        message ? `&comment=${message}` : ""
+      }${nostr ? `&nostr=${encodeURIComponent(nostr)}` : ""}`;
+
+      // cb = `${data.callback}?amount=${recipient.amount * 1000}`;
+
+      const invoiceRes = await fetch(cb);
 
       const invoiceData = await invoiceRes.json();
       const invoice = invoiceData.pr;
@@ -32,7 +35,7 @@ export default function sendLNUrl(recipient) {
         { invoice },
         {
           headers: {
-            Authorization: `Bearer ${process.env.PRISM_ALBY_ACCESS_TOKEN}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

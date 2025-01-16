@@ -1,43 +1,53 @@
 import WebSocket from "ws";
-import { SimplePool } from "nostr-tools";
-import { useWebSocketImplementation } from "nostr-tools/pool";
+import { Relay } from "nostr-tools/relay";
+import { useWebSocketImplementation } from "nostr-tools/relay";
 import { relayUrls } from "./relayUrls.js";
 
 useWebSocketImplementation(WebSocket);
 
+const TIMEOUT_MS = 1000; // Adjust timeout duration as needed
+
 async function fetchEvent(eventId, publicKey) {
-  const pool = new SimplePool(); // Create a SimplePool instance
+  for (const url of relayUrls) {
+    const relay = await Relay.connect(url);
 
-  return new Promise((resolve, reject) => {
     try {
-      // Define the subscription
-      const subscription = pool.subscribeMany(
-        relayUrls, // Array of relay URLs
-        [
-          {
-            ids: [eventId], // Filter by event ID
-            authors: [publicKey], // Filter by public key
-          },
-        ],
-        {
-          // Event handler for received events
-          onevent(event) {
-            console.log("evt: ", event);
-            resolve(event.tags); // Resolve the promise with event tags
-          },
+      const event = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          relay.close();
+          reject(new Error("Timeout"));
+        }, TIMEOUT_MS);
 
-          // End of stored events (EOSE) handler
-          oneose() {
-            subscription.close(); // Close the subscription after EOSE
-            pool.close(relayUrls);
-          },
-        }
-      );
+        relay.subscribe(
+          [
+            {
+              ids: [eventId], // Filter by event ID
+              authors: [publicKey], // Filter by public key
+            },
+          ],
+          {
+            onevent(event) {
+              clearTimeout(timeout);
+              resolve(event); // Resolve with the event
+            },
+          }
+        );
+      });
+
+      console.log(`Event found on relay ${url}:`, event);
+      relay.close();
+      return event; // Return the event immediately if found
     } catch (error) {
-      console.log("err: ", error);
-      reject(error); // Reject the promise if an error occurs
+      console.log(`Relay ${url} failed: ${error.message}`);
+      // Continue to the next relay
+    } finally {
+      if (relay && relay.status === WebSocket.OPEN) {
+        relay.close();
+      }
     }
-  });
+  }
+
+  throw new Error("No event found on any relay.");
 }
 
 export default fetchEvent;

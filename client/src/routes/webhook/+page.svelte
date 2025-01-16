@@ -3,7 +3,7 @@
 
   async function sendPostRequest() {
     const data = {
-      amount: 21,
+      amount: 100,
       boostagram: null,
       comment: "",
       created_at: "2025-01-15T04:15:07.419Z",

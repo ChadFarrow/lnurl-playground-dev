@@ -1,110 +1,110 @@
 import fs from "fs/promises";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
-import sendLNUrl from "./sendLNUrl.js";
+import sendLNUrl from "./payments/sendLNUrl.js";
 import fetchEvent from "../../functions/nostr/fetchEvent.js";
 import fetchChannel from "../splitbox/functions/getSplits/fetchChannelFromIndex.js";
+import fetchRSSFeed from "../splitbox/functions/getSplits/fetchRSSFeed.js";
+import getItemFromRSS from "../splitbox/functions/getSplits/getItemFromRSS.js";
+import normalizeSplits from "../splitbox/functions/getSplits/normalizeSplits.js";
+import combineSplits from "../splitbox/functions/getSplits/combineSplits.js";
+import processPayments from "./payments/processPayments.js";
 
 dotenv.config();
 
 async function webhook() {
   return async (req, res) => {
-    const filePath = "prism-webhook.json";
+    const payload = req.body;
+    const headers = req.headers;
+
+    // const wh = new Webhook(process.env.PRISM_WEBHOOK);
 
     try {
-      // Read existing file
-      let content = [];
-      try {
-        const data = await fs.readFile(filePath, "utf-8");
-        if (data.length) {
-          content = JSON.parse(data);
+      // Verify the signature
+      // const verifiedPayload = await wh.verify(
+      //   JSON.stringify(payload),
+      //   headers
+      // );
+      console.log("Webhook verified");
+
+      // Process the webhook payload here
+      // res.status(200).send("Webhook received");
+      let newData = req.body;
+      let feedUrl = null;
+      let feedGuid = null;
+      let itemGuid = null;
+      let eventId = null;
+      let publicKey = null;
+      let channel = null;
+
+      const tags = newData.metadata?.zap_request?.tags;
+
+      if (tags) {
+        eventId = tags.find((tag) => tag[0] === "e")?.[1];
+        publicKey = tags.find((tag) => tag[0] === "p")?.[1];
+        if (eventId && publicKey) {
+          let evt = await fetchEvent(eventId, publicKey);
+          feedGuid = evt?.tags?.find((tag) => tag[0] === "feed_guid")?.[1];
+          feedUrl = evt?.tags?.find((tag) => tag[0] === "feed_url")?.[1];
+          itemGuid = evt?.tags?.find((tag) => tag[0] === "item_guid")?.[1];
         }
-      } catch (err) {
-        if (err.code !== "ENOENT") throw err; // Ignore file-not-found errors
       }
 
-      // Append new request body
-      let newData = req.body;
-      content.push(newData);
-
-      // Write updated array back to file
-      await fs.writeFile(filePath, JSON.stringify(content, null, 2));
-
-      const payload = req.body;
-      const headers = req.headers;
-
-      // const wh = new Webhook(process.env.PRISM_WEBHOOK);
-
-      try {
-        // Verify the signature
-        // const verifiedPayload = await wh.verify(
-        //   JSON.stringify(payload),
-        //   headers
-        // );
-        console.log("Webhook verified");
-
-        // Process the webhook payload here
-        // res.status(200).send("Webhook received");
-        let feedGuid = null;
-        let itemGuid = null;
-        let eventId = null;
-        let publicKey = null;
-        const tags = newData.metadata?.zap_request?.tags;
-
-        if (tags) {
-          eventId = tags.find((tag) => tag[0] === "e")?.[1];
-          publicKey = tags.find((tag) => tag[0] === "p")?.[1];
-
-          if (eventId && publicKey) {
-            let evt = await fetchEvent(eventId, publicKey);
-            console.log(evt);
-
-            feedGuid = evt.find((tag) => tag[0] === "feed_guid")?.[1];
-            itemGuid = evt.find((tag) => tag[0] === "item_guid")?.[1];
-          }
+      let amount = newData?.amount;
+      if ((feedGuid || feedUrl) && itemGuid && amount) {
+        if (!feedUrl) {
+          channel = await fetchChannel({ guid: feedGuid });
+          feedUrl = channel?.feed?.url;
         }
 
-        let amount = newData.amount;
-        if (feedGuid && itemGuid) {
-          console.log(feedGuid);
-          console.log(itemGuid);
-          console.log(eventId);
-          console.log(publicKey);
-          console.log();
-          let channel = await fetchChannel({ guid: feedGuid });
-          console.log(channel);
-          res.status(200).send(channel);
+        if (feedUrl) {
+          const RSS = await fetchRSSFeed(feedUrl);
+
+          const itemFromRSS = getItemFromRSS(RSS, { episode_guid: itemGuid });
+
+          const destinations = {
+            remoteSplits: { feesDestinations: [], splitsDestinations: [] },
+          };
+          destinations.mainSplits = normalizeSplits(
+            itemFromRSS?.["podcast:value"]?.["podcast:valueRecipient"] ||
+              RSS?.["podcast:value"]?.["podcast:valueRecipient"],
+            100
+          );
+
+          let splits = combineSplits(destinations, amount);
+
+          const tlv = {
+            podcast: RSS.title,
+            episode: itemFromRSS.title,
+            guid: feedGuid,
+            episode_guid: itemGuid,
+            action: "boost",
+            app_name: "The Split Box nostRSS Integration",
+            value_msat_total: amount * 1000,
+            url: feedUrl,
+            sender_name: "Steven B",
+            message:
+              "This is a test of The Split Box nostRSS splits from a nostr note",
+          };
+
+          let paid = await processPayments({
+            splits,
+            metadata: tlv,
+            message: tlv.message,
+            nostr: newData?.metadata?.zap_request_raw,
+          });
+          console.log(paid);
+          res.status(200).send(feedUrl);
         } else {
-          // console.log("prism split");
-          // let recipients = [
-          //   "sjb@strike.me",
-          //   "adamcurry@strike.me",
-          //   "jb55@sendsats.lol",
-          //   "dergigi@npub.cash",
-          //   "jack@primal.net",
-          //   "hzrd149@minibits.cash",
-          // ];
-          // let lnRoutes = recipients.map((v) => {
-          //   return {
-          //     "@_address": v,
-          //     amount: Math.floor(amount / recipients.length),
-          //   };
-          // });
-          // let paid = await Promise.all(lnRoutes.map((v) => sendLNUrl(v)));
-          // console.log(paid);
-          console.log("hi");
-          res.status(200).send("dude");
+          res.status(200).json(channel);
         }
-      } catch (err) {
-        console.error(err);
-        res.status(200).send("Invalid signature");
       }
     } catch (err) {
       console.error(err);
-      res.status(500).send("Failed to process the request");
+      res.status(200).send("Invalid signature");
     }
   };
 }
 export default webhook;
 
-// http://localhost:3000/lnurlp/prism/callback?amount=1000&nostr=%7B%22created_at%22%3A1736827008%2C%22content%22%3A%22%22%2C%22tags%22%3A%5B%5B%22p%22%2C%224660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849%22%5D%2C%5B%22amount%22%2C%221000%22%5D%2C%5B%22relays%22%2C%22wss%3A%2F%2Fstrfry.iris.to%2F%22%2C%22wss%3A%2F%2Frelay.damus.io%2F%22%2C%22wss%3A%2F%2Frelay.nostr.band%2F%22%2C%22wss%3A%2F%2Frelay.snort.social%2F%22%5D%2C%5B%22e%22%2C%2201f48856d49fb2ae918dc4b8a6a31a7cb2cd07ea922b774c893d5fb3e9c3753d%22%2C%22wss%3A%2F%2Fstrfry.iris.to%2F%22%5D%2C%5B%22lnurl%22%2C%22https%3A%2F%2Fgetalby.com%2Flnurlp%2Fprism%2Fcallback%23pc.856cd618-7f34-57ea-9b84-3600f1f65e7f%22%5D%5D%2C%22kind%22%3A9734%2C%22pubkey%22%3A%2223103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403%22%2C%22id%22%3A%22e50ce63af37046c4eccdfde83eeb1a02d18f4e7899225e9677d3747cd0e2ca08%22%2C%22sig%22%3A%22a4b69219267c20d8d1bda6c08a549295bbab7e84d9d8838967a3d215a5c3761230f092ec594eec2663e94464f5e52b574bdea6e50408b076595b4f3d4497ab15%22%7D
+// https://thesplitbox.com/lnurlp/73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436/callback?amount=21000&nostr=%7B%22created_at%22%3A1736997691%2C%22content%22%3A%22%22%2C%22tags%22%3A%5B%5B%22p%22%2C%22b8f17389a7c3e62c3cffaf16bfce6ca4eac88593c2b2194e1c6abb18a7631ec3%22%5D%2C%5B%22amount%22%2C%2221000%22%5D%2C%5B%22relays%22%2C%22wss%3A%2F%2Fstrfry.iris.to%2F%22%2C%22wss%3A%2F%2Frelay.damus.io%2F%22%2C%22wss%3A%2F%2Frelay.nostr.band%2F%22%2C%22wss%3A%2F%2Frelay.snort.social%2F%22%2C%22wss%3A%2F%2Fnostr.bitcoiner.social%2F%22%2C%22wss%3A%2F%2Fnostr-pub.wellorder.net%2F%22%2C%22wss%3A%2F%2Fnos.lol%2F%22%2C%22wss%3A%2F%2Fwelcome.nostr.wine%2F%22%2C%22wss%3A%2F%2Fpurplerelay.com%2F%22%5D%2C%5B%22e%22%2C%2273f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436%22%2C%22wss%3A%2F%2Fstrfry.iris.to%2F%22%5D%2C%5B%22lnurl%22%2C%22https%3A%2F%2Fthesplitbox.com%2Flnurlp%2F73f9f344d380df125bdbbd393b9e2f7bc496c973bed12ececced78a0d7146436%2Fcallback%22%5D%5D%2C%22kind%22%3A9734%2C%22pubkey%22%3A%224660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849%22%2C%22id%22%3A%2263a61e92fed53873ef19d190ec249e4c3a562942fb775fa3b6eefbec4ee26239%22%2C%22sig%22%3A%22e8ba133df86bd48246404150782567eb21014febb18519eda95493a51ca496bd34414edda0f1999c22aa1535a2ad921076ca03736b520d5d97d1c7136a150839%22%7D
