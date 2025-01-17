@@ -33,15 +33,17 @@ async function webhook() {
       let eventId = null;
       let publicKey = null;
       let channel = null;
+      let relays = null;
 
       const tags = newData.metadata?.zap_request?.tags;
-      console.log(tags);
+      console.log(newData);
 
       if (tags) {
         eventId = tags.find((tag) => tag[0] === "e")?.[1];
         publicKey = tags.find((tag) => tag[0] === "p")?.[1];
         if (eventId && publicKey) {
-          let evt = await fetchEvent(eventId, publicKey);
+          relays = tags?.find((tag) => tag[0] === "relays")?.slice(0) || [];
+          let evt = await fetchEvent(eventId, publicKey, relays);
           feedGuid = evt?.tags?.find((tag) => tag[0] === "feed_guid")?.[1];
           feedUrl = evt?.tags?.find((tag) => tag[0] === "feed_url")?.[1];
           itemGuid = evt?.tags?.find((tag) => tag[0] === "item_guid")?.[1];
