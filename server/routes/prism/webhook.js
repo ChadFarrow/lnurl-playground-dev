@@ -42,7 +42,7 @@ async function webhook() {
         eventId = tags.find((tag) => tag[0] === "e")?.[1];
         publicKey = tags.find((tag) => tag[0] === "p")?.[1];
         if (eventId && publicKey) {
-          relays = tags?.find((tag) => tag[0] === "relays")?.slice(0) || [];
+          relays = tags?.find((tag) => tag[0] === "relays")?.slice(1) || [];
           let evt = await fetchEvent(eventId, publicKey, relays);
           feedGuid = evt?.tags?.find((tag) => tag[0] === "feed_guid")?.[1];
           feedUrl = evt?.tags?.find((tag) => tag[0] === "feed_url")?.[1];
