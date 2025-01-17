@@ -5,10 +5,11 @@ import { relayUrls } from "./relayUrls.js";
 
 useWebSocketImplementation(WebSocket);
 
-const TIMEOUT_MS = 1000; // Adjust timeout duration as needed
+const TIMEOUT_MS = 5000; // Adjust timeout duration as needed
 
 async function fetchEvent(eventId, publicKey, relays) {
   let _relays = [...new Set(relays.concat(relayUrls))];
+  console.log(_relays);
 
   for (const url of relays) {
     const relay = await Relay.connect(url);
