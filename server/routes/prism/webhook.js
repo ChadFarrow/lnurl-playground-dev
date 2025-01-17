@@ -80,8 +80,7 @@ async function webhook() {
             value_msat_total: amount * 1000,
             url: feedUrl,
             sender_name: "Steven B",
-            message:
-              "This is a test of The Split Box nostRSS splits from a nostr note",
+            message: newData?.comment,
           };
 
           let paid = await processPayments({
