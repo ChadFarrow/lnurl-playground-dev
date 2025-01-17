@@ -35,6 +35,7 @@ async function webhook() {
       let channel = null;
 
       const tags = newData.metadata?.zap_request?.tags;
+      console.log(tags);
 
       if (tags) {
         eventId = tags.find((tag) => tag[0] === "e")?.[1];
