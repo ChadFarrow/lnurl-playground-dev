@@ -79,7 +79,7 @@ async function webhook() {
             app_name: "The Split Box nostRSS Integration",
             value_msat_total: amount * 1000,
             url: feedUrl,
-            sender_name: "Steven B",
+            sender_name: newData?.payer_name,
             message: newData?.comment,
           };
 
