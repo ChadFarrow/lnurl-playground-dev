@@ -1,4 +1,4 @@
-import { bech32 } from "bech32";
+import bech32 from "bech32";
 
 function encodeNsec(secretKeyHex) {
   const secretKeyBytes = Buffer.from(secretKeyHex, "hex");
