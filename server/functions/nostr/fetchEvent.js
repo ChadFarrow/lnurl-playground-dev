@@ -11,18 +11,16 @@ async function fetchEvent(eventId, publicKey, relays) {
   let _relays = [...new Set(relays.concat(relayUrls))];
   console.log(_relays);
 
-  for (const url of _relays) {
-    // Use the merged _relays array
-    let relay;
-    try {
-      relay = await Relay.connect(url);
+  for (const url of relays) {
+    const relay = await Relay.connect(url);
 
+    try {
       const event = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error("Timeout"));
         }, TIMEOUT_MS);
 
-        const sub = relay.subscribe(
+        relay.subscribe(
           [
             {
               ids: [eventId], // Filter by event ID
@@ -32,8 +30,7 @@ async function fetchEvent(eventId, publicKey, relays) {
           {
             onevent(event) {
               clearTimeout(timeout);
-              sub.unsub(); // Ensure subscription cleanup
-              resolve(event);
+              resolve(event); // Resolve with the event
             },
           }
         );
@@ -47,7 +44,7 @@ async function fetchEvent(eventId, publicKey, relays) {
       // Continue to the next relay
     } finally {
       if (relay && relay.status === WebSocket.OPEN) {
-        relay.close(); // Ensure relay is closed
+        relay.close();
       }
     }
   }
