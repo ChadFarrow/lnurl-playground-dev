@@ -15,10 +15,7 @@ let nsec = encodeNsec(sk);
 console.log(nsec);
 let eNsec = encrypt(token, nsec);
 console.log("store this: ", eNsec);
-let dNsec = decrypt(
-  token,
-  "5b8499681ce6e84d029d707ddc4f7ed7c498993f026c18d42b7f5a4ab9d2e87acb135f374f06d3f7f8b578c4df4637e45bd7fe990c1328c7be3d5649e3c9792b"
-);
+let dNsec = decrypt(token, eNsec);
 console.log(dNsec);
 let _sk = decodeNsec(dNsec);
 
