@@ -12,9 +12,10 @@ async function fetchEvent(eventId, publicKey, relays) {
   console.log(_relays);
 
   for (const url of relays) {
-    const relay = await Relay.connect(url);
+    let relay = await Relay.connect(url);
 
     try {
+      relay = await Relay.connect(url);
       const event = await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error("Timeout"));
