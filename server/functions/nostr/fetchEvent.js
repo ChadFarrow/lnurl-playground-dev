@@ -12,7 +12,7 @@ async function fetchEvent(eventId, publicKey, relays) {
   console.log(_relays);
 
   for (const url of relays) {
-    let relay = await Relay.connect(url);
+    let relay;
 
     try {
       relay = await Relay.connect(url);
