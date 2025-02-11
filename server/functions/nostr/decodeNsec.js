@@ -1,4 +1,4 @@
-import { bech32 } from "bech32";
+import bech32 from "bech32";
 
 function decodeNsec(nsec) {
   const decoded = bech32.decode(nsec);

@@ -20,12 +20,21 @@ async function webhook() {
     const wh = new Webhook(process.env.PRISM_WEBHOOK);
 
     try {
-      // Verify the signature
-      const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
-      console.log("Webhook verified");
+      try {
+        // Verify the signature
+        const verifiedPayload = await wh.verify(
+          JSON.stringify(payload),
+          headers
+        );
+        console.log("Webhook verified");
 
-      // Process the webhook payload here
-      res.status(200).send("Webhook received");
+        // Process the webhook payload here
+        res.status(200).send("Webhook received");
+      } catch (err) {
+        console.error(err);
+        res.status(200).send("Invalid signature");
+      }
+
       let newData = req.body;
       let feedUrl = null;
       let feedGuid = null;
@@ -33,14 +42,17 @@ async function webhook() {
       let eventId = null;
       let publicKey = null;
       let channel = null;
+      let relays = null;
 
       const tags = newData.metadata?.zap_request?.tags;
+      console.log(newData);
 
       if (tags) {
         eventId = tags.find((tag) => tag[0] === "e")?.[1];
         publicKey = tags.find((tag) => tag[0] === "p")?.[1];
         if (eventId && publicKey) {
-          let evt = await fetchEvent(eventId, publicKey);
+          relays = tags?.find((tag) => tag[0] === "relays")?.slice(1) || [];
+          let evt = await fetchEvent(eventId, publicKey, relays);
           feedGuid = evt?.tags?.find((tag) => tag[0] === "feed_guid")?.[1];
           feedUrl = evt?.tags?.find((tag) => tag[0] === "feed_url")?.[1];
           itemGuid = evt?.tags?.find((tag) => tag[0] === "item_guid")?.[1];
@@ -79,9 +91,8 @@ async function webhook() {
             app_name: "The Split Box nostRSS Integration",
             value_msat_total: amount * 1000,
             url: feedUrl,
-            sender_name: "Steven B",
-            message:
-              "This is a test of The Split Box nostRSS splits from a nostr note",
+            sender_name: newData?.payer_name,
+            message: newData?.comment,
           };
 
           let paid = await processPayments({
@@ -98,7 +109,6 @@ async function webhook() {
       }
     } catch (err) {
       console.error(err);
-      res.status(200).send("Invalid signature");
     }
   };
 }
