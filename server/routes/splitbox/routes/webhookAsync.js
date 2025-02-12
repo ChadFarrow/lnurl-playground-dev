@@ -8,21 +8,19 @@ dotenv.config();
 
 function webhookAsync(storeMetadata) {
   return async (req, res) => {
+    const payload = req.body;
+    const headers = req.headers;
     try {
-      const payload = req.body;
-      const headers = req.headers;
-
-      const wh = new Webhook(process.env.TSB_WEBHOOK);
-
       // Verify the signature
-      const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
+      // const wh = new Webhook(process.env.TSB_WEBHOOK);
+      // const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
       console.log("Webhook verified");
 
-      // Process the webhook payload here
       res.status(200).send("Webhook received");
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal server error");
+      return;
     }
 
     if (payload.payment_request) {
@@ -30,31 +28,55 @@ function webhookAsync(storeMetadata) {
       let invoice = payload.payment_request;
 
       if (confirmInvoice(preimage, invoice)) {
-        await storeMetadata.updateByInvoice(invoice, { settled: true });
-
-        const payload = await storeMetadata.getByInvoice(invoice);
-        const { metadata, id, parentAddress } = payload;
-        let splits = await getSplits(metadata);
-        let account = await storeMetadata.fetchAccessToken(parentAddress);
-        let completedPayments = await processPayments({
-          accessToken: account.albyAccessToken || account.strikeAccessToken,
-          splits,
-          metadata,
-          id,
-        });
         await storeMetadata.updateByInvoice(
           invoice,
-          { completedPayments },
-          splits
+          { settled: true },
+          "tsb-tsk"
         );
-        res.json({ completedPayments, id });
+
+        const storedData = await storeMetadata.getByInvoice(invoice, "tsb-tsk");
+        const { metadata, id, parentAddress } = storedData;
+        console.log(storedData);
+
+        let event = await getBlocks(storedData.guid);
+        console.log(event?.blocks?.[0]?.value);
+        // let splits = await getSplits(metadata);
+        // let account = await storeMetadata.fetchAccessToken(
+        //   parentAddress,
+        //   "tsb-tsk"
+        // );
+        // let completedPayments = await processPayments({
+        //   accessToken: account.albyAccessToken || account.strikeAccessToken,
+        //   splits,
+        //   metadata,
+        //   id,
+        // });
+        // await storeMetadata.updateByInvoice(
+        //   invoice,
+        //   { completedPayments },
+        //   "tsb-tsk"
+        // );
+        // console.log({ completedPayments, id });
       } else {
-        res.json({ succes: false, reason: "unconfirmed preimage" });
+        console.log({ success: false, reason: "unconfirmed preimage" });
       }
-    } else {
-      res.json({ succes: false, reason: "no payment request present" });
     }
   };
 }
 
 export default webhookAsync;
+
+async function getBlocks(guid) {
+  const url = `https://curiohoster.com/api/sk/getblocks?guid=${guid}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return null;
+  }
+}

@@ -42,7 +42,7 @@ async function handleTaskCallback(guid, amount, comment, res, storeMetadata) {
       invoice,
       ...payload,
     };
-    storeMetadata.addTSK(newMetadata);
+    storeMetadata.add(newMetadata, "tsb-tsk");
 
     return res.json(albyResponse.data);
   } catch (error) {

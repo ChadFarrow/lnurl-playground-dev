@@ -7,38 +7,32 @@ import fetchAccessToken from "./functions/fetchAccessToken.js";
 
 const metadataStore = "tsb-metadata";
 const usersStore = "tsb-users";
-const tskStore = "tsb-tsk";
 
 const storeMetadata = {
-  add: async (metadata) => {
-    const collection = await getCollection(metadataStore);
+  add: async (metadata, store) => {
+    const collection = await getCollection(store || metadataStore);
     const result = await collection.insertOne(metadata);
     return result.insertedId;
   },
-  addTSK: async (metadata) => {
-    const collection = await getCollection(tskStore);
-    const result = await collection.insertOne(metadata);
-    return result.insertedId;
-  },
-  getAll: async () => {
-    const collection = await getCollection(metadataStore);
+  getAll: async (store) => {
+    const collection = await getCollection(store || metadataStore);
     return await collection.find().toArray();
   },
-  getById: async (id) => {
-    const collection = await getCollection(metadataStore);
+  getById: async (id, store) => {
+    const collection = await getCollection(store || metadataStore);
     return await collection.findOne({ id });
   },
-  getByInvoice: async (invoice) => {
-    const collection = await getCollection(metadataStore);
+  getByInvoice: async (invoice, store) => {
+    const collection = await getCollection(store || metadataStore);
     return await collection.findOne({ invoice });
   },
-  updateById: async (id, updatedData) => {
-    const collection = await getCollection(metadataStore);
+  updateById: async (id, updatedData, store) => {
+    const collection = await getCollection(store || metadataStore);
     const result = await collection.updateOne({ id }, { $set: updatedData });
     return result.matchedCount > 0 ? await storeMetadata.getById(id) : null;
   },
-  updateByInvoice: async (invoice, updatedData) => {
-    const collection = await getCollection(metadataStore);
+  updateByInvoice: async (invoice, updatedData, store) => {
+    const collection = await getCollection(store || metadataStore);
     const result = await collection.updateOne(
       { invoice },
       { $set: updatedData }
@@ -47,19 +41,19 @@ const storeMetadata = {
       ? await storeMetadata.getByInvoice(invoice)
       : null;
   },
-  deleteById: async (id) => {
-    const collection = await getCollection(metadataStore);
+  deleteById: async (id, store) => {
+    const collection = await getCollection(store || metadataStore);
     const result = await collection.deleteOne({ id });
     return result.deletedCount > 0;
   },
-  saveSettings: async (address, settings) => {
-    return saveSettings(getCollection(usersStore))(address, settings);
+  saveSettings: async (address, settings, store) => {
+    return saveSettings(getCollection(store || usersStore))(address, settings);
   },
-  fetchSettings: async (address) => {
-    return fetchSettings(getCollection(usersStore))(address);
+  fetchSettings: async (address, store) => {
+    return fetchSettings(getCollection(store || usersStore))(address);
   },
-  fetchAccessToken: async (address) => {
-    return fetchAccessToken(getCollection(usersStore))(address);
+  fetchAccessToken: async (address, store) => {
+    return fetchAccessToken(getCollection(store || usersStore))(address);
   },
 };
 
