@@ -7,10 +7,16 @@ import fetchAccessToken from "./functions/fetchAccessToken.js";
 
 const metadataStore = "tsb-metadata";
 const usersStore = "tsb-users";
+const tskStore = "tsb-tsk";
 
 const storeMetadata = {
   add: async (metadata) => {
     const collection = await getCollection(metadataStore);
+    const result = await collection.insertOne(metadata);
+    return result.insertedId;
+  },
+  addTSK: async (metadata) => {
+    const collection = await getCollection(tskStore);
     const result = await collection.insertOne(metadata);
     return result.insertedId;
   },

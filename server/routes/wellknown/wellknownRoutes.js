@@ -2,6 +2,8 @@ import express from "express";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { randomUUID } from "crypto";
+import mongoStore from "../../stores/mongo/store.js";
+const storeMetadata = mongoStore;
 
 const router = express.Router();
 
@@ -14,8 +16,6 @@ router.get("/lnurlp/:name", (req, res) => {
     commentAllowed: 255,
     callback: `https://thesplitbox.com/lnurlp/${name}/callback`, // Use the dynamic name
     metadata: `[["text/identifier","${name}@thesplitbox.com"],["text/plain","Sats for ${name}"]]`,
-    // callback: `https://getalby.com/lnurlp/prism/callback`, // Use the dynamic name
-    // metadata: `[["text/identifier","prism@getalby.com"],["text/plain","Sats for ${name}"]]`,
     minSendable: 1000,
     maxSendable: 10000000000,
     payerData: {
@@ -33,6 +33,8 @@ router.get("/lnurlp/:name/callback", async (req, res) => {
   const { name } = req.params;
   const { amount } = req.query;
 
+  console.log(name);
+
   if (!amount) {
     return res.status(400).json({ status: "ERROR", message: "Missing amount" });
   }
@@ -43,20 +45,27 @@ router.get("/lnurlp/:name/callback", async (req, res) => {
     const url = `https://api.thesplitkit.com/event?event_id=${guid}`;
 
     try {
-      const remoteValue = await getRemoteValue(url);
-
-      const uuid = randomUUID();
-      let store = uuid;
+      const metaID = randomUUID();
+      const payload = await getRemoteValue(url);
       const albyResponse = await axios.get(
         `https://getalby.com/lnurlp/thesplitbox/callback`,
-        { params: { amount, comment: `tsk-${uuid}` } }
+        { params: { amount, comment: `tsk-${metaID}` } }
       );
+      let invoiceData = albyResponse.data;
+      let invoice = invoiceData.pr;
+
+      const newMetadata = {
+        id: metaID,
+        invoice,
+        ...payload,
+      };
+      storeMetadata.addTSK(newMetadata);
 
       return res.json({
         status: "OK",
-        uuid,
-        remoteValue,
+        metaID,
         invoice: albyResponse.data,
+        ...payload,
       });
     } catch (error) {
       return res.status(504).json({ status: "ERROR", message: error.message });
@@ -64,7 +73,23 @@ router.get("/lnurlp/:name/callback", async (req, res) => {
   }
 
   // Default response for non-task names
-  res.json({ status: "OK", message: `Regular payment received for ${name}` });
+  res.json({
+    status: "OK",
+    tag: "payRequest",
+    commentAllowed: 255,
+    callback: `https://getalby.com/lnurlp/${name}/callback`,
+    metadata: `[["text/identifier","${name}@getalby.com"],["text/plain","Sats for thesplitbox"]]`,
+    minSendable: 1000,
+    maxSendable: 10000000000,
+    payerData: {
+      name: { mandatory: false },
+      email: { mandatory: false },
+      pubkey: { mandatory: false },
+    },
+    nostrPubkey:
+      "79f00d3f5a19ec806189fcab03c1be4ff81d18ee4f653c88fac41fe03570f432",
+    allowsNostr: true,
+  });
 });
 
 const wellknownRoutes = router;

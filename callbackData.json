@@ -289,5 +289,33 @@
     "callBackName": "1234",
     "amount": "1000",
     "nostr": "{\"created_at\":1736827008,\"content\":\"\",\"tags\":[[\"p\",\"4660cd71c8a4715b9d23bdb7ff5b33e12508259247b2426423453f8af3b73849\"],[\"amount\",\"1000\"],[\"relays\",\"wss://strfry.iris.to/\",\"wss://relay.damus.io/\",\"wss://relay.nostr.band/\",\"wss://relay.snort.social/\"],[\"e\",\"01f48856d49fb2ae918dc4b8a6a31a7cb2cd07ea922b774c893d5fb3e9c3753d\",\"wss://strfry.iris.to/\"],[\"lnurl\",\"https://getalby.com/lnurlp/prism/callback#${name}\"],[\"splitbox\",\"1234\"]],\"kind\":9734,\"pubkey\":\"ea669a46675aec792e620694fbbf6d797cd24090928009600ac1a81e8730bee2\",\"id\":\"b9b87687e8d76a8142daa6faf4f9eabeaea8351c1e35957d391fb71aa3cb497f\",\"sig\":\"4bfd1eda5a8bc73d18dddcfb9cef330843af83c8c69bce70dbb4d742391ca1c12442bf9c9a29e9d06e08590e3d5e62b2005f05a2bbc5bbd739bdadc3a671c756\"}"
+  },
+  {
+    "callBackName": "prism",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "prism",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "89317989-ab52-4c16-95db-d5f6fb35238c",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "89317989-ab52-4c16-95db-d5f6fb35238c",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "89317989-ab52-4c16-95db-d5f6fb35238c",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "tsk-89317989-ab52-4c16-95db-d5f6fb35238c",
+    "amount": "1000"
+  },
+  {
+    "callBackName": "tsk-89317989-ab52-4c16-95db-d5f6fb35238c",
+    "amount": "1000"
   }
 ]

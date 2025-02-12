@@ -9,6 +9,7 @@ import webhookAsync from "./routes/webhookAsync.js";
 import saveSettings from "./routes/saveSettings.js";
 import fetchSettings from "./routes/fetchSettings.js";
 import getById from "./routes/getById.js";
+import lnurlp from "./routes/lnurlp.js";
 
 const storeMetadata = mongoStore;
 const router = express.Router();
@@ -46,5 +47,9 @@ router.get("/metadata/:id", (req, res) => {
   const { id } = req.params;
   handle((store) => getById(store, id), req, res);
 });
+
+router.get("/lnurlp/:name/callback", async (req, res) =>
+  handle(lnurlp, req, res)
+);
 
 export default router;
