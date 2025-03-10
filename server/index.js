@@ -16,7 +16,6 @@ import {
 
 import albyRoutes from "./routes/alby/albyRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
-import strikeRoutes from "./routes/strike/router.js";
 import wellknownRoutes from "./routes/wellknown/wellknownRoutes.js";
 import prismRoutes from "./routes/prism/router.js";
 
@@ -64,8 +63,6 @@ if (process.env.ALBY_JWT) {
   app.use("/alby", albyRoutes(tempTokens));
 }
 
-app.use("/strike", strikeRoutes);
-
 app.use("/", splitBoxRouter);
 
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
@@ -74,7 +71,7 @@ app.use("/prism", prismRoutes);
 
 app.get("/lnurlp/:name/callback/", cors({ origin: "*" }), async (req, res) => {
   const { name } = req.params;
-  const { amount } = req.query;
+  const { amount, comment } = req.query;
   let { nostr } = req.query;
   const filePath = "callbackData.json"; // File to store JSON data
 
@@ -85,35 +82,39 @@ app.get("/lnurlp/:name/callback/", cors({ origin: "*" }), async (req, res) => {
       const fileContent = fs.readFileSync(filePath, "utf-8");
       data = JSON.parse(fileContent);
     }
-    if (nostr) {
-      try {
-        nostr = JSON.parse(nostr);
-        delete nostr.id;
-        delete nostr.sig;
-        const tags = nostr?.tags;
 
-        console.log(tags);
+    // if (nostr) {
+    //   try {
+    //     nostr = JSON.parse(nostr);
+    //     delete nostr.id;
+    //     delete nostr.sig;
+    //     const tags = nostr?.tags;
 
-        if (tags) {
-          if (tags) {
-            tags.push(["splitbox", name]);
-          } else {
-            nostr.tags = [["splitbox", name]];
-          }
-        }
-      } catch (error) {}
-      console.log(nostr);
+    //     console.log(tags);
 
-      let sk = generateSecretKey();
+    //     if (tags) {
+    //       if (tags) {
+    //         tags.push(["splitbox", name]);
+    //       } else {
+    //         nostr.tags = [["splitbox", name]];
+    //       }
+    //     }
+    //   } catch (error) {}
+    //   console.log(nostr);
 
-      nostr = finalizeEvent(nostr, sk);
-      nostr = JSON.stringify(nostr);
-    }
+    //   let sk = generateSecretKey();
+
+    //   nostr = finalizeEvent(nostr, sk);
+    //   nostr = JSON.stringify(nostr);
+    // }
 
     // Update the file with the new entry
     const newEntry = { callBackName: name, amount, nostr };
     data.push(newEntry);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+    if (name.startsWith("tsk-")) {
+    }
 
     // Send the queries to the external API
     const response = await axios.get(

@@ -23,7 +23,7 @@ export default async function getSplits(metadata) {
   let remoteItemFromIndex;
   let remotePercentage = 0;
 
-  if (metadata.guid) {
+  if (metadata?.guid) {
     const channelResponse = await fetchChannelFromIndex({
       guid: metadata.guid,
     });

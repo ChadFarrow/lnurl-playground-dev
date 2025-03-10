@@ -36,11 +36,16 @@ function webhookAsync(storeMetadata) {
 
         const storedData = await storeMetadata.getByInvoice(invoice, "tsb-tsk");
         const { metadata, id, parentAddress } = storedData;
-        console.log(storedData);
+        console.log("stored data: ", storedData);
+        console.log();
 
         let event = await getBlocks(storedData.guid);
-        console.log(event?.blocks?.[0]?.value);
-        // let splits = await getSplits(metadata);
+        console.log("block value: ", event?.blocks?.[0]?.value);
+        console.log();
+        console.log("md: ", metadata);
+        console.log();
+        let splits = await getSplits(metadata);
+        console.log(splits);
         // let account = await storeMetadata.fetchAccessToken(
         //   parentAddress,
         //   "tsb-tsk"
