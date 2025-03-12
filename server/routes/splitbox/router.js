@@ -43,9 +43,16 @@ router.get("/fetch-settings", async (req, res) =>
   handle(fetchSettings, req, res)
 );
 
-router.get("/metadata/:id", (req, res) => {
+router.get("/metadata/:id", async (req, res) => {
   const { id } = req.params;
-  handle((store) => getById(store, id), req, res);
+  let data = await storeMetadata.getById(id);
+  res.json(data);
+});
+
+router.get("/tsk/metadata/:id", async (req, res) => {
+  const { id } = req.params;
+  let data = await storeMetadata.getById(id, "tsb-tsk");
+  res.json(data);
 });
 
 router.get("/lnurlp/:name/callback", async (req, res) =>

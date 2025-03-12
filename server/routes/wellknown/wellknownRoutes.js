@@ -10,7 +10,7 @@ router.get("/lnurlp/:name", (req, res) => {
     tag: "payRequest",
     commentAllowed: 255,
     callback: `https://thesplitbox.com/lnurlp/${name}/callback`, // Use the dynamic name
-    metadata: `[["text/identifier","${name}@thesplitbox.com"],["text/plain","Sats for ${name}"]]`,
+    metadata: `[["text/identifier","${name}@thesplitbox.com"],["text/plain","${name}"]]`,
     minSendable: 1000,
     maxSendable: 10000000000,
     payerData: {

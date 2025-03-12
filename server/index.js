@@ -4,15 +4,6 @@ import helmet from "helmet";
 import path from "path";
 import cookieParser from "cookie-parser";
 import cors from "cors"; // Import the CORS package
-import fs from "fs";
-import axios from "axios";
-import fetch from "node-fetch";
-
-import {
-  finalizeEvent,
-  generateSecretKey,
-  getPublicKey,
-} from "nostr-tools/pure";
 
 import albyRoutes from "./routes/alby/albyRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
@@ -63,72 +54,10 @@ if (process.env.ALBY_JWT) {
   app.use("/alby", albyRoutes(tempTokens));
 }
 
-app.use("/", splitBoxRouter);
-
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
 
+app.use("/", splitBoxRouter);
 app.use("/prism", prismRoutes);
-
-app.get("/lnurlp/:name/callback/", cors({ origin: "*" }), async (req, res) => {
-  const { name } = req.params;
-  const { amount, comment } = req.query;
-  let { nostr } = req.query;
-  const filePath = "callbackData.json"; // File to store JSON data
-
-  try {
-    // Read or initialize the JSON file
-    let data = [];
-    if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      data = JSON.parse(fileContent);
-    }
-
-    // if (nostr) {
-    //   try {
-    //     nostr = JSON.parse(nostr);
-    //     delete nostr.id;
-    //     delete nostr.sig;
-    //     const tags = nostr?.tags;
-
-    //     console.log(tags);
-
-    //     if (tags) {
-    //       if (tags) {
-    //         tags.push(["splitbox", name]);
-    //       } else {
-    //         nostr.tags = [["splitbox", name]];
-    //       }
-    //     }
-    //   } catch (error) {}
-    //   console.log(nostr);
-
-    //   let sk = generateSecretKey();
-
-    //   nostr = finalizeEvent(nostr, sk);
-    //   nostr = JSON.stringify(nostr);
-    // }
-
-    // Update the file with the new entry
-    const newEntry = { callBackName: name, amount, nostr };
-    data.push(newEntry);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-
-    if (name.startsWith("tsk-")) {
-    }
-
-    // Send the queries to the external API
-    const response = await axios.get(
-      "https://getalby.com/lnurlp/prism/callback",
-      { params: { amount, nostr } }
-    );
-
-    // Return the response from the external API
-    res.json(response.data);
-  } catch (error) {
-    console.error("Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 // Start the server
 app.listen(PORT, () => {

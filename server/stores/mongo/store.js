@@ -24,7 +24,7 @@ const storeMetadata = {
   },
   getByInvoice: async (invoice, store) => {
     const collection = await getCollection(store || metadataStore);
-    return await collection.findOne({ invoice });
+    await collection.findOne({ invoice });
   },
   updateById: async (id, updatedData, store) => {
     const collection = await getCollection(store || metadataStore);
