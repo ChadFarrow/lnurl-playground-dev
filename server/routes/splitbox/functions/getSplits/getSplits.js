@@ -6,7 +6,7 @@ import findVTS from "./findVTS.js";
 import getItemFromRSS from "./getItemFromRSS.js";
 import combineSplits from "./combineSplits.js";
 
-export default async function getSplits(metadata) {
+export default async function getSplits({ metadata, eventGuid, blockGuid }) {
   let debug = false;
   let splits = [];
 

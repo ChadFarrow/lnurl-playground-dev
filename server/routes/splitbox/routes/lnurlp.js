@@ -3,45 +3,71 @@ import { io } from "socket.io-client";
 import { randomUUID } from "crypto";
 let valueTimer;
 
-async function getRemoteValue(guid) {
+async function getBlock(guid) {
   const url = `https://api.thesplitkit.com/event?event_id=${guid}`;
-  console.log(url);
   return new Promise((resolve, reject) => {
     const socket = io(url, { transports: ["websocket"] });
     socket.on("remoteValue", async (data) => {
-      console.log(data);
       socket.disconnect(); // Close connection after receiving data
-      if (!data.guid) {
-        const url = `https://api.thesplitkit.com/api/sk/getblocks?guid=${guid}`;
-        console.log(url);
+      if (!data?.blockGuid) {
+        data = await handleEventFallback(guid);
       }
-      data.guid = data.guid || guid;
+
       clearTimeout(valueTimer);
-      resolve(data);
+      resolve(stripValueBlock(data));
     });
 
     // Timeout to prevent waiting indefinitely
-    valueTimer = setTimeout(() => {
-      console.log("No remoteValue received, closing connection.");
+    valueTimer = setTimeout(async () => {
+      console.log("No block received, closing connection.");
       socket.disconnect();
-      const url = `https://api.thesplitkit.com//api/sk/getblocks?guid=${guid}`;
-      console.log(url);
-      resolve({ guid });
+      const data = stripValueBlock(await handleEventFallback(guid));
+
+      resolve(data);
     }, 10000);
   });
 }
 
-async function handleTskCallback(guid, amount, comment, res, storeMetadata) {
+async function handleEventFallback(guid) {
+  const url = `https://api.thesplitkit.com/api/sk/getblocks?guid=${guid}`;
+  const res = await fetch(url);
+  let block = {};
+  try {
+    const data = await res.json();
+    if (data?.blocks[0]) {
+      block = data.blocks[0];
+    }
+  } catch (error) {}
+
+  return block;
+}
+
+function stripValueBlock(block) {
+  let data = {};
+  data.eventGuid = block?.eventGuid;
+  data.blockGuid = block?.blockGuid;
+  data.value = block?.value || {};
+  return data;
+}
+
+async function handleTskCallback(
+  guid,
+  amount,
+  comment,
+  nostr,
+  res,
+  storeMetadata
+) {
   try {
     const metaID = randomUUID();
-    console.log(guid);
-    const payload = await getRemoteValue(guid);
+    const payload = await getBlock(guid);
     const albyResponse = await axios.get(
       `https://getalby.com/lnurlp/thesplitbox/callback`,
       {
         params: {
           amount,
-          comment: `http://localhost:3000/tsk/metadata/${metaID}`,
+          comment: `http://localhost:3000/metadata/${metaID}`,
+          nostr,
         },
       }
     );
@@ -57,7 +83,7 @@ async function handleTskCallback(guid, amount, comment, res, storeMetadata) {
       ...payload,
     };
 
-    storeMetadata.add(newMetadata, "tsb-tsk");
+    storeMetadata.add(newMetadata);
 
     return res.json(albyResponse.data);
   } catch (error) {
@@ -68,7 +94,7 @@ async function handleTskCallback(guid, amount, comment, res, storeMetadata) {
 function lnurlp(storeMetadata) {
   return async (req, res) => {
     const { name } = req.params;
-    const { amount, comment } = req.query;
+    const { amount, comment, nostr } = req.query;
 
     if (!amount) {
       return res
@@ -82,12 +108,13 @@ function lnurlp(storeMetadata) {
         tskMatch[1],
         amount,
         comment,
+        nostr,
         res,
         storeMetadata
       );
     }
 
-    // Default response for non-task names
+    // Default response for non-tsk names
     res.json({
       status: "OK",
       tag: "payRequest",
