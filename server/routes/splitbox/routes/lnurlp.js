@@ -71,7 +71,7 @@ async function handleTskCallback(
       {
         params: {
           amount,
-          comment: `${process.env.WEBHOOK_SERVER}/metadata/${id}`,
+          comment: `${process.env.WEBHOOK_SERVER}/metadata/${metaID}`,
           nostr,
         },
       }
