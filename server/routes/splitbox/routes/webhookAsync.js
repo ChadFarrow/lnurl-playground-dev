@@ -6,7 +6,9 @@ import clone from "just-clone";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
 
-dotenv.config();
+if (!process.env.WEBHOOK) {
+  dotenv.config();
+}
 
 function webhookAsync(storeMetadata) {
   return async (req, res) => {
@@ -15,100 +17,106 @@ function webhookAsync(storeMetadata) {
     res.status(200).send("Webhook received");
     try {
       // Verify the signature
-      // const wh = new Webhook(process.env.TSB_WEBHOOK);
-      // const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
+      const wh = new Webhook(process.env.WEBHOOK);
+      const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
+      if (verifiedPayload) {
+        if (payload.payment_request) {
+          const preimage = payload.preimage || payload.payment_preimage;
+          const invoice = payload.payment_request;
+          const amount = payload.amount || 0;
+          let runningAmount = amount;
+          console.log(payload);
+
+          if (confirmInvoice(preimage, invoice) || true) {
+            await storeMetadata.updateByInvoice(invoice, { settled: true });
+
+            const storedData = await storeMetadata.getByInvoice(invoice);
+            let {
+              eventGuid,
+              blockGuid,
+              value,
+              comment,
+              metadata,
+              id,
+              parentAddress,
+            } = storedData;
+
+            if (blockGuid) {
+              let event = await getEvent(eventGuid);
+              let block = getBlock(event, blockGuid);
+
+              let account = await storeMetadata.fetchAccessToken(
+                parentAddress || "thesplitbox@getalby.com"
+              );
+
+              //this adds an '@_' to each destination so it matches parsed RSS feeds
+              let splits = []
+                .concat(value?.destinations)
+                .filter(Boolean)
+                .map((obj) =>
+                  Object.fromEntries(
+                    Object.entries(obj).map(([key, value]) => [
+                      key.startsWith("@_") ? key : `@_${key}`,
+                      value,
+                    ])
+                  )
+                );
+
+              let feesDestinations = [];
+              let splitsDestinations = [];
+
+              splits.forEach((v) => {
+                if (!v["@_fee"] || v["@_fee"] === false) {
+                  splitsDestinations.push(clone(v));
+                } else {
+                  feesDestinations.push(clone(v));
+                }
+              });
+
+              feesDestinations.forEach((fee) => {
+                fee.amount = Math.floor((fee["@_split"] / 100) * amount);
+                runningAmount -= fee.amount;
+              });
+
+              splitsDestinations.forEach((split) => {
+                split.amount = Math.floor(
+                  (split["@_split"] / 100) * runningAmount
+                );
+              });
+
+              let completedPayments = await processPayments({
+                accessToken: account.albyAccessToken,
+                splits: [...feesDestinations, ...splitsDestinations],
+                metadata: blockToMeta(block, payload.amount, comment),
+                id,
+              });
+              await storeMetadata.updateByInvoice(invoice, {
+                completedPayments,
+              });
+            } else if (metadata) {
+              let splits = await getSplits(metadata);
+              let account = await storeMetadata.fetchAccessToken(
+                parentAddress || "thesplitbox@getalby.com"
+              );
+              let completedPayments = await processPayments({
+                accessToken: account.albyAccessToken,
+                splits,
+                metadata,
+                id,
+              });
+              await storeMetadata.updateByInvoice(invoice, {
+                completedPayments,
+              });
+            }
+          }
+        } else {
+          console.log({ success: false, reason: "unconfirmed preimage" });
+        }
+      }
       console.log("Webhook verified");
     } catch (error) {
       console.error(error.message);
-      res.status(500).send("Internal server error");
       return;
-    }
-
-    if (payload.payment_request) {
-      const preimage = payload.preimage || payload.payment_preimage;
-      const invoice = payload.payment_request;
-      const amount = payload.amount || 0;
-      let runningAmount = amount;
-      console.log(payload);
-
-      if (confirmInvoice(preimage, invoice) || true) {
-        await storeMetadata.updateByInvoice(invoice, { settled: true });
-
-        const storedData = await storeMetadata.getByInvoice(invoice);
-        let {
-          eventGuid,
-          blockGuid,
-          value,
-          comment,
-          metadata,
-          id,
-          parentAddress,
-        } = storedData;
-
-        if (blockGuid) {
-          let event = await getEvent(eventGuid);
-          let block = getBlock(event, blockGuid);
-
-          let account = await storeMetadata.fetchAccessToken(
-            parentAddress || "thesplitbox@getalby.com"
-          );
-
-          //this adds an '@_' to each destination so it matches parsed RSS feeds
-          let splits = []
-            .concat(value?.destinations)
-            .filter(Boolean)
-            .map((obj) =>
-              Object.fromEntries(
-                Object.entries(obj).map(([key, value]) => [
-                  key.startsWith("@_") ? key : `@_${key}`,
-                  value,
-                ])
-              )
-            );
-
-          let feesDestinations = [];
-          let splitsDestinations = [];
-
-          splits.forEach((v) => {
-            if (!v["@_fee"] || v["@_fee"] === false) {
-              splitsDestinations.push(clone(v));
-            } else {
-              feesDestinations.push(clone(v));
-            }
-          });
-
-          feesDestinations.forEach((fee) => {
-            fee.amount = Math.floor((fee["@_split"] / 100) * amount);
-            runningAmount -= fee.amount;
-          });
-
-          splitsDestinations.forEach((split) => {
-            split.amount = Math.floor((split["@_split"] / 100) * runningAmount);
-          });
-
-          let completedPayments = await processPayments({
-            accessToken: account.albyAccessToken,
-            splits: [...feesDestinations, ...splitsDestinations],
-            metadata: blockToMeta(block, payload.amount, comment),
-            id,
-          });
-          await storeMetadata.updateByInvoice(invoice, { completedPayments });
-        } else if (metadata) {
-          let splits = await getSplits(metadata);
-          let account = await storeMetadata.fetchAccessToken(
-            parentAddress || "thesplitbox@getalby.com"
-          );
-          let completedPayments = await processPayments({
-            accessToken: account.albyAccessToken,
-            splits,
-            metadata,
-            id,
-          });
-          await storeMetadata.updateByInvoice(invoice, { completedPayments });
-        }
-      }
-    } else {
-      console.log({ success: false, reason: "unconfirmed preimage" });
     }
   };
 }
