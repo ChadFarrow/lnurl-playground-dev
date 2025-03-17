@@ -8,8 +8,11 @@ export default async function processPayments({
   id,
 }) {
   let paymentAttempts = splits.map((recipient) => {
+    console.log();
+    console.log();
+    console.log("r: ", recipient);
     if (recipient?.["@_type"] === "node") {
-      return sendKeysend({ accessToken, recipient, metadata });
+      return sendKeysend({ accessToken, recipient, metadata, id });
     } else if (recipient?.["@_type"] === "lnaddress") {
       return sendLNUrl({ accessToken, recipient, id });
     } else {

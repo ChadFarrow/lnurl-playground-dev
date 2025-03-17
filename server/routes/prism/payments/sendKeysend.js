@@ -29,6 +29,7 @@ export default function sendKeysend({ accessToken, recipient, metadata }) {
       // throw new Error("Intentional test error");
 
       let paymentData;
+
       if (recipient.amount) {
         const paymentRes = await axios.post(
           "https://api.getalby.com/payments/keysend",

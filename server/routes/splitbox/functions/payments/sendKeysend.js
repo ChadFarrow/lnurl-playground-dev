@@ -1,13 +1,14 @@
 import axios from "axios";
 import clone from "just-clone";
 
-export default function sendKeysend({ accessToken, recipient, metadata }) {
+export default function sendKeysend({ accessToken, recipient, metadata, id }) {
   let record = {
     destination: recipient["@_address"],
     amount: recipient.amount,
   };
 
   const tlv = clone(metadata);
+  tlv.metadataUrl = `${process.env.WEBHOOK_SERVER}/metadata/${id}`;
 
   tlv.name = recipient["@_name"];
   tlv.value_msat = recipient.amount * 1000;

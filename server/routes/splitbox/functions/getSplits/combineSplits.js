@@ -20,8 +20,8 @@ export default function combineSplits(destinations, amount) {
     runningAmount -= fee.amount;
   });
 
-  splits.forEach((fee) => {
-    fee.amount = Math.floor((fee["@_split"] / 100) * runningAmount);
+  splits.forEach((split) => {
+    split.amount = Math.floor((fee["@_split"] / 100) * runningAmount);
   });
 
   // Return combined array
