@@ -25,7 +25,6 @@ function webhookAsync(storeMetadata) {
           const invoice = payload.payment_request;
           const amount = payload.amount || 0;
           let runningAmount = amount;
-          console.log(payload);
 
           if (confirmInvoice(preimage, invoice) || true) {
             await storeMetadata.updateByInvoice(invoice, { settled: true });

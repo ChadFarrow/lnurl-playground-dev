@@ -1,7 +1,12 @@
 import axios from "axios";
 import { io } from "socket.io-client";
 import { randomUUID } from "crypto";
+import dotenv from "dotenv";
 let valueTimer;
+
+if (!process.env.WEBHOOK_SERVER) {
+  dotenv.config();
+}
 
 async function getBlock(guid) {
   const url = `https://api.thesplitkit.com/event?event_id=${guid}`;
@@ -66,7 +71,7 @@ async function handleTskCallback(
       {
         params: {
           amount,
-          comment: `http://localhost:3000/metadata/${metaID}`,
+          comment: `${process.env.WEBHOOK_SERVER}/metadata/${id}`,
           nostr,
         },
       }
@@ -74,7 +79,6 @@ async function handleTskCallback(
     let invoiceData = albyResponse.data;
     let invoice = invoiceData.pr;
 
-    console.log(`http://localhost:3000/metadata/${metaID}`);
     const newMetadata = {
       id: metaID,
       ts: new Date().getTime(),
