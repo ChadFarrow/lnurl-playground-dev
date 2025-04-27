@@ -1,9 +1,10 @@
 <script>
   import { onMount } from "svelte";
+  import { remoteServer } from "$lib/state.svelte.js";
   import webhook from "./webhook-test";
   async function sendPostRequest() {
     try {
-      const response = await fetch("http://localhost:3000/webhook-async", {
+      const response = await fetch(`${remoteServer}/webhook-async`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
