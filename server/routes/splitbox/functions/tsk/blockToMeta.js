@@ -2,7 +2,7 @@ export default function blockToMeta(block, satAmount, comment) {
   const meta = {
     podcast: block.title,
     action: "boost",
-    app_name: "The Split Kit",
+    app_name: "LNUrl Payment",
     value_msat_total: satAmount * 1000,
     message: comment,
     remoteFeedGuid: block.feedGuid,
