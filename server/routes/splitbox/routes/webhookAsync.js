@@ -13,6 +13,7 @@ if (!process.env.WEBHOOK) {
 function webhookAsync(storeMetadata) {
   return async (req, res) => {
     const payload = req.body;
+    console.log(JSON.stringify(payload, null, 2));
     const headers = req.headers;
     res.status(200).send("Webhook received");
     try {
@@ -87,7 +88,12 @@ function webhookAsync(storeMetadata) {
               let completedPayments = await processPayments({
                 accessToken: account.albyAccessToken,
                 splits: [...feesDestinations, ...splitsDestinations],
-                metadata: blockToMeta(block, payload.amount, comment, payerdata),
+                metadata: blockToMeta(
+                  block,
+                  payload.amount,
+                  comment,
+                  payerdata
+                ),
                 id,
               });
               await storeMetadata.updateByInvoice(invoice, {
