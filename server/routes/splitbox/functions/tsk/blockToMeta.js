@@ -1,4 +1,4 @@
-export default function blockToMeta(block, satAmount, comment) {
+export default function blockToMeta(block, satAmount, comment, payerdata) {
   const meta = {
     podcast: block.title,
     action: "boost",
@@ -11,6 +11,10 @@ export default function blockToMeta(block, satAmount, comment) {
     blockGuid: block?.blockGuid,
     eventAPI: block.eventAPI,
   };
+
+  if (payerdata?.name) {
+    meta.sender_name = payerdata.name;
+  }
 
   // Remove undefined values
   return Object.fromEntries(

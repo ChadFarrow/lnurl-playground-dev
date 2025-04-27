@@ -38,6 +38,7 @@ function webhookAsync(storeMetadata) {
               metadata,
               id,
               parentAddress,
+              payerdata,
             } = storedData;
 
             if (blockGuid) {
@@ -86,7 +87,7 @@ function webhookAsync(storeMetadata) {
               let completedPayments = await processPayments({
                 accessToken: account.albyAccessToken,
                 splits: [...feesDestinations, ...splitsDestinations],
-                metadata: blockToMeta(block, payload.amount, comment),
+                metadata: blockToMeta(block, payload.amount, comment, payerdata),
                 id,
               });
               await storeMetadata.updateByInvoice(invoice, {
