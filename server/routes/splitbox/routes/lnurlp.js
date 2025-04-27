@@ -60,6 +60,7 @@ async function handleTskCallback(
   amount,
   comment,
   nostr,
+  payerdata,
   res,
   storeMetadata
 ) {
@@ -84,6 +85,7 @@ async function handleTskCallback(
       ts: new Date().getTime(),
       comment,
       invoice,
+      payerdata,
       ...payload,
     };
 
@@ -98,12 +100,23 @@ async function handleTskCallback(
 function lnurlp(storeMetadata) {
   return async (req, res) => {
     const { name } = req.params;
-    const { amount, comment, nostr } = req.query;
+    const { amount, comment, nostr, payerdata } = req.query;
 
     if (!amount) {
       return res
         .status(400)
         .json({ status: "ERROR", message: "Missing amount" });
+    }
+
+    let decodedPayerdata = null;
+    if (payerdata) {
+      decodedPayerdata = JSON.parse(payerdata);
+
+      if (!decodedPayerdata) {
+        return res
+          .status(400)
+          .json({ status: "ERROR", message: "Invalid payerdata" });
+      }
     }
 
     const tskMatch = name.match(/^tsk-([0-9a-fA-F-]{36})$/);
@@ -113,6 +126,7 @@ function lnurlp(storeMetadata) {
         amount,
         comment,
         nostr,
+        decodedPayerdata,
         res,
         storeMetadata
       );
