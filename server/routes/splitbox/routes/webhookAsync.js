@@ -13,7 +13,6 @@ if (!process.env.WEBHOOK) {
 function webhookAsync(storeMetadata) {
   return async (req, res) => {
     const payload = req.body;
-    console.log(JSON.stringify(payload, null, 2));
     const headers = req.headers;
     res.status(200).send("Webhook received");
     try {
