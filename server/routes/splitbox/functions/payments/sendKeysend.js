@@ -43,7 +43,7 @@ export default async function sendKeysend({
         record,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-          timeout: 10000, // Optional: avoid hanging forever
+          timeout: 10000,
         }
       );
       paymentData = paymentRes.data;
@@ -58,24 +58,37 @@ export default async function sendKeysend({
     };
   } catch (error) {
     if (error.response) {
-      console.error("Keysend Server Error:", {
-        status: error.response.status,
-        headers: error.response.headers,
-        data: error.response.data,
-      });
-    } else if (error.request) {
-      console.error("Keysend No Response:", error.request);
-    } else {
-      console.error("Keysend Setup Error:", error.message);
-    }
+      const statusCode = error.response.status;
+      const isServerError = statusCode >= 500;
+      const isClientError = statusCode >= 400 && statusCode < 500;
 
-    return {
-      success: false,
-      recipient: minimalRecipient(recipient),
-      errorMessage: error.message || "Unknown error",
-      statusCode: error.response?.status || null,
-      serverData: error.response?.data || null,
-    };
+      console.error(`Keysend Payment Error: ${statusCode}`);
+      console.error(
+        `Problem appears on: ${
+          isServerError ? "Alby's end" : isClientError ? "Your end" : "Unknown"
+        }`
+      );
+
+      return {
+        success: false,
+        recipient: minimalRecipient(recipient),
+        statusCode,
+        errorSource: isServerError
+          ? "server"
+          : isClientError
+          ? "client"
+          : "unknown",
+        errorType: "network",
+      };
+    } else {
+      console.error("Internal Code Error:", error.message || error);
+      return {
+        success: false,
+        recipient: minimalRecipient(recipient),
+        errorType: "internal",
+        errorMessage: error.message || "Unknown internal error",
+      };
+    }
   }
 }
 
