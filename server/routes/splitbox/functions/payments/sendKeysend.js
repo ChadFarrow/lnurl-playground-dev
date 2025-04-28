@@ -1,58 +1,87 @@
 import axios from "axios";
-import clone from "just-clone";
 
-export default function sendKeysend({ accessToken, recipient, metadata, id }) {
-  let record = {
+export default async function sendKeysend({
+  accessToken,
+  recipient,
+  metadata,
+  id,
+}) {
+  if (!accessToken) throw new Error("Missing access token.");
+  if (!recipient?.["@_address"]) throw new Error("Missing recipient address.");
+  if (typeof recipient.amount !== "number" || recipient.amount < 0)
+    throw new Error("Invalid recipient amount.");
+  if (!process.env.WEBHOOK_SERVER)
+    throw new Error("Missing WEBHOOK_SERVER environment variable.");
+
+  const record = {
     destination: recipient["@_address"],
     amount: recipient.amount,
   };
 
-  const tlv = clone(metadata);
-  tlv.metadataUrl = `${process.env.WEBHOOK_SERVER}/metadata/${id}`;
+  const customRecords = {
+    7629169: JSON.stringify({
+      ...metadata,
+      metadataUrl: `${process.env.WEBHOOK_SERVER}/metadata/${id}`,
+      name: recipient["@_name"] || "",
+      value_msat: recipient.amount * 1000,
+    }),
+  };
 
-  tlv.name = recipient["@_name"];
-  tlv.value_msat = recipient.amount * 1000;
-
-  let customRecords = {};
-  if (tlv) {
-    customRecords[7629169] = JSON.stringify(tlv);
-  }
   if (recipient["@_customKey"]) {
     customRecords[recipient["@_customKey"]] = recipient["@_customValue"];
   }
 
-  if (Object.keys(customRecords)?.length > 0) {
+  if (Object.keys(customRecords).length > 0) {
     record.custom_records = customRecords;
   }
 
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Throwing an error for testing purposes
-      // throw new Error("Intentional test error");
-
-      let paymentData;
-      if (recipient.amount) {
-        const paymentRes = await axios.post(
-          "https://api.getalby.com/payments/keysend",
-          record,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-
-        paymentData = paymentRes.data;
-      } else {
-        paymentData = { amount: 0, status: "no sats sent, amount too low" };
-      }
-      resolve({
-        success: true,
-        recipient: recipient,
-        paymentData,
-      });
-    } catch (error) {
-      console.log("Keysend Payment Error:", error.message || error);
-      let err = error.message || error;
-      resolve({ success: false, recipient, record, err });
+  try {
+    let paymentData;
+    if (recipient.amount > 0) {
+      const paymentRes = await axios.post(
+        "https://api.getalby.com/payments/keysend",
+        record,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          timeout: 10000, // Optional: avoid hanging forever
+        }
+      );
+      paymentData = paymentRes.data;
+    } else {
+      paymentData = { amount: 0, status: "No sats sent. Amount too low." };
     }
-  });
+
+    return {
+      success: true,
+      recipient: minimalRecipient(recipient),
+      paymentData,
+    };
+  } catch (error) {
+    if (error.response) {
+      console.error("Keysend Server Error:", {
+        status: error.response.status,
+        headers: error.response.headers,
+        data: error.response.data,
+      });
+    } else if (error.request) {
+      console.error("Keysend No Response:", error.request);
+    } else {
+      console.error("Keysend Setup Error:", error.message);
+    }
+
+    return {
+      success: false,
+      recipient: minimalRecipient(recipient),
+      errorMessage: error.message || "Unknown error",
+      statusCode: error.response?.status || null,
+      serverData: error.response?.data || null,
+    };
+  }
+}
+
+function minimalRecipient(recipient) {
+  return {
+    address: recipient["@_address"],
+    name: recipient["@_name"] || null,
+  };
 }
