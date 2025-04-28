@@ -43,7 +43,6 @@ export default async function sendKeysend({
         record,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-          timeout: 10000,
         }
       );
       paymentData = paymentRes.data;
