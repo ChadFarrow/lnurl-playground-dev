@@ -59,6 +59,7 @@ async function handleTskCallback(
   guid,
   amount,
   comment,
+  rawNostr,
   nostr,
   payerdata,
   res,
@@ -73,7 +74,7 @@ async function handleTskCallback(
         params: {
           amount,
           comment: `${process.env.WEBHOOK_SERVER}/metadata/${metaID}`,
-          nostr,
+          nostr: rawNostr,
         },
       }
     );
@@ -86,6 +87,7 @@ async function handleTskCallback(
       comment,
       invoice,
       payerdata,
+      nostr,
       ...payload,
     };
 
@@ -119,6 +121,17 @@ function lnurlp(storeMetadata) {
       }
     }
 
+    let decodedNostr = null;
+    if (nostr) {
+      try {
+        decodedNostr = JSON.parse(nostr);
+      } catch (error) {
+        return res
+          .status(400)
+          .json({ status: "ERROR", message: "Invalid nostr data" });
+      }
+    }
+
     const tskMatch = name.match(/^tsk-([0-9a-fA-F-]{36})$/);
     if (tskMatch) {
       return handleTskCallback(
@@ -126,6 +139,7 @@ function lnurlp(storeMetadata) {
         amount,
         comment,
         nostr,
+        decodedNostr,
         decodedPayerdata,
         res,
         storeMetadata
