@@ -112,9 +112,9 @@ function lnurlp(storeMetadata) {
 
     let decodedPayerdata = null;
     if (payerdata) {
-      decodedPayerdata = JSON.parse(payerdata);
-
-      if (!decodedPayerdata) {
+      try {
+        decodedPayerdata = JSON.parse(payerdata);
+      } catch (error) {
         return res
           .status(400)
           .json({ status: "ERROR", message: "Invalid payerdata" });
