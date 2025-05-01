@@ -40,6 +40,7 @@ function webhookAsync(storeMetadata) {
               parentAddress,
               payerdata,
               nostr,
+              senderName,
             } = storedData;
 
             if (blockGuid) {
