@@ -42,7 +42,6 @@ async function getBlock(guid, blockGuid) {
 
       try {
         const block = await fetchBlock(guid, blockGuid);
-        console.log("block 45: ", block);
         clearTimeout(timeout);
         resolve(stripValueBlock(block));
       } catch (err) {
@@ -74,7 +73,6 @@ async function fetchBlock(guid, blockGuid) {
 
   try {
     const data = await res.json();
-    console.log("data 77: ", data);
     block =
       data.blocks.find((b) => b.blockGuid === blockGuid) ||
       data.blocks[0] ||
