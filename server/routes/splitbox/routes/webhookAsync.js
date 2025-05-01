@@ -31,8 +31,6 @@ function webhookAsync(storeMetadata) {
 
             const storedData = await storeMetadata.getByInvoice(invoice);
             let {
-              eventGuid,
-              blockGuid,
               value,
               comment,
               metadata,
@@ -40,12 +38,10 @@ function webhookAsync(storeMetadata) {
               parentAddress,
               payerdata,
               nostr,
+              senderName,
             } = storedData;
 
-            if (blockGuid) {
-              let event = await getEvent(eventGuid);
-              let block = getBlock(event, blockGuid);
-
+            if (value) {
               let account = await storeMetadata.fetchAccessToken(
                 parentAddress || "thesplitbox@getalby.com"
               );
@@ -88,13 +84,14 @@ function webhookAsync(storeMetadata) {
               let completedPayments = await processPayments({
                 accessToken: account.albyAccessToken,
                 splits: [...feesDestinations, ...splitsDestinations],
-                metadata: blockToMeta(
+                metadata: blockToMeta({
                   block,
-                  payload.amount,
+                  satAmount: payload.amount,
                   comment,
                   payerdata,
                   nostr,
-                ),
+                  senderName,
+                }),
                 id,
               });
               await storeMetadata.updateByInvoice(invoice, {
@@ -129,22 +126,3 @@ function webhookAsync(storeMetadata) {
 }
 
 export default webhookAsync;
-
-async function getEvent(guid) {
-  const url = `https://curiohoster.com/api/sk/getblocks?guid=${guid}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Fetch error:", error);
-    return null;
-  }
-}
-
-function getBlock(event, guid) {
-  return (event?.blocks || []).find((v) => v.blockGuid === guid);
-}

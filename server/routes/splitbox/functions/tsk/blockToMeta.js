@@ -1,4 +1,11 @@
-export default function blockToMeta(block, satAmount, comment, payerdata, nostr) {
+export default function blockToMeta({
+  block,
+  satAmount,
+  comment,
+  payerdata,
+  nostr,
+  senderName,
+}) {
   const meta = {
     podcast: block.title,
     action: "boost",
@@ -16,13 +23,16 @@ export default function blockToMeta(block, satAmount, comment, payerdata, nostr)
     meta.sender_name = payerdata.name;
   }
 
+  if (senderName) {
+    meta.sender_name = senderName;
+  }
   if (nostr) {
     meta.app_name = "Zap";
 
     // TODO: Get sender_name from nostr.pubkey lookup
 
     if (nostr.content) {
-      meta.comment = nostr.content
+      meta.message = nostr.content;
     }
   }
 

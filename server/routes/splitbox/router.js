@@ -49,7 +49,7 @@ router.get("/metadata/:id", async (req, res) => {
   res.json(data);
 });
 
-router.get("/lnurlp/:name/callback", cors(corsOptions), async (req, res) =>
+router.get("/lnurlp/:address/callback", cors(corsOptions), async (req, res) =>
   handle(lnurlp, req, res)
 );
 
