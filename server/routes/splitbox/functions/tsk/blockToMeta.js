@@ -6,17 +6,18 @@ export default function blockToMeta({
   nostr,
   senderName,
 }) {
+  console.log(block);
   const meta = {
-    podcast: block.title,
+    podcast: block?.title,
     action: "boost",
     app_name: "LNUrl Payment",
     value_msat_total: satAmount * 1000,
     message: comment,
-    remoteFeedGuid: block.feedGuid,
-    remoteItemGuid: block.itemGuid,
-    eventGuid: block.eventGuid,
+    remoteFeedGuid: block?.feedGuid,
+    remoteItemGuid: block?.itemGuid,
+    eventGuid: block?.eventGuid,
     blockGuid: block?.blockGuid,
-    eventAPI: block.eventAPI,
+    eventAPI: block?.eventAPI,
   };
 
   if (payerdata?.name) {
