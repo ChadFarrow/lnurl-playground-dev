@@ -137,6 +137,7 @@ function webhookAsync(storeMetadata) {
 export default webhookAsync;
 
 async function getEvent(guid) {
+  console.log(guid);
   const url = `https://curiohoster.com/api/sk/getblocks?guid=${guid}`;
 
   try {
