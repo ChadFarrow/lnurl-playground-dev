@@ -39,6 +39,7 @@ function webhookAsync(storeMetadata) {
               id,
               parentAddress,
               payerdata,
+              nostr,
             } = storedData;
 
             if (blockGuid) {
@@ -91,7 +92,8 @@ function webhookAsync(storeMetadata) {
                   block,
                   payload.amount,
                   comment,
-                  payerdata
+                  payerdata,
+                  nostr,
                 ),
                 id,
               });

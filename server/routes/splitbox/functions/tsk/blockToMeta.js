@@ -1,4 +1,4 @@
-export default function blockToMeta(block, satAmount, comment, payerdata) {
+export default function blockToMeta(block, satAmount, comment, payerdata, nostr) {
   const meta = {
     podcast: block.title,
     action: "boost",
@@ -14,6 +14,16 @@ export default function blockToMeta(block, satAmount, comment, payerdata) {
 
   if (payerdata?.name) {
     meta.sender_name = payerdata.name;
+  }
+
+  if (nostr) {
+    meta.app_name = "Zap";
+
+    // TODO: Get sender_name from nostr.pubkey lookup
+
+    if (nostr.content) {
+      meta.comment = nostr.content
+    }
   }
 
   // Remove undefined values
