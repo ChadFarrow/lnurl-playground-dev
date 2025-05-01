@@ -5,6 +5,7 @@ import blockToMeta from "../functions/tsk/blockToMeta.js";
 import clone from "just-clone";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
+import { io } from "socket.io-client";
 
 if (!process.env.WEBHOOK) {
   dotenv.config();
@@ -43,6 +44,13 @@ function webhookAsync(storeMetadata) {
               nostr,
               senderName,
             } = storedData;
+
+            const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
+            try {
+              const socket = io(url, { transports: ["websocket"] });
+              socket.emit("webhookInvoice", invoice);
+              socket.disconnect();
+            } catch (error) {}
 
             if (blockGuid) {
               let event = await getEvent(eventGuid);

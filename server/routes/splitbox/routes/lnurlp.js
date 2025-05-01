@@ -93,7 +93,7 @@ function stripValueBlock(block) {
 }
 
 async function handleTskCallback({
-  guid,
+  eventGuid,
   amount,
   comment,
   rawNostr,
@@ -103,10 +103,11 @@ async function handleTskCallback({
   blockGuid,
   res,
   storeMetadata,
+  clientId,
 }) {
   try {
     const metaID = randomUUID();
-    const payload = await getBlock(guid, blockGuid);
+    const payload = await getBlock(eventGuid, blockGuid);
     const albyResponse = await axios.get(
       `https://getalby.com/lnurlp/thesplitbox/callback`,
       {
@@ -128,6 +129,7 @@ async function handleTskCallback({
       payerdata,
       nostr,
       senderName,
+      clientId,
       ...payload,
     };
 
@@ -142,8 +144,15 @@ async function handleTskCallback({
 function lnurlp(storeMetadata) {
   return async (req, res) => {
     const { address } = req.params;
-    const { amount, comment, nostr, payerdata, senderName, blockGuid } =
-      req.query;
+    const {
+      amount,
+      comment,
+      nostr,
+      payerdata,
+      senderName,
+      blockGuid,
+      clientId,
+    } = req.query;
 
     if (!amount) {
       return res
@@ -177,7 +186,7 @@ function lnurlp(storeMetadata) {
     const tskMatch = address.match(/^tsk-([0-9a-fA-F-]{36})$/);
     if (tskMatch) {
       return handleTskCallback({
-        guid: tskMatch[1],
+        eventGuid: tskMatch[1],
         amount,
         comment,
         rawNostr: nostr,
@@ -187,6 +196,7 @@ function lnurlp(storeMetadata) {
         blockGuid,
         res,
         storeMetadata,
+        clientId,
       });
     }
 
