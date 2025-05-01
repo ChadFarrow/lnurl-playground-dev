@@ -49,6 +49,7 @@ function webhookAsync(storeMetadata) {
             if (blockGuid) {
               let event = await getEvent(eventGuid);
               let block = getBlock(event, blockGuid);
+              console.log(block);
 
               let account = await storeMetadata.fetchAccessToken(
                 parentAddress || "thesplitbox@getalby.com"
@@ -88,7 +89,7 @@ function webhookAsync(storeMetadata) {
                   (split["@_split"] / 100) * runningAmount
                 );
               });
-
+              console.log("block2: ", block);
               let completedPayments = await processPayments({
                 accessToken: account.albyAccessToken,
                 splits: [...feesDestinations, ...splitsDestinations],
