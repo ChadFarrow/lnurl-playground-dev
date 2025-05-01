@@ -151,5 +151,7 @@ async function getEvent(guid) {
 }
 
 function getBlock(event, guid) {
+  console.log(event);
+  console.log(guid);
   return (event?.blocks || []).find((v) => v.blockGuid === guid);
 }
