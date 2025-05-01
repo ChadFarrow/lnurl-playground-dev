@@ -81,6 +81,7 @@ async function fetchBlock(guid, blockGuid) {
     console.error("Failed to fetch or parse block data", error);
   }
 
+  console.log("block: ", block);
   return block;
 }
 

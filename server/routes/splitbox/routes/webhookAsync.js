@@ -30,6 +30,7 @@ function webhookAsync(storeMetadata) {
             await storeMetadata.updateByInvoice(invoice, { settled: true });
 
             const storedData = await storeMetadata.getByInvoice(invoice);
+
             let {
               eventGuid,
               blockGuid,
@@ -42,6 +43,8 @@ function webhookAsync(storeMetadata) {
               nostr,
               senderName,
             } = storedData;
+            console.log("blockGuid: ", blockGuid);
+            console.log("eventGuid: ", eventGuid);
 
             if (blockGuid) {
               let event = await getEvent(eventGuid);
