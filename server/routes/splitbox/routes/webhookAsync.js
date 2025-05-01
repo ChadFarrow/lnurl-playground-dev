@@ -46,6 +46,7 @@ function webhookAsync(storeMetadata) {
             } = storedData;
 
             const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
+            console.log(url);
             try {
               const socket = io(url, { transports: ["websocket"] });
               socket.emit("webhookInvoice", invoice);
