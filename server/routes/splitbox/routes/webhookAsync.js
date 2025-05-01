@@ -43,13 +43,10 @@ function webhookAsync(storeMetadata) {
               nostr,
               senderName,
             } = storedData;
-            console.log("blockGuid: ", blockGuid);
-            console.log("eventGuid: ", eventGuid);
 
             if (blockGuid) {
               let event = await getEvent(eventGuid);
               let block = getBlock(event, blockGuid);
-              console.log(block);
 
               let account = await storeMetadata.fetchAccessToken(
                 parentAddress || "thesplitbox@getalby.com"
@@ -89,18 +86,18 @@ function webhookAsync(storeMetadata) {
                   (split["@_split"] / 100) * runningAmount
                 );
               });
-              console.log("block2: ", block);
+
               let completedPayments = await processPayments({
                 accessToken: account.albyAccessToken,
                 splits: [...feesDestinations, ...splitsDestinations],
-                metadata: blockToMeta(
+                metadata: blockToMeta({
                   block,
-                  payload.amount,
+                  satAmount: payload.amount,
                   comment,
                   payerdata,
                   nostr,
-                  senderName
-                ),
+                  senderName,
+                }),
                 id,
               });
               await storeMetadata.updateByInvoice(invoice, {
@@ -137,7 +134,6 @@ function webhookAsync(storeMetadata) {
 export default webhookAsync;
 
 async function getEvent(guid) {
-  console.log(guid);
   const url = `https://curiohoster.com/api/sk/getblocks?guid=${guid}`;
 
   try {
@@ -153,7 +149,5 @@ async function getEvent(guid) {
 }
 
 function getBlock(event, guid) {
-  console.log(event);
-  console.log(guid);
   return (event?.blocks || []).find((v) => v.blockGuid === guid);
 }
