@@ -6,7 +6,6 @@ export default function blockToMeta({
   nostr,
   senderName,
 }) {
-  console.log("metablock: ", block);
   const meta = {
     podcast: block?.title,
     action: "boost",

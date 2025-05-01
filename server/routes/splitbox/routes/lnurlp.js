@@ -81,7 +81,6 @@ async function fetchBlock(guid, blockGuid) {
     console.error("Failed to fetch or parse block data", error);
   }
 
-  console.log("block: ", block);
   return block;
 }
 
@@ -114,7 +113,7 @@ async function handleTskCallback({
         params: {
           amount,
           comment: `${process.env.WEBHOOK_SERVER}/metadata/${metaID}`,
-          nostr: rawNostr,
+          // nostr: rawNostr,
         },
       }
     );
@@ -167,7 +166,7 @@ function lnurlp(storeMetadata) {
     if (nostr) {
       try {
         decodedNostr = JSON.parse(nostr);
-        console.log(decodedNostr);
+        console.log("lnurlp nostr: ", decodedNostr);
       } catch (error) {
         return res
           .status(400)
