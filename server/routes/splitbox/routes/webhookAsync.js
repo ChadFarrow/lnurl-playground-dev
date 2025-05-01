@@ -49,9 +49,12 @@ function webhookAsync(storeMetadata) {
             console.log(url);
             try {
               const socket = io(url, { transports: ["websocket"] });
+              console.log(socket);
               socket.emit("webhookInvoice", invoice);
               socket.disconnect();
-            } catch (error) {}
+            } catch (error) {
+              console.log("socket err: ", error);
+            }
 
             if (blockGuid) {
               let event = await getEvent(eventGuid);
