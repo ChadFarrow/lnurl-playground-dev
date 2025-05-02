@@ -52,8 +52,10 @@ function webhookAsync(storeMetadata) {
               const socket = io(url, { transports: ["websocket"] });
 
               socket.on("connect", () => {
+                console.log("connected");
                 socket.emit("webhookInvoice", invoice);
                 socket.disconnect(); // Close after emitting
+                console.log("disconnected");
               });
 
               socket.on("connect_error", (err) => {
