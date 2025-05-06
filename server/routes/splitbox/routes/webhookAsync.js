@@ -6,6 +6,7 @@ import clone from "just-clone";
 import { Webhook } from "svix";
 import dotenv from "dotenv";
 import { io } from "socket.io-client";
+import { sendZapReceipt } from "../functions/nostr/sendZapRequest.js";
 
 if (!process.env.WEBHOOK) {
   dotenv.config();

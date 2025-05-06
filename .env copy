@@ -18,3 +18,6 @@ MONGO_URI = the connection uri if you're using MongoDB
 MONGO_DB = the DB you're connecting to
 
 WEBHOOK_SERVER = your server route
+
+NSEC = your nostr nsec
+NPUB = your nostr npub

@@ -19,7 +19,7 @@ router.get("/lnurlp/:name", (req, res) => {
       pubkey: { mandatory: false },
     },
     nostrPubkey:
-      "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403",
+      "4484c8d3dfcefab6cd348d2ff05f50873d5a59811c141f9f3b1b227ddef143df",
     allowsNostr: true,
   });
 });
