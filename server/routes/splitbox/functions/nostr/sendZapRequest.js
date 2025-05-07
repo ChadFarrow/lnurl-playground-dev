@@ -4,7 +4,7 @@ import { SimplePool } from "nostr-tools/pool";
 import { finalizeEvent, getPublicKey } from "nostr-tools/pure";
 
 /**
- * Convert an `nsec` bech32 key to a hex private key.
+ * Convert bech32 nsec to raw hex private key
  */
 function nsecToHex(nsec) {
   const { type, data } = nip19.decode(nsec);
@@ -13,13 +13,13 @@ function nsecToHex(nsec) {
 }
 
 /**
- * Fetch Kind 0 metadata for the zap sender
+ * Fetch Kind 0 metadata for sender
  */
 async function fetchSenderMetadata(pubkey, relays) {
   const pool = new SimplePool();
 
   return new Promise((resolve, reject) => {
-    const sub = pool.sub(relays, [
+    const sub = pool.subscribe(relays, [
       {
         kinds: [0],
         authors: [pubkey],
@@ -45,7 +45,7 @@ async function fetchSenderMetadata(pubkey, relays) {
 }
 
 /**
- * Send a zap receipt (kind 9735) and return the signed event and sender info.
+ * Build, sign, publish, and return a zap receipt with sender metadata
  */
 export async function sendZapReceipt({
   zapRequest,
@@ -91,12 +91,11 @@ export async function sendZapReceipt({
   const signed = finalizeEvent(receipt, privkey);
 
   if (!validateEvent(signed)) {
-    throw new Error("Invalid zap receipt");
+    throw new Error("Zap receipt is invalid");
   }
 
+  // Extract relays from 9734 or fallback
   const relayTag = zapRequest.tags.find((t) => t[0] === "relays");
-
-  //Ensure it's an array and slice off the first element
   const relays =
     Array.isArray(relayTag) && relayTag.length > 1
       ? relayTag.slice(1)
@@ -106,6 +105,7 @@ export async function sendZapReceipt({
           "wss://relay.nostr.band",
         ];
 
+  // Publish to each relay
   const pool = new SimplePool();
   await Promise.allSettled(
     relays.map(async (url) => {
@@ -117,6 +117,7 @@ export async function sendZapReceipt({
     })
   );
 
+  // Optional: fetch sender metadata
   let senderInfo = null;
   if (zapRequest.pubkey) {
     try {
