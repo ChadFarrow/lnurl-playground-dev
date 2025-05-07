@@ -133,6 +133,7 @@ export async function sendZapReceipt({
 
         // When all publications are settled (either resolved or rejected), clear timeout and resolve
         Promise.allSettled(pubs).then((results) => {
+          console.log(results);
           clearTimeout(timeoutId);
           const successes = results.filter(
             (r) => r.status === "fulfilled"
