@@ -8,9 +8,7 @@ import {
 } from "nostr-tools";
 
 /**
- * Converts an `nsec` to raw hex private key
- * @param {string} nsec - bech32 encoded private key
- * @returns {string} - hex private key
+ * Convert nsec (bech32) to hex private key
  */
 function nsecToHex(nsec) {
   const { type, data } = nip19.decode(nsec);
@@ -19,18 +17,42 @@ function nsecToHex(nsec) {
 }
 
 /**
- * Sends a NIP-57 zap receipt (kind 9735) event
- * @param {Object} opts
- * @param {Object} opts.zapRequest - the original 9734 zap request
- * @param {string} opts.bolt11 - the paid invoice string
- * @param {number} opts.paidAt - timestamp of payment (in seconds)
- * @param {string} opts.nsec - your LNURL server's nsec (bech32)
- * @param {string|null} [opts.preimage] - optional LN payment preimage
- * @returns {Object} - signed 9735 event
+ * Fetch Kind 0 metadata from sender's pubkey
+ */
+async function fetchSenderMetadata(pubkey, relays) {
+  const pool = new SimplePool();
+  return new Promise((resolve, reject) => {
+    const sub = pool.sub(relays, [
+      {
+        kinds: [0],
+        authors: [pubkey],
+      },
+    ]);
+
+    sub.on("event", (event) => {
+      try {
+        const metadata = JSON.parse(event.content);
+        resolve({ ...metadata, pubkey });
+      } catch (err) {
+        reject(new Error("Failed to parse metadata"));
+      } finally {
+        sub.unsub();
+      }
+    });
+
+    sub.on("eose", () => {
+      reject(new Error("No metadata found"));
+      sub.unsub();
+    });
+  });
+}
+
+/**
+ * Build, sign, publish, and return a zap receipt with sender metadata
  */
 export async function sendZapReceipt({
   zapRequest,
-  bolt11,
+  invoice,
   paidAt,
   nsec,
   preimage = null,
@@ -40,33 +62,23 @@ export async function sendZapReceipt({
 
   const tags = [];
 
-  // Required: recipient pubkey
   const pTag = zapRequest.tags.find((t) => t[0] === "p");
   if (!pTag) throw new Error("Missing 'p' tag in zap request");
   tags.push(["p", pTag[1]]);
 
-  // Optional: sender pubkey
   if (zapRequest.pubkey) {
     tags.push(["P", zapRequest.pubkey]);
   }
 
-  // Optional: original zapped event
   const eTag = zapRequest.tags.find((t) => t[0] === "e");
-  if (eTag) {
-    tags.push(["e", eTag[1]]);
-  }
+  if (eTag) tags.push(["e", eTag[1]]);
 
-  // Optional: addressable content
   const aTag = zapRequest.tags.find((t) => t[0] === "a");
-  if (aTag) {
-    tags.push(["a", aTag[1]]);
-  }
+  if (aTag) tags.push(["a", aTag[1]]);
 
-  // Required: paid invoice and original request
-  tags.push(["bolt11", bolt11]);
+  tags.push(["invoice", invoice]);
   tags.push(["description", JSON.stringify(zapRequest)]);
 
-  // Optional: LN preimage
   if (preimage) {
     tags.push(["preimage", preimage]);
   }
@@ -85,14 +97,17 @@ export async function sendZapReceipt({
     sig: signEvent(receipt, privkey),
   };
 
-  if (!validateEvent(signed)) {
-    throw new Error("Zap receipt is invalid after signing");
-  }
+  if (!validateEvent(signed)) throw new Error("Zap receipt is invalid");
 
-  // Relay broadcast
+  // Relay publishing
   const relayTag = zapRequest.tags.find((t) => t[0] === "relays");
-  if (!relayTag) throw new Error("Missing 'relays' tag in zap request");
-  const relays = relayTag.slice(1);
+  const relays = relayTag
+    ? relayTag.slice(1)
+    : [
+        "wss://relay.damus.io",
+        "wss://relay.snort.social",
+        "wss://relay.nostr.band",
+      ];
 
   const pool = new SimplePool();
   await Promise.allSettled(
@@ -105,5 +120,18 @@ export async function sendZapReceipt({
     })
   );
 
-  return signed;
+  // Optional sender profile fetch
+  let senderInfo = null;
+  if (zapRequest.pubkey) {
+    try {
+      senderInfo = await fetchSenderMetadata(zapRequest.pubkey, relays);
+    } catch (e) {
+      console.warn("Could not fetch sender metadata:", e.message);
+    }
+  }
+
+  return {
+    event: signed,
+    sender: senderInfo,
+  };
 }

@@ -46,6 +46,20 @@ function webhookAsync(storeMetadata) {
               senderName,
             } = storedData;
 
+            const { event, sender } = await sendZapReceipt({
+              zapRequest: nostr,
+              bolt11: invoice,
+              paidAt: Math.floor(Date.now() / 1000),
+              nsec: process.env.NSEC,
+              preimage,
+            });
+
+            console.log("Zap receipt ID:", event.id);
+            console.log(
+              "Sent by:",
+              sender?.display_name || sender?.name || sender?.pubkey
+            );
+
             const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
             try {
               const socket = io(url, { transports: ["websocket"] });
