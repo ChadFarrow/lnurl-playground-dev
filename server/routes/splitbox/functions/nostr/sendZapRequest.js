@@ -15,16 +15,23 @@ function nsecToHex(nsec) {
 /**
  * Fetch Kind 0 metadata for sender.
  */
-async function fetchSenderMetadata(pubkey, relays) {
+async function fetchSenderMetadata(pubkey, relays, timeoutMs = 5000) {
   const pool = new SimplePool();
 
   return new Promise((resolve, reject) => {
+    // Add timeout to ensure the function doesn't hang indefinitely
+    const timeout = setTimeout(() => {
+      if (sub) sub.close();
+      reject(new Error("Metadata fetch timed out"));
+    }, timeoutMs);
+
     // Use callbacks directly instead of event emitter pattern
     const sub = pool.subscribeMany(
       relays,
       [{ kinds: [0], authors: [pubkey] }],
       {
         onevent(event) {
+          clearTimeout(timeout);
           sub.close();
           try {
             const metadata = JSON.parse(event.content);
@@ -34,8 +41,13 @@ async function fetchSenderMetadata(pubkey, relays) {
           }
         },
         oneose() {
+          clearTimeout(timeout);
           sub.close();
           reject(new Error("No metadata found"));
+        },
+        onclose() {
+          clearTimeout(timeout);
+          reject(new Error("Connection closed"));
         },
       }
     );
@@ -51,6 +63,7 @@ export async function sendZapReceipt({
   paidAt,
   nsec,
   preimage = null,
+  timeoutMs = 7000,
 }) {
   const privkey = nsecToHex(nsec);
   const pubkey = getPublicKey(privkey);
@@ -102,21 +115,73 @@ export async function sendZapReceipt({
   const relayArray = Array.isArray(relays) ? relays : [relays];
 
   const pool = new SimplePool();
-  try {
-    // Use publishEvent instead of trying to publish to individual relays
-    const pubs = pool.publish(relayArray, event);
-    await Promise.allSettled(pubs);
-  } catch (err) {
-    console.error(`Failed to publish event:`, err.message);
-  }
+  // Define a function to create a promise that will resolve after publishing
+  const publishWithTimeout = async () => {
+    return new Promise((resolve) => {
+      const timeoutId = setTimeout(() => {
+        console.log("Publication timeout reached, continuing execution");
+        resolve();
+      }, timeoutMs);
+
+      try {
+        // Use publishEvent and set up promises
+        const pubs = pool.publish(relayArray, event);
+
+        // When all publications are settled (either resolved or rejected), clear timeout and resolve
+        Promise.allSettled(pubs).then((results) => {
+          clearTimeout(timeoutId);
+          const successes = results.filter(
+            (r) => r.status === "fulfilled"
+          ).length;
+          console.log(`Published to ${successes}/${relayArray.length} relays`);
+          resolve();
+        });
+      } catch (err) {
+        console.error(`Failed to initiate publish:`, err.message);
+        clearTimeout(timeoutId);
+        resolve(); // Resolve anyway to continue execution
+      }
+    });
+  };
+
+  // Execute the publish with timeout
+  await publishWithTimeout();
 
   let sender = null;
   if (senderPubkey) {
     try {
-      sender = await fetchSenderMetadata(senderPubkey, relayArray);
+      // Use the same timeout for metadata fetch
+      sender = await fetchSenderMetadata(
+        senderPubkey,
+        relayArray,
+        timeoutMs
+      ).catch((e) => {
+        console.warn("Could not fetch sender metadata:", e.message);
+        return null;
+      });
     } catch (e) {
-      console.warn("Could not fetch sender metadata:", e.message);
+      console.warn("Error in metadata fetch:", e.message);
     }
+  }
+
+  // Try to close the pool safely
+  try {
+    // Some versions of nostr-tools have issues with pool.close()
+    // Only call it if it exists and is a function
+    if (pool && typeof pool.close === "function") {
+      // Create a wrapper that catches any errors that might occur
+      const safeClose = () => {
+        try {
+          pool.close();
+        } catch (e) {
+          console.warn("Error closing pool:", e.message);
+        }
+      };
+
+      safeClose();
+    }
+  } catch (e) {
+    console.warn("Error attempting to close pool:", e.message);
   }
 
   return { event, sender };
