@@ -19,31 +19,29 @@ async function fetchSenderMetadata(pubkey, relays) {
   const pool = new SimplePool();
 
   return new Promise((resolve, reject) => {
-    const subs = pool.subscribe(relays, [{ kinds: [0], authors: [pubkey] }]);
+    const sub = pool.subscribe(relays, [{ kinds: [0], authors: [pubkey] }]);
 
     let resolved = false;
 
-    for (const [, sub] of subs) {
-      sub.on("event", (event) => {
-        if (resolved) return;
+    sub.on("event", (event) => {
+      if (resolved) return;
+      resolved = true;
+      sub.unsub();
+      try {
+        const metadata = JSON.parse(event.content);
+        resolve({ ...metadata, pubkey });
+      } catch {
+        reject(new Error("Invalid metadata JSON"));
+      }
+    });
+
+    sub.on("eose", () => {
+      if (!resolved) {
         resolved = true;
         sub.unsub();
-        try {
-          const metadata = JSON.parse(event.content);
-          resolve({ ...metadata, pubkey });
-        } catch {
-          reject(new Error("Invalid metadata JSON"));
-        }
-      });
-
-      sub.on("eose", () => {
-        if (!resolved) {
-          resolved = true;
-          sub.unsub();
-          reject(new Error("No metadata found"));
-        }
-      });
-    }
+        reject(new Error("No metadata found"));
+      }
+    });
   });
 }
 
