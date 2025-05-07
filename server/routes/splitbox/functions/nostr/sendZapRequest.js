@@ -95,13 +95,16 @@ export async function sendZapReceipt({
   }
 
   const relayTag = zapRequest.tags.find((t) => t[0] === "relays");
-  const relays = relayTag
-    ? relayTag.slice(1)
-    : [
-        "wss://relay.damus.io",
-        "wss://relay.snort.social",
-        "wss://relay.nostr.band",
-      ];
+
+  //Ensure it's an array and slice off the first element
+  const relays =
+    Array.isArray(relayTag) && relayTag.length > 1
+      ? relayTag.slice(1)
+      : [
+          "wss://relay.damus.io",
+          "wss://relay.snort.social",
+          "wss://relay.nostr.band",
+        ];
 
   const pool = new SimplePool();
   await Promise.allSettled(
