@@ -116,6 +116,8 @@ export async function sendZapReceipt({
     r.replace(/\/+$/, "")
   );
 
+  console.log(relayArray);
+
   const pool = new SimplePool();
   // Define a function to create a promise that will resolve after publishing
   const publishWithTimeout = async () => {
