@@ -112,7 +112,9 @@ export async function sendZapReceipt({
         ];
 
   // Make sure relays is a proper array and not some other iterable
-  const relayArray = Array.isArray(relays) ? relays : [relays];
+  const relayArray = (Array.isArray(relays) ? relays : [relays]).map((r) =>
+    r.replace(/\/+$/, "")
+  );
 
   const pool = new SimplePool();
   // Define a function to create a promise that will resolve after publishing
