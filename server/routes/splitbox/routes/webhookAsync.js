@@ -46,22 +46,19 @@ function webhookAsync(storeMetadata) {
               senderName,
             } = storedData;
 
-            const { event, sender } = await sendZapReceipt({
-              zapRequest: nostr,
-              bolt11:
-                "lnbc210n1p5p5jcqdr0dp68gurn8ghj7argv4ehqmrfw33x77pwvdhk6tmdv46xzerpw3sj7ef5vvcnwdecxgknzcejxskngef58qkkzv3svsknvdfexajrxcmxxp3x2wqnp4qddd9j25ufjqqjvxmgkefx0pwvh9za0pmnhjg57fy8rvmnp4xm5aspp59wmgjwr3s2n8slhu75z5fkmm4ew5nfkc74qxpxnd5s2j28wfysvqsp5zdxtp5tx5q8t9863vsuc7phgyyhm7wxdcu9wqck6x2362p8mfafq9qyysgqcqpcxqyz5vqzpsrgne9pr3x80jvln7a0zdrsvframpq332ff6tp4n52qfpn4jejgasxsfdt6k6g532qm40cupjpd0dfgrxxm28dr53xm5uzpf8f32cq673lgu",
-              paidAt: Math.floor(Date.now() / 1000),
-              nsec: process.env.NSEC,
-              preimage: null,
-              timeoutMs: 5000, // Use a shorter timeout for testing
-            });
+            if (nostr) {
+              const { event, sender } = await sendZapReceipt({
+                zapRequest: nostr,
+                bolt11: invoice,
+                paidAt: Math.floor(Date.now() / 1000),
+                nsec: process.env.NSEC,
+                preimage: null,
+                timeoutMs: 5000, // Use a shorter timeout for testing
+              });
 
-            console.log("Zap receipt ID:", event.id);
-            console.log("Event:", JSON.stringify(event));
-            console.log(
-              "Sent by:",
-              sender?.display_name || sender?.name || sender?.pubkey
-            );
+              senderName =
+                sender?.display_name || sender?.name || "Anonymous Zapper";
+            }
 
             const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
             try {
