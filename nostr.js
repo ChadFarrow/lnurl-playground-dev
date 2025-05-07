@@ -7,36 +7,24 @@ dotenv.config();
 process.env.RUNNING_AS_SERVER = false;
 
 const nostr = {
-  created_at: 1746553599,
+  kind: 9734,
+  created_at: 1746586606,
   content: "",
   tags: [
-    ["amount", "21000"],
+    ["p", "4484c8d3dfcefab6cd348d2ff05f50873d5a59811c141f9f3b1b227ddef143df"],
     [
       "relays",
       "wss://relay.damus.io/",
-      "wss://relay.nostr.band/",
-      "wss://relay.snort.social/",
-      "wss://relay.primal.net/",
+      "wss://nos.lol/",
+      "wss://strfry.iris.to/",
     ],
-    [
-      "e",
-      "9e84e50b1f218f74c6e80fd3f408e7a531886836aaffad6d420203c6ead7b039",
-      "wss://relay.damus.io/",
-      "",
-      "4484c8d3dfcefab6cd348d2ff05f50873d5a59811c141f9f3b1b227ddef143df",
-    ],
-    [
-      "lnurl",
-      "https://thesplitbox.com/lnurlp/tsk-0dfce62a-2a4c-4a48-a559-cb93d2390b20/callback",
-    ],
-    ["p", "4484c8d3dfcefab6cd348d2ff05f50873d5a59811c141f9f3b1b227ddef143df"],
+    ["amount", "50000"],
+    ["e", "9e84e50b1f218f74c6e80fd3f408e7a531886836aaffad6d420203c6ead7b039"],
   ],
-  kind: 9734,
   pubkey: "23103189356cf7c8bc09bb8b431fc3e71e85582c8f755b9ee160203c9c19e403",
-  id: "e028887fc3a639dde3d97701e8a23b251051750a01c6c8c43dc226ab4236b96f",
-  sig: "9e8c9f080f502625427d852d5fa6a7fe71f15b5339bce321992dc7483d9a788d3bfb130ba50b33d623182472b0b38fbd0e7dd526aeec29bb3ba354b42e9d8092",
+  id: "ab942b2dba78e0f76c443ff18b9e5e996ea195f66938a47848cbce6aef0de79c",
+  sig: "27d0cb041cb1c9832ad9af984143123d8556f39acfd279d04c020700e56b4d06a413a638fcf3b41e3fc222383b1116a4e352e015e45c7d4864ebe1ce1ba4efb3",
 };
-
 (async () => {
   try {
     console.log("Starting zap receipt send...");
