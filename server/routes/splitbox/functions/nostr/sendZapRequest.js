@@ -1,14 +1,10 @@
-import {
-  getEventHash,
-  signEvent,
-  validateEvent,
-  getPublicKey,
-  SimplePool,
-  nip19,
-} from "nostr-tools";
+import { getEventHash, validateEvent } from "nostr-tools";
+import * as nip19 from "nostr-tools/nip19";
+import { SimplePool } from "nostr-tools/pool";
+import { finalizeEvent, getPublicKey } from "nostr-tools/pure";
 
 /**
- * Convert nsec (bech32) to hex private key
+ * Convert an `nsec` bech32 key to a hex private key.
  */
 function nsecToHex(nsec) {
   const { type, data } = nip19.decode(nsec);
@@ -17,10 +13,11 @@ function nsecToHex(nsec) {
 }
 
 /**
- * Fetch Kind 0 metadata from sender's pubkey
+ * Fetch Kind 0 metadata for the zap sender
  */
 async function fetchSenderMetadata(pubkey, relays) {
   const pool = new SimplePool();
+
   return new Promise((resolve, reject) => {
     const sub = pool.sub(relays, [
       {
@@ -48,11 +45,11 @@ async function fetchSenderMetadata(pubkey, relays) {
 }
 
 /**
- * Build, sign, publish, and return a zap receipt with sender metadata
+ * Send a zap receipt (kind 9735) and return the signed event and sender info.
  */
 export async function sendZapReceipt({
   zapRequest,
-  invoice,
+  bolt11,
   paidAt,
   nsec,
   preimage = null,
@@ -76,7 +73,7 @@ export async function sendZapReceipt({
   const aTag = zapRequest.tags.find((t) => t[0] === "a");
   if (aTag) tags.push(["a", aTag[1]]);
 
-  tags.push(["invoice", invoice]);
+  tags.push(["bolt11", bolt11]);
   tags.push(["description", JSON.stringify(zapRequest)]);
 
   if (preimage) {
@@ -91,15 +88,12 @@ export async function sendZapReceipt({
     tags,
   };
 
-  const signed = {
-    ...receipt,
-    id: getEventHash(receipt),
-    sig: signEvent(receipt, privkey),
-  };
+  const signed = finalizeEvent(receipt, privkey);
 
-  if (!validateEvent(signed)) throw new Error("Zap receipt is invalid");
+  if (!validateEvent(signed)) {
+    throw new Error("Invalid zap receipt");
+  }
 
-  // Relay publishing
   const relayTag = zapRequest.tags.find((t) => t[0] === "relays");
   const relays = relayTag
     ? relayTag.slice(1)
@@ -120,7 +114,6 @@ export async function sendZapReceipt({
     })
   );
 
-  // Optional sender profile fetch
   let senderInfo = null;
   if (zapRequest.pubkey) {
     try {
