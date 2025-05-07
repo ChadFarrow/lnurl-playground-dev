@@ -19,29 +19,26 @@ async function fetchSenderMetadata(pubkey, relays) {
   const pool = new SimplePool();
 
   return new Promise((resolve, reject) => {
-    const sub = pool.subscribe(relays, [{ kinds: [0], authors: [pubkey] }]);
-
-    let resolved = false;
-
-    sub.on("event", (event) => {
-      if (resolved) return;
-      resolved = true;
-      sub.unsub();
-      try {
-        const metadata = JSON.parse(event.content);
-        resolve({ ...metadata, pubkey });
-      } catch {
-        reject(new Error("Invalid metadata JSON"));
+    // Use callbacks directly instead of event emitter pattern
+    const sub = pool.subscribeMany(
+      relays,
+      [{ kinds: [0], authors: [pubkey] }],
+      {
+        onevent(event) {
+          sub.close();
+          try {
+            const metadata = JSON.parse(event.content);
+            resolve({ ...metadata, pubkey });
+          } catch {
+            reject(new Error("Invalid metadata JSON"));
+          }
+        },
+        oneose() {
+          sub.close();
+          reject(new Error("No metadata found"));
+        },
       }
-    });
-
-    sub.on("eose", () => {
-      if (!resolved) {
-        resolved = true;
-        sub.unsub();
-        reject(new Error("No metadata found"));
-      }
-    });
+    );
   });
 }
 
@@ -90,6 +87,7 @@ export async function sendZapReceipt({
 
   if (!validateEvent(event)) throw new Error("Invalid zap receipt");
 
+  // Extract relay information and ensure it's always an array
   const relayTag = zapRequest.tags.find((t) => t[0] === "relays");
   const relays =
     Array.isArray(relayTag) && relayTag.length > 1
@@ -100,19 +98,22 @@ export async function sendZapReceipt({
           "wss://relay.nostr.band",
         ];
 
+  // Make sure relays is a proper array and not some other iterable
+  const relayArray = Array.isArray(relays) ? relays : [relays];
+
   const pool = new SimplePool();
-  for (const url of relays) {
-    try {
-      await pool.publish(url, event);
-    } catch (err) {
-      console.error(`Failed to publish to ${url}:`, err.message);
-    }
+  try {
+    // Use publishEvent instead of trying to publish to individual relays
+    const pubs = pool.publish(relayArray, event);
+    await Promise.allSettled(pubs);
+  } catch (err) {
+    console.error(`Failed to publish event:`, err.message);
   }
 
   let sender = null;
   if (senderPubkey) {
     try {
-      sender = await fetchSenderMetadata(senderPubkey, relays);
+      sender = await fetchSenderMetadata(senderPubkey, relayArray);
     } catch (e) {
       console.warn("Could not fetch sender metadata:", e.message);
     }
