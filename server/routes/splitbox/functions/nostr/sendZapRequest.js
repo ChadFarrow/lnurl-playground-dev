@@ -2,6 +2,8 @@ import { getEventHash, validateEvent } from "nostr-tools";
 import * as nip19 from "nostr-tools/nip19";
 import { SimplePool } from "nostr-tools/pool";
 import { finalizeEvent, getPublicKey } from "nostr-tools/pure";
+import WebSocket from "ws";
+global.WebSocket = WebSocket;
 
 /**
  * Convert bech32 nsec to raw hex private key.
