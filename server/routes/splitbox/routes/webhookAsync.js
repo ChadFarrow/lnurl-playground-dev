@@ -25,7 +25,7 @@ function webhookAsync(storeMetadata) {
       console.log("*********************************************");
       console.log("              incoming webhook               ");
       console.log("*********************************************");
-      consolelog("verifiedPayload: ".verifiedPayload);
+      console.log("verifiedPayload: ".verifiedPayload);
       if (verifiedPayload) {
         if (payload.payment_request) {
           const preimage = payload.preimage || payload.payment_preimage;
