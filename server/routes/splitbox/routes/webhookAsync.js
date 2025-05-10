@@ -70,18 +70,22 @@ function webhookAsync(storeMetadata) {
 
             const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
             try {
-              const socket = io(url, { transports: ["websocket"] });
+              await new Promise((resolve, reject) => {
+                const socket = io(url, { transports: ["websocket"] });
 
-              socket.on("connect", () => {
-                socket.emit("webhookInvoice", { eventGuid, invoice });
-                socket.disconnect(); // Close after emitting
-              });
+                socket.on("connect", () => {
+                  socket.emit("webhookInvoice", { eventGuid, invoice });
+                  socket.disconnect();
+                  resolve(); // keep alive long enough to emit
+                });
 
-              socket.on("connect_error", (err) => {
-                console.log("Socket connection error:", err);
+                socket.on("connect_error", (err) => {
+                  console.log("Socket connection error:", err);
+                  resolve(); // resolve anyway; you don't want to block the rest
+                });
               });
-            } catch (error) {
-              console.log("socket err:", error);
+            } catch (err) {
+              console.log("Unhandled socket error:", err);
             }
 
             if (blockGuid) {
