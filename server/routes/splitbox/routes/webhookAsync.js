@@ -21,6 +21,11 @@ function webhookAsync(storeMetadata) {
       // Verify the signature
       const wh = new Webhook(process.env.WEBHOOK);
       const verifiedPayload = await wh.verify(JSON.stringify(payload), headers);
+      console.log();
+      console.log("*********************************************");
+      console.log("              incoming webhook               ");
+      console.log("*********************************************");
+      consolelog("verifiedPayload: ".verifiedPayload);
       if (verifiedPayload) {
         if (payload.payment_request) {
           const preimage = payload.preimage || payload.payment_preimage;
@@ -28,7 +33,7 @@ function webhookAsync(storeMetadata) {
           const amount = payload.amount || 0;
           let runningAmount = amount;
 
-          if (confirmInvoice(preimage, invoice) || true) {
+          if (confirmInvoice(preimage, invoice)) {
             await storeMetadata.updateByInvoice(invoice, { settled: true });
 
             const storedData = await storeMetadata.getByInvoice(invoice);
@@ -45,6 +50,9 @@ function webhookAsync(storeMetadata) {
               nostr,
               senderName,
             } = storedData;
+
+            console.log("has nostr: ", nostr ? "true" : "false");
+            console.log("eventGuid: ", eventGuid);
 
             if (nostr) {
               const { event, sender } = await sendZapReceipt({
