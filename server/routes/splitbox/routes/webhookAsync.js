@@ -25,7 +25,7 @@ function webhookAsync(storeMetadata) {
       console.log("*********************************************");
       console.log("              incoming webhook               ");
       console.log("*********************************************");
-      console.log("verifiedPayload: ".verifiedPayload);
+      console.log("verifiedPayload: ", verifiedPayload);
       if (verifiedPayload) {
         if (payload.payment_request) {
           const preimage = payload.preimage || payload.payment_preimage;
@@ -71,7 +71,9 @@ function webhookAsync(storeMetadata) {
             const url = `https://api.thesplitkit.com/event?event_id=${eventGuid}`;
             try {
               await new Promise((resolve, reject) => {
+                console.log(url);
                 const socket = io(url, { transports: ["websocket"] });
+                console.log(socket);
 
                 socket.on("connect", () => {
                   socket.emit("webhookInvoice", { eventGuid, invoice });
