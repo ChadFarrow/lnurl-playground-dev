@@ -1,0 +1,33 @@
+services:
+  lnbits:
+    image: lnbits/lnbits:latest
+    container_name: lnbits
+    ports:
+      - "5001:5000"
+    environment:
+      - LNBITS_DATA_FOLDER=/app/data
+      - LNBITS_DATABASE_URL=postgres://lnbits:lnbits@postgres:5432/lnbits
+      - LNBITS_DEFAULT_WALLET_NAME=LNbits Wallet
+      - LNBITS_SITE_TITLE=Local LNbits
+      - LNBITS_SITE_TAGLINE=Local Lightning Network wallet
+      - LNBITS_SITE_DESCRIPTION=Local LNbits instance for testing
+    volumes:
+      - lnbits_data:/app/data
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: lnbits_postgres
+    environment:
+      - POSTGRES_DB=lnbits
+      - POSTGRES_USER=lnbits
+      - POSTGRES_PASSWORD=lnbits
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  lnbits_data:
+  postgres_data: 
