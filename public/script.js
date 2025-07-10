@@ -247,7 +247,6 @@ function displayValueBlocks(valueBlocks) {
         
         let content = `
             <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">${block.title}</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">${block.description}</p>
         `;
         
         if (block.lightningAddresses.length > 0) {
