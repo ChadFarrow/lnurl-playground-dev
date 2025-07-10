@@ -34,8 +34,16 @@ async function parseValueBlock() {
             throw new Error('Please enter a RSS feed URL');
         }
         
-        // Fetch the RSS feed
-        const response = await fetch(feedUrl);
+        // Fetch the RSS feed with CORS proxy if needed
+        let response;
+        try {
+            response = await fetch(feedUrl);
+        } catch (error) {
+            // If direct fetch fails, try with CORS proxy
+            const corsProxy = 'https://api.allorigins.win/raw?url=';
+            response = await fetch(corsProxy + encodeURIComponent(feedUrl));
+        }
+        
         if (!response.ok) {
             throw new Error(`Failed to fetch RSS feed: ${response.status}`);
         }
@@ -228,7 +236,7 @@ function clearSettings() {
 
 function loadTestFeed() {
     const rssInput = document.querySelector('input[type="url"]');
-    rssInput.value = 'https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/refs/heads/main/public/lnurl_test_feed.xml';
+    rssInput.value = 'test-feed.xml';
     // Add visual feedback
     rssInput.style.borderColor = 'var(--accent-success)';
     setTimeout(() => {
