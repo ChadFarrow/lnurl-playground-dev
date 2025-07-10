@@ -2,15 +2,32 @@ import React, { useState } from "react";
 import { nwc } from "@getalby/sdk";
 
 export default function App() {
+  // Load saved settings from localStorage
+  const loadSavedSettings = () => {
+    try {
+      const savedRssUrl = localStorage.getItem('lnurl_playground_rss_url');
+      const savedNwcUrl = localStorage.getItem('lnurl_playground_nwc_url');
+      return {
+        rssUrl: savedRssUrl || "",
+        nwcUrl: savedNwcUrl || ""
+      };
+    } catch (e) {
+      console.error("Error loading saved settings:", e);
+      return { rssUrl: "", nwcUrl: "" };
+    }
+  };
+
+  const savedSettings = loadSavedSettings();
+  
   const [activeTab, setActiveTab] = useState("payment");
-  const [rssUrl, setRssUrl] = useState("");
+  const [rssUrl, setRssUrl] = useState(savedSettings.rssUrl);
   const [recipients, setRecipients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState(null);
   const [selected, setSelected] = useState(null);
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
-  const [nwcUrl, setNwcUrl] = useState("");
+  const [nwcUrl, setNwcUrl] = useState(savedSettings.nwcUrl);
   const [walletInfo, setWalletInfo] = useState(null);
   const [availableMethods, setAvailableMethods] = useState([]);
   const [testResults, setTestResults] = useState([]);
@@ -39,32 +56,57 @@ export default function App() {
     return cleanPubkey;
   }
 
+  // Helper function to save settings to localStorage
+  const saveSettings = (key, value) => {
+    try {
+      localStorage.setItem(`lnurl_playground_${key}`, value);
+      console.log(`Saved ${key}:`, value);
+    } catch (e) {
+      console.error(`Error saving ${key}:`, e);
+    }
+  };
+
+  // Helper function to clear saved settings
+  const clearSavedSettings = () => {
+    try {
+      localStorage.removeItem('lnurl_playground_rss_url');
+      localStorage.removeItem('lnurl_playground_nwc_url');
+      setRssUrl("");
+      setNwcUrl("");
+      setStatus("Settings cleared!");
+      console.log("Cleared saved settings");
+    } catch (e) {
+      console.error("Error clearing settings:", e);
+      setStatus("Error clearing settings: " + e.message);
+    }
+  };
+
   // Known working Lightning node pubkeys for testing
   const KNOWN_NODES = [
     {
-      name: "minr",
+      name: "minr (Your Node)",
       pubkey: "032870511bfa0309bab3ca1832ead69eed848a4abddbc4d50e55bb2157f9525e51",
-      description: "Known working Lightning node"
+      description: "Your own Lightning node - should work"
     },
     {
-      name: "ACINQ",
+      name: "Podcast Index",
+      pubkey: "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a",
+      description: "Podcast Index node - from your feed"
+    },
+    {
+      name: "The Wolf",
+      pubkey: "03ecb3ee55ba6324d40bea174de096dc9134cb35d990235723b37ae9b5c49f4f53",
+      description: "The Wolf node - from your feed"
+    },
+    {
+      name: "ACINQ Phoenix",
       pubkey: "03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f",
-      description: "ACINQ Lightning node (Phoenix wallet)"
-    },
-    {
-      name: "Bitcoin Lightning",
-      pubkey: "02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619",
-      description: "Bitcoin Lightning node"
+      description: "ACINQ Phoenix wallet node"
     },
     {
       name: "Lightning Labs",
       pubkey: "03a9d1e8f25b9aac3360eaea6a8b7a163c6f1f563c0a90947c460172ddd1f5b4f1",
       description: "Lightning Labs node"
-    },
-    {
-      name: "Blixt",
-      pubkey: "02eec7245d6b7d2ccb30380bfbe2a3648cd7a942653f5aa340edcea1f283686619",
-      description: "Blixt Lightning node"
     }
   ];
 
@@ -308,21 +350,20 @@ export default function App() {
       );
       console.log("Payment methods:", paymentMethods);
       
-      // Handle balance display (could be sats or millisats)
+      // Handle balance display - always convert to sats
       let balanceDisplay = balance.balance;
       let unit = "sats";
       
-      if (balance.balance > 1000000) {
-        // Likely millisats, convert to sats
+      // If balance is likely in millisats (large number), convert to sats
+      if (balance.balance > 10000) {
         balanceDisplay = Math.round(balance.balance / 1000);
-        unit = "sats";
-      } else if (balance.balance > 1000) {
-        // Likely sats
-        unit = "sats";
+        console.log(`Converted ${balance.balance} millisats to ${balanceDisplay} sats`);
       } else {
-        // Could be sats or millisats, show both
-        unit = "units";
+        console.log(`Balance appears to be in sats: ${balance.balance}`);
       }
+      
+      // Format with commas for readability
+      balanceDisplay = balanceDisplay.toLocaleString();
       
       setStatus(`Wallet test successful! Balance: ${balanceDisplay} ${unit} | Payment methods: ${paymentMethods.join(', ')}`);
     } catch (e) {
@@ -340,13 +381,13 @@ export default function App() {
     
     setStatus("Testing keysend functionality...");
     try {
-      // Test with the real minr node pubkey
-      const testNodePubkey = "032870511bfa0309bab3ca1832ead69eed848a4abddbc4d50e55bb2157f9525e51";
+      // Test with Podcast Index node (large, reliable node)
+      const testNodePubkey = "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a";
       const testAmount = 10; // 10 sats
       
       // Validate the pubkey
       const validatedPubkey = validateNodePubkey(testNodePubkey);
-      console.log("Testing keysend to node pubkey:", validatedPubkey);
+      console.log("Testing keysend to Podcast Index node pubkey:", validatedPubkey);
       console.log("Node pubkey length:", validatedPubkey.length);
       console.log("Node pubkey starts with:", validatedPubkey.substring(0, 2));
       
@@ -415,7 +456,7 @@ export default function App() {
       }
       
       console.log("Keysend result:", keysendResult);
-      setStatus(`Keysend test successful! Payment ID: ${keysendResult.paymentHash || keysendResult.paymentId || 'N/A'}`);
+      setStatus(`Keysend test successful! Payment to Podcast Index node. Payment ID: ${keysendResult.paymentHash || keysendResult.paymentId || 'N/A'}`);
       
     } catch (e) {
       console.error("Keysend test failed:", e);
@@ -482,114 +523,129 @@ export default function App() {
         details: keysendSupported ? `Keysend supported via ${keysendMethod}` : "No keysend method found"
       });
       
-             // Test 3: Test keysend with known nodes
+             // Test 3: Test keysend with Podcast Index node (large, reliable node)
        if (keysendSupported) {
-         for (const node of KNOWN_NODES) {
-           console.log(`Testing keysend to ${node.name} with pubkey:`, node.pubkey);
-           console.log(`Pubkey length:`, node.pubkey.length);
-           console.log(`Pubkey type:`, typeof node.pubkey);
-          try {
-            console.log(`Testing keysend to ${node.name}:`, node.pubkey);
-            
-                                      let keysendResult;
-             if (keysendMethod === 'payKeysend') {
-               // Try different parameter formats for payKeysend
-               try {
-                 console.log(`Trying payKeysend with destination for ${node.name}:`, node.pubkey);
-                 keysendResult = await wallet.payKeysend({
-                   destination: node.pubkey,
-                   amount: 10000, // 10 sats
-                   customRecords: {
-                     "696969": `Automated test to ${node.name}`
-                   }
-                 });
-               } catch (e) {
-                 console.log(`Destination failed for ${node.name}, trying pubkey parameter:`, e.message);
-                 keysendResult = await wallet.payKeysend({
-                   pubkey: node.pubkey,
-                   amount: 10000, // 10 sats
-                   customRecords: {
-                     "696969": `Automated test to ${node.name}`
-                   }
-                 });
-               }
-             } else if (keysendMethod === 'keysend') {
-               keysendResult = await wallet.keysend({
-                 destination: node.pubkey,
-                 amount: 10000,
+         const podcastIndexNode = {
+           name: "Podcast Index",
+           pubkey: "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a",
+           description: "Podcast Index node - large, reliable, always online"
+         };
+         
+         console.log(`Testing keysend to ${podcastIndexNode.name} with pubkey:`, podcastIndexNode.pubkey);
+         console.log(`Pubkey length:`, podcastIndexNode.pubkey.length);
+         console.log(`Pubkey type:`, typeof podcastIndexNode.pubkey);
+         
+         try {
+           console.log(`Testing keysend to ${podcastIndexNode.name}:`, podcastIndexNode.pubkey);
+           
+           let keysendResult;
+           if (keysendMethod === 'payKeysend') {
+             // Try different parameter formats for payKeysend
+             try {
+               console.log(`Trying payKeysend with destination for ${podcastIndexNode.name}:`, podcastIndexNode.pubkey);
+               keysendResult = await wallet.payKeysend({
+                 destination: podcastIndexNode.pubkey,
+                 amount: 10000, // 10 sats
                  customRecords: {
-                   "696969": `Automated test to ${node.name}`
+                   "696969": `Automated test to ${podcastIndexNode.name}`
                  }
                });
-             } else if (keysendMethod === 'sendKeysend') {
-               keysendResult = await wallet.sendKeysend({
-                 destination: node.pubkey,
-                 amount: 10000,
+             } catch (e) {
+               console.log(`Destination failed for ${podcastIndexNode.name}, trying pubkey parameter:`, e.message);
+               keysendResult = await wallet.payKeysend({
+                 pubkey: podcastIndexNode.pubkey,
+                 amount: 10000, // 10 sats
                  customRecords: {
-                   "696969": `Automated test to ${node.name}`
+                   "696969": `Automated test to ${podcastIndexNode.name}`
                  }
                });
              }
-             
-             results.push({
-               test: `Keysend to ${node.name}`,
-               status: "PASS",
-               details: `Payment successful! ID: ${keysendResult.paymentHash || keysendResult.paymentId || 'N/A'}`
+           } else if (keysendMethod === 'keysend') {
+             keysendResult = await wallet.keysend({
+               destination: podcastIndexNode.pubkey,
+               amount: 10000,
+               customRecords: {
+                 "696969": `Automated test to ${podcastIndexNode.name}`
+               }
              });
-             
-             // Wait a bit between tests
-             await new Promise(resolve => setTimeout(resolve, 1000));
-             
-           } catch (e) {
-             console.log(`Keysend failed for ${node.name}, trying minimal parameters:`, e.message);
-             
-             // Try with minimal parameters (no custom records)
+           } else if (keysendMethod === 'sendKeysend') {
+             keysendResult = await wallet.sendKeysend({
+               destination: podcastIndexNode.pubkey,
+               amount: 10000,
+               customRecords: {
+                 "696969": `Automated test to ${podcastIndexNode.name}`
+               }
+             });
+           }
+           
+           results.push({
+             test: `Keysend to ${podcastIndexNode.name}`,
+             status: "PASS",
+             details: `Payment successful! ID: ${keysendResult.paymentHash || keysendResult.paymentId || 'N/A'}`
+           });
+           
+         } catch (e) {
+           console.log(`Keysend failed for ${podcastIndexNode.name}, trying minimal parameters:`, e.message);
+           
+           // Try with minimal parameters (no custom records)
+           try {
+             let minimalKeysendResult;
+             if (keysendMethod === 'payKeysend') {
+               minimalKeysendResult = await wallet.payKeysend({
+                 destination: podcastIndexNode.pubkey,
+                 amount: 10000
+               });
+               results.push({
+                 test: `Keysend to ${podcastIndexNode.name} (minimal)`,
+                 status: "PASS",
+                 details: `Payment successful! ID: ${minimalKeysendResult.paymentHash || minimalKeysendResult.paymentId || 'N/A'}`
+               });
+             } else {
+               results.push({
+                 test: `Keysend to ${podcastIndexNode.name}`,
+                 status: "FAIL",
+                 details: e.message
+               });
+             }
+           } catch (minimalError) {
+             console.log(`Minimal keysend also failed for ${podcastIndexNode.name}:`, minimalError.message);
+            
+             // Try with different parameter names
              try {
-               let minimalKeysendResult;
-               if (keysendMethod === 'payKeysend') {
-                 minimalKeysendResult = await wallet.payKeysend({
-                   destination: node.pubkey,
-                   amount: 10000
-                 });
-                 results.push({
-                   test: `Keysend to ${node.name} (minimal)`,
-                   status: "PASS",
-                   details: `Payment successful! ID: ${minimalKeysendResult.paymentHash || minimalKeysendResult.paymentId || 'N/A'}`
-                 });
-               } else {
-                 results.push({
-                   test: `Keysend to ${node.name}`,
-                   status: "FAIL",
-                   details: e.message
-                 });
-               }
-             } catch (minimalError) {
-               console.log(`Minimal keysend also failed for ${node.name}:`, minimalError.message);
+               console.log(`Trying alternative parameter names for ${podcastIndexNode.name}`);
+               let altKeysendResult = await wallet.payKeysend({
+                 nodeId: podcastIndexNode.pubkey,
+                 amount: 10000
+               });
+               results.push({
+                 test: `Keysend to ${podcastIndexNode.name} (nodeId)`,
+                 status: "PASS",
+                 details: `Payment successful! ID: ${altKeysendResult.paymentHash || altKeysendResult.paymentId || 'N/A'}`
+               });
+             } catch (altError) {
+               console.log(`Alternative parameters also failed for ${podcastIndexNode.name}:`, altError.message);
                
-               // Try with different parameter names
-               try {
-                 console.log(`Trying alternative parameter names for ${node.name}`);
-                 let altKeysendResult = await wallet.payKeysend({
-                   nodeId: node.pubkey,
-                   amount: 10000
-                 });
-                 results.push({
-                   test: `Keysend to ${node.name} (nodeId)`,
-                   status: "PASS",
-                   details: `Payment successful! ID: ${altKeysendResult.paymentHash || altKeysendResult.paymentId || 'N/A'}`
-                 });
-               } catch (altError) {
-                 console.log(`Alternative parameters also failed for ${node.name}:`, altError.message);
-                 results.push({
-                   test: `Keysend to ${node.name}`,
-                   status: "FAIL",
-                   details: `${e.message} | Minimal: ${minimalError.message} | Alternative: ${altError.message}`
-                 });
+               // Provide more specific error messages
+               let errorMessage = e.message;
+               if (e.message.includes("NO_ROUTE")) {
+                 errorMessage = "No route found to this node";
+               } else if (e.message.includes("FAILURE_REASON_INCORRECT_PAYMENT_DETAILS")) {
+                 errorMessage = "Invalid node pubkey or node offline";
+               } else if (e.message.includes("FAILURE_REASON_NO_ROUTE")) {
+                 errorMessage = "No Lightning route available";
+               } else if (e.message.includes("FAILURE_REASON_TIMEOUT")) {
+                 errorMessage = "Payment timeout - node may be slow";
                }
+               
+               results.push({
+                 test: `Keysend to ${podcastIndexNode.name}`,
+                 status: "FAIL",
+                 details: `${errorMessage} | Minimal: ${minimalError.message} | Alternative: ${altError.message}`
+               });
              }
            }
-        }
-      }
+         }
+       }
       
              // Test 4: Test Lightning address payment
        try {
@@ -876,11 +932,20 @@ export default function App() {
         <input
           style={{ width: "100%", marginBottom: "0.5rem" }}
           value={rssUrl}
-          onChange={(e) => setRssUrl(e.target.value)}
+          onChange={(e) => {
+            setRssUrl(e.target.value);
+            saveSettings('rss_url', e.target.value);
+          }}
           placeholder="Enter podcast RSS feed URL"
         />
         <button onClick={fetchRss} disabled={loading || !rssUrl}>
           {loading ? "Loading..." : "Parse Value Block"}
+        </button>
+        <button 
+          onClick={clearSavedSettings}
+          style={{ marginLeft: "0.5rem", backgroundColor: "#f44336", color: "white" }}
+        >
+          Clear Settings
         </button>
       </div>
 
@@ -889,7 +954,10 @@ export default function App() {
         <input
           style={{ width: "100%", marginBottom: "0.5rem" }}
           value={nwcUrl}
-          onChange={(e) => setNwcUrl(e.target.value)}
+          onChange={(e) => {
+            setNwcUrl(e.target.value);
+            saveSettings('nwc_url', e.target.value);
+          }}
           placeholder="Enter NWC connection string (nostr+walletconnect://... or nwc://...)"
         />
         <button onClick={connectWallet} disabled={!nwcUrl.trim()}>
@@ -941,38 +1009,38 @@ export default function App() {
               setStatus("Please connect wallet first");
               return;
             }
-            setStatus("Testing keysend with real Lightning node...");
+            setStatus("Testing keysend with Podcast Index node...");
             try {
-              // Test with the real minr node pubkey
-              const realNodePubkey = "032870511bfa0309bab3ca1832ead69eed848a4abddbc4d50e55bb2157f9525e51";
+              // Test with Podcast Index node (large, reliable node)
+              const realNodePubkey = "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a";
               const testAmount = 10;
               
-              console.log("Testing keysend with real Lightning node:", realNodePubkey);
-              console.log("Real node pubkey length:", realNodePubkey.length);
+              console.log("Testing keysend with Podcast Index node:", realNodePubkey);
+              console.log("Podcast Index node pubkey length:", realNodePubkey.length);
               
               // Validate the pubkey first
               const validatedRealPubkey = validateNodePubkey(realNodePubkey);
-              console.log("Validated real node pubkey:", validatedRealPubkey);
+              console.log("Validated Podcast Index node pubkey:", validatedRealPubkey);
               
               if (typeof wallet.payKeysend === 'function') {
                 const result = await wallet.payKeysend({
                   destination: validatedRealPubkey,
                   amount: testAmount * 1000,
                   customRecords: {
-                    "696969": "Real Lightning node test"
+                    "696969": "Podcast Index node test"
                   }
                 });
-                console.log("Real node keysend result:", result);
-                setStatus(`Real node keysend successful! Payment ID: ${result.paymentHash || result.paymentId || 'N/A'}`);
+                console.log("Podcast Index node keysend result:", result);
+                setStatus(`Podcast Index node keysend successful! Payment ID: ${result.paymentHash || result.paymentId || 'N/A'}`);
               } else {
                 setStatus("payKeysend method not available");
               }
             } catch (e) {
-              console.error("Real node keysend failed:", e);
-              setStatus("Real node keysend failed: " + e.message);
+              console.error("Podcast Index node keysend failed:", e);
+              setStatus("Podcast Index node keysend failed: " + e.message);
             }
           }} style={{ marginBottom: "0.5rem", marginRight: "0.5rem" }}>
-            Test Real Node
+            Test Podcast Index Node
           </button>
           <button onClick={testPaymentMethods} style={{ marginBottom: "0.5rem", marginRight: "0.5rem" }}>
             Test All Payment Methods
@@ -982,11 +1050,11 @@ export default function App() {
               setStatus("Please connect wallet first");
               return;
             }
-            setStatus("Testing minimal keysend...");
+            setStatus("Testing minimal keysend with Podcast Index node...");
             try {
-              // Test with the real minr node pubkey
-              const testPubkey = "032870511bfa0309bab3ca1832ead69eed848a4abddbc4d50e55bb2157f9525e51";
-              console.log("Testing minimal keysend with pubkey:", testPubkey);
+              // Test with Podcast Index node (large, reliable node)
+              const testPubkey = "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a";
+              console.log("Testing minimal keysend with Podcast Index node pubkey:", testPubkey);
               
               if (typeof wallet.payKeysend === 'function') {
                 // Try with just destination and amount
@@ -995,7 +1063,7 @@ export default function App() {
                   amount: 10000 // 10 sats in millisats
                 });
                 console.log("Minimal keysend result:", result);
-                setStatus(`Minimal keysend successful! Payment ID: ${result.paymentHash || result.paymentId || 'N/A'}`);
+                setStatus(`Minimal keysend to Podcast Index successful! Payment ID: ${result.paymentHash || result.paymentId || 'N/A'}`);
               } else {
                 setStatus("payKeysend method not available");
               }
@@ -1033,6 +1101,15 @@ export default function App() {
 
       {/* Status */}
       <div style={{ marginTop: 16, color: "green" }}>{status}</div>
+      
+      {/* Settings Status */}
+      {(savedSettings.rssUrl || savedSettings.nwcUrl) && (
+        <div style={{ marginTop: 8, fontSize: "12px", color: "#666" }}>
+          💾 Settings saved locally
+          {savedSettings.rssUrl && <span style={{ marginLeft: "8px" }}>• RSS: {savedSettings.rssUrl.substring(0, 30)}...</span>}
+          {savedSettings.nwcUrl && <span style={{ marginLeft: "8px" }}>• NWC: {savedSettings.nwcUrl.substring(0, 30)}...</span>}
+        </div>
+      )}
       
       {/* Test Results */}
       {testResults.length > 0 && (
@@ -1087,138 +1164,11 @@ export default function App() {
         </div>
       )}
       
-      {/* NWC Wallet Testing Guide */}
-      <div style={{ marginTop: 32, padding: "1rem", backgroundColor: "#e8f4fd", borderRadius: "8px" }}>
-        <h3>Testing Different NWC Wallets for Keysend Support</h3>
-        <p style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          Use this app to test different NWC wallets and see which ones support keysend payments, 
-          which are essential for podcast value blocks with node pubkeys.
-        </p>
-        
-        <h4>Wallets to Test:</h4>
-        <ul style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          <li><strong>Alby</strong> - ✅ Keysend supported via payKeysend (tested)</li>
-          <li><strong>Primal</strong> - ⚠️ Keysend method exists but not implemented</li>
-          <li><strong>Phoenix</strong> - Should support keysend (test next)</li>
-          <li><strong>Blixt</strong> - Lightning wallet with NWC support</li>
-          <li><strong>Zeus</strong> - Advanced Lightning wallet</li>
-          <li><strong>Coinos</strong> - ❌ Does NOT support keysend (confirmed)</li>
-          <li><strong>YakiHonne</strong> - ❌ NWC support discontinued</li>
-          <li><strong>Wallet of Satoshi</strong> - Check NWC support</li>
-        </ul>
-        
-        <h4>Testing Steps:</h4>
-        <ol style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          <li>Connect your wallet using NWC connection string</li>
-          <li>Click "🚀 Run All Tests" for comprehensive automated testing</li>
-          <li>Review test results showing keysend support and routing</li>
-          <li>Check console logs for detailed debugging info</li>
-        </ol>
-        
-        <h4>Expected Results:</h4>
-        <ul style={{ fontSize: "14px", marginBottom: "1rem" }}>
-          <li><strong>✅ Good Keysend Support:</strong> "SUPPORTS KEYSEND" with successful payments to multiple nodes</li>
-          <li><strong>⚠️ Limited Keysend:</strong> Keysend works but "FAILURE_REASON_NO_ROUTE" for some nodes</li>
-          <li><strong>❌ No Keysend:</strong> "NO KEYSEND SUPPORT" or "invalid vertex length" errors</li>
-        </ul>
-        
-        <h4>Current Test Results:</h4>
-        <ul style={{ fontSize: "14px" }}>
-          <li><strong>Alby:</strong> ✅ Keysend works, successfully sent to minr node, some routing issues</li>
-          <li><strong>Primal:</strong> ⚠️ Keysend method exists but returns "not implemented yet"</li>
-          <li><strong>Coinos:</strong> ❌ No keysend method available</li>
-          <li><strong>YakiHonne:</strong> ❌ NWC support discontinued</li>
-                    <li><strong>Next to test:</strong> Phoenix, Blixt, Zeus</li>
-        </ul>
-      </div>
-      
-      {/* Help Text */}
-      <div style={{ marginTop: 32, fontSize: 12, color: "#888" }}>
-        <div>
-          <b>Test Feeds:</b>
-        </div>
-        <div style={{ marginTop: 4 }}>
-          • <code>http://localhost:3000/test-feed.xml</code> (Lightning addresses)
-        </div>
-        <div style={{ marginTop: 4 }}>
-          • <code>http://localhost:3000/test-keysend-feed.xml</code> (Node pubkeys for keysend testing)
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <b>Supported Formats:</b>
-        </div>
-        <div style={{ marginTop: 4 }}>
-          • <code>nostr+walletconnect://[pubkey]?relay=[relay]&secret=[secret]</code>
-        </div>
-        <div style={{ marginTop: 4 }}>
-          • <code>nwc://[pubkey]?relay=[relay]&secret=[secret]</code>
-        </div>
-      </div>
 
-      <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Test Lightning Address Payment</h3>
-          <p className="text-sm text-gray-600 mb-2">Test with a known working Lightning address (minimum 10 sats):</p>
-          <button 
-            onClick={async () => {
-              if (!wallet) {
-                setStatus("Please connect wallet first");
-                return;
-              }
-              setStatus("Testing Lightning address payment...");
-              try {
-                // Test with a known working Lightning address
-                const testAddress = "chadf@getalby.com";
-                const amount = 10; // 10 sats (1 sat was too low)
-                
-                console.log("Testing Lightning address payment to:", testAddress);
-                
-                // Try to create an invoice using LNURL
-                let lnurlResponse = await fetch(`https://api.getalby.com/.well-known/lnurlp/chadf`);
-                
-                // If HTTPS fails with 426 UPGRADE REQUIRED, try HTTP for local testing
-                if (lnurlResponse.status === 426) {
-                  console.log("HTTPS failed with 426 UPGRADE REQUIRED, trying HTTP for local testing...");
-                  lnurlResponse = await fetch(`http://api.getalby.com/.well-known/lnurlp/chadf`);
-                }
-                
-                if (!lnurlResponse.ok) {
-                  throw new Error(`LNURL request failed: ${lnurlResponse.status} ${lnurlResponse.statusText}`);
-                }
-                
-                const lnurlData = await lnurlResponse.json();
-                console.log("LNURL data:", lnurlData);
-                
-                if (lnurlData.callback) {
-                  // Create invoice using LNURL
-                  const invoiceResponse = await fetch(`${lnurlData.callback}?amount=${amount * 1000}&description=Test payment`);
-                  
-                  if (!invoiceResponse.ok) {
-                    throw new Error(`Invoice request failed: ${invoiceResponse.status} ${invoiceResponse.statusText}`);
-                  }
-                  
-                  const invoiceData = await invoiceResponse.json();
-                  console.log("Invoice data:", invoiceData);
-                  
-                  if (invoiceData.pr) {
-                    // Pay the invoice
-                    const paymentResult = await wallet.payInvoice({ invoice: invoiceData.pr });
-                    console.log("Payment result:", paymentResult);
-                    setStatus(`Test payment sent! ${amount} sats to ${testAddress}`);
-                  } else {
-                    throw new Error("Failed to create invoice - no payment request");
-                  }
-                } else {
-                  throw new Error("LNURL not supported - no callback");
-                }
-              } catch (e) {
-                console.error("Test payment error:", e);
-                setStatus("Test payment failed: " + e.message);
-              }
-            }}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Test 10 Sats Payment
-          </button>
-        </div>
+      
+
+
+
     </div>
   );
 }
