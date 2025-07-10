@@ -1,6 +1,6 @@
-# LNURL Testing Podcast
+# V4V Lightning Payment Tester
 
-A test podcast for LNURL payment integration and Lightning Network testing.
+A tool for testing Lightning Network payments and podcast value splits.
 
 ## Feed URL
 https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/main/feed.xml

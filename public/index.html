@@ -1,43 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V4V Lightning Payment Tester</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">V4V Lightning Payment Tester</h1>
+            <p class="subtitle">Test Lightning payments to podcast value blocks and node pubkeys with modern blockchain technology</p>
+        </header>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📡</div>
+                <h2 class="card-title">RSS Feed</h2>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Podcast RSS Feed URL</label>
+                <input 
+                    type="url" 
+                    class="form-input" 
+                    placeholder="https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/refs/heads/main/public/..."
+                    value="https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/refs/heads/main/public/lnurl_test_feed.xml"
+                >
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="parseValueBlock()">
+                    <span class="lightning-icon">⚡</span> Parse Value Block
+                </button>
+                <button class="btn btn-danger" onclick="clearSettings()">
+                    🗑️ Clear Settings
+                </button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🚀</div>
+                <h2 class="card-title">Quick Test Feeds</h2>
+            </div>
+            <div class="quick-test">
+                <div class="quick-test-content">
+                    <div class="quick-test-info">
+                        <div class="quick-test-title">
+                            <span class="lightning-icon">⚡</span>
+                            Chad's Test Feed
+                        </div>
+                        <div class="quick-test-description">
+                            LNURL test feed with Lightning addresses and node pubkeys
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="loadTestFeed()">
+                        📂 Load Test Feed
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">💼</div>
+                <h2 class="card-title">Wallet Connection</h2>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nostr Wallet Connect (NWC) String</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    placeholder="nostr+walletconnect://pa80990666ef0b64ba5059347beb13242921e54669e680064ca755256a1e3a67..."
+                    value="nostr+walletconnect://pa80990666ef0b64ba5059347beb13242921e54669e680064ca755256a1e3a67relay=wss%3A%2F%2Frelay.coinos.io&secret=..."
+                >
+            </div>
+            <button class="btn btn-secondary" onclick="connectWallet()">
+                🔗 Connect Wallet
+            </button>
+        </div>
+        <div class="status-bar">
+            <span class="status-indicator"></span>
+            Settings saved locally • RSS: https://raw.githubusercontent.com... • NWC: nostr+walletconnect://pa80990...
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
 </html>
