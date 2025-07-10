@@ -94,25 +94,74 @@ async function parseValueBlock() {
 function extractValueBlocks(xmlDoc) {
     const valueBlocks = [];
     
-    // Look for value blocks in different possible formats
-    const items = xmlDoc.querySelectorAll('item');
+    // Look for podcast:value blocks (podcast namespace)
+    const valueBlocksElements = xmlDoc.querySelectorAll('podcast\\:value');
     
-    items.forEach((item, index) => {
-        const title = item.querySelector('title')?.textContent || '';
-        const description = item.querySelector('description')?.textContent || '';
-        const content = item.querySelector('content\\:encoded')?.textContent || '';
+    valueBlocksElements.forEach((valueBlock, index) => {
+        const recipients = valueBlock.querySelectorAll('podcast\\:valueRecipient');
+        const lightningAddresses = [];
+        const nodePubkeys = [];
         
-        // Look for Lightning addresses and node pubkeys
-        const lightningAddresses = extractLightningAddresses(title + ' ' + description + ' ' + content);
-        const nodePubkeys = extractNodePubkeys(title + ' ' + description + ' ' + content);
+        recipients.forEach(recipient => {
+            const type = recipient.getAttribute('type');
+            const address = recipient.getAttribute('address');
+            const name = recipient.getAttribute('name');
+            const split = recipient.getAttribute('split');
+            
+            if (type === 'lnaddress' && address) {
+                lightningAddresses.push({
+                    address: address,
+                    name: name,
+                    split: split
+                });
+            } else if (type === 'node' && address) {
+                nodePubkeys.push({
+                    address: address,
+                    name: name,
+                    split: split
+                });
+            }
+        });
         
         if (lightningAddresses.length > 0 || nodePubkeys.length > 0) {
+            // Get the parent item or channel info
+            let title = 'Value Block';
+            let description = 'Lightning payment recipients';
+            
+            const parentItem = valueBlock.closest('item');
+            if (parentItem) {
+                title = parentItem.querySelector('title')?.textContent || title;
+                description = parentItem.querySelector('description')?.textContent || description;
+            }
+            
             valueBlocks.push({
                 title: title,
                 description: description,
                 lightningAddresses: lightningAddresses,
                 nodePubkeys: nodePubkeys,
                 index: index + 1
+            });
+        }
+    });
+    
+    // Also check for Lightning addresses in episode descriptions (fallback)
+    const items = xmlDoc.querySelectorAll('item');
+    items.forEach((item, index) => {
+        const title = item.querySelector('title')?.textContent || '';
+        const description = item.querySelector('description')?.textContent || '';
+        const content = item.querySelector('content\\:encoded')?.textContent || '';
+        
+        // Look for Lightning addresses and node pubkeys in text
+        const textLightningAddresses = extractLightningAddresses(title + ' ' + description + ' ' + content);
+        const textNodePubkeys = extractNodePubkeys(title + ' ' + description + ' ' + content);
+        
+        if (textLightningAddresses.length > 0 || textNodePubkeys.length > 0) {
+            valueBlocks.push({
+                title: title,
+                description: description,
+                lightningAddresses: textLightningAddresses.map(addr => ({ address: addr, name: '', split: '' })),
+                nodePubkeys: textNodePubkeys.map(pubkey => ({ address: pubkey, name: '', split: '' })),
+                index: valueBlocks.length + index + 1
             });
         }
     });
@@ -172,14 +221,21 @@ function displayValueBlocks(valueBlocks) {
                     <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;">⚡ Lightning Addresses:</h4>
                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                         ${block.lightningAddresses.map(addr => `
-                            <span style="
+                            <div style="
                                 background: var(--accent-primary);
                                 color: white;
-                                padding: 0.25rem 0.5rem;
-                                border-radius: 6px;
+                                padding: 0.5rem;
+                                border-radius: 8px;
                                 font-family: 'JetBrains Mono', monospace;
                                 font-size: 0.9rem;
-                            ">${addr}</span>
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.25rem;
+                            ">
+                                <div style="font-weight: bold;">${addr.name || 'Lightning Address'}</div>
+                                <div>${addr.address}</div>
+                                ${addr.split ? `<div style="font-size: 0.8rem; opacity: 0.8;">Split: ${addr.split}%</div>` : ''}
+                            </div>
                         `).join('')}
                     </div>
                 </div>
@@ -192,15 +248,22 @@ function displayValueBlocks(valueBlocks) {
                     <h4 style="color: var(--accent-secondary); margin-bottom: 0.5rem;">🔑 Node Pubkeys:</h4>
                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                         ${block.nodePubkeys.map(pubkey => `
-                            <span style="
+                            <div style="
                                 background: var(--accent-secondary);
                                 color: white;
-                                padding: 0.25rem 0.5rem;
-                                border-radius: 6px;
+                                padding: 0.5rem;
+                                border-radius: 8px;
                                 font-family: 'JetBrains Mono', monospace;
                                 font-size: 0.9rem;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.25rem;
                                 word-break: break-all;
-                            ">${pubkey}</span>
+                            ">
+                                <div style="font-weight: bold;">${pubkey.name || 'Node Pubkey'}</div>
+                                <div>${pubkey.address}</div>
+                                ${pubkey.split ? `<div style="font-size: 0.8rem; opacity: 0.8;">Split: ${pubkey.split}%</div>` : ''}
+                            </div>
                         `).join('')}
                     </div>
                 </div>
@@ -236,7 +299,7 @@ function clearSettings() {
 
 function loadTestFeed() {
     const rssInput = document.querySelector('input[type="url"]');
-    rssInput.value = 'test-feed.xml';
+    rssInput.value = 'https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/refs/heads/main/public/lnurl-test-feed.xml';
     // Add visual feedback
     rssInput.style.borderColor = 'var(--accent-success)';
     setTimeout(() => {
