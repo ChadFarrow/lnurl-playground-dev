@@ -34,14 +34,13 @@ async function parseValueBlock() {
             throw new Error('Please enter a RSS feed URL');
         }
         
-        // Fetch the RSS feed with CORS proxy if needed
+        // Fetch the RSS feed using backend proxy
+        const proxyUrl = `/proxy?url=${encodeURIComponent(feedUrl)}`;
         let response;
         try {
-            response = await fetch(feedUrl);
+            response = await fetch(proxyUrl);
         } catch (error) {
-            // If direct fetch fails, try with CORS proxy
-            const corsProxy = 'https://api.allorigins.win/raw?url=';
-            response = await fetch(corsProxy + encodeURIComponent(feedUrl));
+            throw new Error('Failed to fetch RSS feed via proxy');
         }
         
         if (!response.ok) {

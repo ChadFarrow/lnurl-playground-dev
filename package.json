@@ -5,7 +5,12 @@
   "main": "public/index.html",
   "scripts": {
     "build": "./build.sh",
-    "start": "echo 'Static site - serve public/index.html'"
+    "start": "node proxy.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7",
+    "cors": "^2.8.5"
   },
   "keywords": ["lightning", "bitcoin", "v4v", "podcast"],
   "author": "Chad Farrow",
