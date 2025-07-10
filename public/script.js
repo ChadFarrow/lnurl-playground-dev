@@ -63,6 +63,10 @@ async function parseValueBlock() {
         // Extract value blocks from the feed
         const valueBlocks = extractValueBlocks(xmlDoc);
         
+        // Debug: Log what we found
+        console.log('XML Document:', xmlDoc);
+        console.log('Value blocks found:', valueBlocks);
+        
         if (valueBlocks.length === 0) {
             btn.innerHTML = '⚠️ No value blocks found';
             setTimeout(() => {
@@ -94,11 +98,25 @@ async function parseValueBlock() {
 function extractValueBlocks(xmlDoc) {
     const valueBlocks = [];
     
-    // Look for podcast:value blocks (podcast namespace)
-    const valueBlocksElements = xmlDoc.querySelectorAll('podcast\\:value');
+    // Look for podcast:value blocks (podcast namespace) - try different selectors
+    let valueBlocksElements = xmlDoc.querySelectorAll('podcast\\:value');
+    if (valueBlocksElements.length === 0) {
+        // Try without namespace prefix
+        valueBlocksElements = xmlDoc.querySelectorAll('value');
+    }
+    if (valueBlocksElements.length === 0) {
+        // Try with wildcard namespace
+        valueBlocksElements = xmlDoc.querySelectorAll('*[local-name()="value"]');
+    }
     
     valueBlocksElements.forEach((valueBlock, index) => {
-        const recipients = valueBlock.querySelectorAll('podcast\\:valueRecipient');
+        let recipients = valueBlock.querySelectorAll('podcast\\:valueRecipient');
+        if (recipients.length === 0) {
+            recipients = valueBlock.querySelectorAll('valueRecipient');
+        }
+        if (recipients.length === 0) {
+            recipients = valueBlock.querySelectorAll('*[local-name()="valueRecipient"]');
+        }
         const lightningAddresses = [];
         const nodePubkeys = [];
         
@@ -165,6 +183,23 @@ function extractValueBlocks(xmlDoc) {
             });
         }
     });
+    
+    // If no value blocks found with podcast namespace, try searching the entire XML text
+    if (valueBlocks.length === 0) {
+        const xmlText = xmlDoc.documentElement.outerHTML;
+        const lightningAddresses = extractLightningAddresses(xmlText);
+        const nodePubkeys = extractNodePubkeys(xmlText);
+        
+        if (lightningAddresses.length > 0 || nodePubkeys.length > 0) {
+            valueBlocks.push({
+                title: 'Value Block (Found in XML)',
+                description: 'Lightning addresses and node pubkeys found in the RSS feed',
+                lightningAddresses: lightningAddresses.map(addr => ({ address: addr, name: '', split: '' })),
+                nodePubkeys: nodePubkeys.map(pubkey => ({ address: pubkey, name: '', split: '' })),
+                index: 1
+            });
+        }
+    }
     
     return valueBlocks;
 }
