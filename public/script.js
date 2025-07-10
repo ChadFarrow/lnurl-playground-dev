@@ -255,9 +255,15 @@ function displayValueBlocks(valueBlocks) {
             label = '<span style="display:inline-block;background:#888;color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Other Value Block</span>';
         }
         
+        // Collapsible content
+        const detailsId = `value-block-details-${index}`;
         let content = `
             ${label}
-            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">${block.title}</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h3 style=\"color: var(--text-primary); margin-bottom: 0.5rem; margin-right: 1rem;\">${block.title}</h3>
+                <button class=\"btn btn-secondary\" style=\"font-size:1rem;padding:0.3em 1em;\" onclick=\"toggleValueBlock('${detailsId}')\">Expand</button>
+            </div>
+            <div id=\"${detailsId}\" style=\"display:none; margin-top:1rem;\">
         `;
         
         if (block.lightningAddresses.length > 0) {
@@ -279,7 +285,7 @@ function displayValueBlocks(valueBlocks) {
                             ">
                                 <div style="font-weight: bold;">${addr.name || 'Lightning Address'}</div>
                                 <div>${addr.address}</div>
-                                ${addr.split ? `<div style="font-size: 0.8rem; opacity: 0.8;">Split: ${addr.split}%</div>` : ''}
+                                ${addr.split ? `<div style=\"font-size: 0.8rem; opacity: 0.8;\">Split: ${addr.split}%</div>` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -307,14 +313,14 @@ function displayValueBlocks(valueBlocks) {
                             ">
                                 <div style="font-weight: bold;">${pubkey.name || 'Node Pubkey'}</div>
                                 <div>${pubkey.address}</div>
-                                ${pubkey.split ? `<div style="font-size: 0.8rem; opacity: 0.8;">Split: ${pubkey.split}%</div>` : ''}
+                                ${pubkey.split ? `<div style=\"font-size: 0.8rem; opacity: 0.8;\">Split: ${pubkey.split}%</div>` : ''}
                             </div>
                         `).join('')}
                     </div>
                 </div>
             `;
         }
-        
+        content += `</div>`;
         blockElement.innerHTML = content;
         resultsContainer.appendChild(blockElement);
     });
@@ -326,6 +332,20 @@ function displayValueBlocks(valueBlocks) {
     // Scroll to results
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
 }
+
+// Add this function to the global scope
+window.toggleValueBlock = function(detailsId) {
+    const details = document.getElementById(detailsId);
+    if (!details) return;
+    const btn = details.previousElementSibling.querySelector('button');
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        if (btn) btn.textContent = 'Collapse';
+    } else {
+        details.style.display = 'none';
+        if (btn) btn.textContent = 'Expand';
+    }
+};
 
 function clearSettings() {
     if (confirm('Are you sure you want to clear all settings?')) {
