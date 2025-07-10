@@ -245,7 +245,18 @@ function displayValueBlocks(valueBlocks) {
             border: 1px solid var(--border-color);
         `;
         
+        // Determine label
+        let label = '';
+        if (block.title === 'Value Block' || block.title === 'Value Block (Found in XML)') {
+            label = '<span style="display:inline-block;background:var(--accent-secondary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Show Value Block</span>';
+        } else if (block.title && block.title !== 'Value Block') {
+            label = '<span style="display:inline-block;background:var(--accent-primary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Episode Value Block</span>';
+        } else {
+            label = '<span style="display:inline-block;background:#888;color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Other Value Block</span>';
+        }
+        
         let content = `
+            ${label}
             <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">${block.title}</h3>
         `;
         
