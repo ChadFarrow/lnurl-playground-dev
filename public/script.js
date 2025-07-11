@@ -24,7 +24,8 @@ function setButtonFeedback(btn, text, duration = 2000, resetText = null, enable 
 
 // --- Fetch and Parse RSS Feed ---
 async function fetchRssFeed(feedUrl) {
-    const proxyUrl = `/proxy?url=${encodeURIComponent(feedUrl)}`;
+    // Use a CORS proxy for Vercel deployment
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`;
     let response;
     try {
         response = await fetch(proxyUrl);
