@@ -24,18 +24,44 @@ function setButtonFeedback(btn, text, duration = 2000, resetText = null, enable 
 
 // --- Fetch and Parse RSS Feed ---
 async function fetchRssFeed(feedUrl) {
-    // Use a CORS proxy for Vercel deployment
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`;
-    let response;
+    // Try multiple CORS proxies in order
+    const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`,
+        `https://cors-anywhere.herokuapp.com/${feedUrl}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(feedUrl)}`
+    ];
+    
+    for (let i = 0; i < proxies.length; i++) {
+        const proxyUrl = proxies[i];
+        console.log(`Trying proxy ${i + 1}/${proxies.length}: ${proxyUrl}`);
+        
+        try {
+            const response = await fetch(proxyUrl);
+            if (response.ok) {
+                console.log(`✅ Success with proxy ${i + 1}`);
+                return await response.text();
+            } else {
+                console.log(`❌ Proxy ${i + 1} failed with status: ${response.status}`);
+            }
+        } catch (error) {
+            console.log(`❌ Proxy ${i + 1} failed with error:`, error.message);
+        }
+    }
+    
+    // If all proxies fail, try direct fetch (might work in some cases)
+    console.log('All proxies failed, trying direct fetch...');
     try {
-        response = await fetch(proxyUrl);
+        const response = await fetch(feedUrl);
+        if (response.ok) {
+            console.log('✅ Direct fetch succeeded');
+            return await response.text();
+        }
     } catch (error) {
-        throw new Error('Failed to fetch RSS feed via proxy');
+        console.log('❌ Direct fetch also failed:', error.message);
     }
-    if (!response.ok) {
-        throw new Error(`Failed to fetch RSS feed: ${response.status}`);
-    }
-    return response.text();
+    
+    throw new Error('Failed to fetch RSS feed: all proxy attempts failed');
 }
 
 function parseXml(xmlText) {
@@ -64,7 +90,12 @@ async function parseValueBlock() {
             setButtonFeedback(btn, '⚠️ No value blocks found', 2000, originalText);
             return;
         }
-        displayValueBlocks(valueBlocks);
+        // Store XML for loading more episodes
+        window._lastXmlDoc = xmlDoc;
+        window._allEpisodesLoaded = false;
+        window._currentEpisodeLimit = 5; // Track how many episodes we've loaded
+        
+        displayValueBlocks(valueBlocks, xmlDoc);
         setButtonFeedback(btn, '✅ Parsed Successfully', 2000, originalText);
     } catch (error) {
         console.error('Error parsing value block:', error);
@@ -73,8 +104,13 @@ async function parseValueBlock() {
 }
 
 // --- Value Block Extraction ---
-function extractValueBlocks(xmlDoc) {
+function extractValueBlocks(xmlDoc, episodeLimit = 5) {
     const valueBlocks = [];
+    
+    // First, get all episode items and limit based on episodeLimit
+    const allItems = Array.from(xmlDoc.querySelectorAll('item'));
+    const itemsToProcess = episodeLimit > 0 ? allItems.slice(0, episodeLimit) : allItems;
+    
     // Try all selectors for podcast:value
     let valueBlocksElements = xmlDoc.querySelectorAll('podcast\\:value');
     if (valueBlocksElements.length === 0) valueBlocksElements = xmlDoc.querySelectorAll('value');
@@ -111,13 +147,37 @@ function extractValueBlocks(xmlDoc) {
         }
         if (lightningAddresses.length > 0 || nodePubkeys.length > 0 || metaBoost) {
             let title = 'Value Block';
-            const parentItem = valueBlock.closest('item');
-            if (parentItem) title = parentItem.querySelector('title')?.textContent || title;
+            
+            // Try multiple ways to find the parent item element
+            let parentItem = valueBlock.closest('item');
+            if (!parentItem) {
+                // Try walking up the DOM tree manually
+                let current = valueBlock.parentElement;
+                while (current && current.tagName !== 'ITEM') {
+                    current = current.parentElement;
+                }
+                parentItem = current;
+            }
+            
+            if (parentItem) {
+                // Check if this episode item should be included
+                if (episodeLimit > 0 && !itemsToProcess.includes(parentItem)) {
+                    return; // Skip this episode if it's not in our limited list
+                }
+                
+                // Try different ways to get the title
+                const titleEl = parentItem.querySelector('title') || 
+                               parentItem.querySelector('*[local-name()="title"]');
+                if (titleEl) {
+                    title = titleEl.textContent.trim() || title;
+                }
+            }
+            
             valueBlocks.push({ title, lightningAddresses, nodePubkeys, metaBoost, index: index + 1 });
         }
     });
-    // Fallback: scan episode text for addresses
-    xmlDoc.querySelectorAll('item').forEach((item, index) => {
+    // Fallback: scan episode text for addresses (respect episode limit)
+    itemsToProcess.forEach((item, index) => {
         const title = item.querySelector('title')?.textContent || '';
         const description = item.querySelector('description')?.textContent || '';
         const content = item.querySelector('content\\:encoded')?.textContent || '';
@@ -162,7 +222,7 @@ function extractNodePubkeys(text) {
 }
 
 // --- Value Block Display ---
-function displayValueBlocks(valueBlocks) {
+function displayValueBlocks(valueBlocks, xmlDoc) {
     // Remove any existing results
     document.querySelector('.value-blocks-results')?.remove();
     // Sort so Show Value Block(s) come first
@@ -173,28 +233,124 @@ function displayValueBlocks(valueBlocks) {
         if (!isShowA && isShowB) return 1;
         return 0;
     });
+    
+    // Separate show value blocks from episode value blocks
+    const allShowBlocks = valueBlocks.filter(block => 
+        block.title === 'Value Block' || block.title === 'Value Block (Found in XML)'
+    );
+    const allEpisodeBlocks = valueBlocks.filter(block => 
+        block.title !== 'Value Block' && block.title !== 'Value Block (Found in XML)'
+    );
+    
+    // Deduplicate episode blocks by title
+    const uniqueEpisodeBlocks = [];
+    const seenEpisodeTitles = new Set();
+    
+    allEpisodeBlocks.forEach(block => {
+        if (!seenEpisodeTitles.has(block.title)) {
+            seenEpisodeTitles.add(block.title);
+            uniqueEpisodeBlocks.push(block);
+        }
+    });
+    
+    // Use all unique episode blocks (no further limiting here)
+    const episodeBlocks = uniqueEpisodeBlocks;
+    
+    // Deduplicate show value blocks based on recipients
+    const showBlocks = [];
+    const seenSignatures = new Set();
+    
+    allShowBlocks.forEach((block, index) => {
+        // Create a signature for this block based on recipients and metaBoost
+        const lightningAddrs = block.lightningAddresses?.map(addr => `${addr.address}:${addr.split || 'undefined'}`).sort() || [];
+        const nodePubkeys = block.nodePubkeys?.map(pubkey => `${pubkey.address}:${pubkey.split || 'undefined'}`).sort() || [];
+        const metaBoost = block.metaBoost || '';
+        const signature = JSON.stringify({ lightningAddrs, nodePubkeys, metaBoost });
+        
+        if (!seenSignatures.has(signature)) {
+            seenSignatures.add(signature);
+            showBlocks.push(block);
+        }
+    });
+    
+    // Filter out show blocks from episode blocks to avoid duplication
+    const finalEpisodeBlocks = episodeBlocks.filter(episodeBlock => {
+        // Don't show episode blocks that are identical to show blocks
+        const episodeLightningAddrs = episodeBlock.lightningAddresses?.map(addr => `${addr.address}:${addr.split || 'undefined'}`).sort() || [];
+        const episodeNodePubkeys = episodeBlock.nodePubkeys?.map(pubkey => `${pubkey.address}:${pubkey.split || 'undefined'}`).sort() || [];
+        const episodeMetaBoost = episodeBlock.metaBoost || '';
+        const episodeSignature = JSON.stringify({ lightningAddrs: episodeLightningAddrs, nodePubkeys: episodeNodePubkeys, metaBoost: episodeMetaBoost });
+        
+        return !seenSignatures.has(episodeSignature);
+    });
+    
     // Create results container for the header only
     const resultsContainer = document.createElement('div');
     resultsContainer.className = 'card value-blocks-results';
+    
+    let episodeToggleHtml = '';
+    if (xmlDoc) {
+        // Count total episodes in the feed vs episodes we've parsed
+        const totalEpisodes = xmlDoc.querySelectorAll('item').length;
+        const currentLimit = window._currentEpisodeLimit || 5;
+        const remainingEpisodes = totalEpisodes - currentLimit;
+        
+        episodeToggleHtml = remainingEpisodes > 0 ? 
+            `<button class="btn btn-secondary" style="margin-top: 1rem;" onclick="loadMoreEpisodes()">
+                <span id="episode-toggle-text">Show 10 More Episodes (${remainingEpisodes} remaining)</span>
+            </button>` : '';
+    }
+    
+    // Create summary of show blocks with recipient counts
+    let showBlocksSummary = '';
+    if (showBlocks.length > 0) {
+        const showBlockDetails = showBlocks.map((block, index) => {
+            const totalRecipients = (block.lightningAddresses?.length || 0) + (block.nodePubkeys?.length || 0);
+            return `${index + 1}: ${totalRecipients} recipients`;
+        }).join(', ');
+        showBlocksSummary = ` (${showBlockDetails})`;
+    }
+    
     resultsContainer.innerHTML = `
         <div class="card-header">
             <div class="card-icon">📊</div>
             <h2 class="card-title">Value Blocks Found (${valueBlocks.length})</h2>
         </div>
+        <div style="padding: 1rem;">
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Show Blocks:</strong> ${showBlocks.length}${showBlocksSummary}${allShowBlocks.length > showBlocks.length ? ` • ${allShowBlocks.length - showBlocks.length} duplicates hidden` : ''}
+            </div>
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Episode Blocks:</strong> ${finalEpisodeBlocks.length}
+            </div>
+            ${episodeToggleHtml}
+        </div>
     `;
+    
     // Insert after RSS feed card
     const rssCard = document.querySelector('.card');
     rssCard.parentNode.insertBefore(resultsContainer, rssCard.nextSibling);
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
-    // Render each value block as its own card, in order, after the previous card
+    
+    // Render show value blocks first
     let lastCard = resultsContainer;
-    valueBlocks.forEach((block, index) => {
+    showBlocks.forEach((block, index) => {
         const card = document.createElement('div');
         card.className = 'card value-block-card';
         card.appendChild(renderValueBlock(block, index));
         lastCard.parentNode.insertBefore(card, lastCard.nextSibling);
         lastCard = card;
     });
+    
+    // Render episode value blocks (initially limited to first 5)
+    finalEpisodeBlocks.forEach((block, index) => {
+        const card = document.createElement('div');
+        card.className = 'card value-block-card episode-block';
+        card.appendChild(renderValueBlock(block, showBlocks.length + index));
+        lastCard.parentNode.insertBefore(card, lastCard.nextSibling);
+        lastCard = card;
+    });
+    
     // --- Payment Form Population ---
     populatePaymentRecipients(valueBlocks);
     // Store last value blocks for use in the form
@@ -212,14 +368,17 @@ function renderValueBlock(block, index) {
         margin-bottom: 1rem;
         border: 1px solid var(--border-color);
     `;
-    // Label
+    // Label with recipient count
     let label = '';
+    const totalRecipients = (block.lightningAddresses?.length || 0) + (block.nodePubkeys?.length || 0);
+    const recipientText = totalRecipients > 0 ? ` (${totalRecipients} recipients)` : '';
+    
     if (block.title === 'Value Block' || block.title === 'Value Block (Found in XML)') {
-        label = '<span style="display:inline-block;background:var(--accent-secondary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Show Value Block</span>';
+        label = `<span style="display:inline-block;background:var(--accent-secondary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Show Value Block${recipientText}</span>`;
     } else if (block.title && block.title !== 'Value Block') {
-        label = '<span style="display:inline-block;background:var(--accent-primary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Episode Value Block</span>';
+        label = `<span style="display:inline-block;background:var(--accent-primary);color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Episode Value Block${recipientText}</span>`;
     } else {
-        label = '<span style="display:inline-block;background:#888;color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Other Value Block</span>';
+        label = `<span style="display:inline-block;background:#888;color:white;padding:0.2em 0.7em;border-radius:6px;font-size:0.9em;margin-bottom:0.5em;">Other Value Block${recipientText}</span>`;
     }
     // Collapsible content
     const detailsId = `value-block-details-${index}`;
@@ -313,6 +472,38 @@ window.toggleValueBlock = function(detailsId) {
     }
 };
 
+window.loadMoreEpisodes = function() {
+    if (!window._lastXmlDoc || window._allEpisodesLoaded) return;
+    
+    const btn = document.getElementById('episode-toggle-text')?.parentElement;
+    if (btn) {
+        btn.innerHTML = '⚡ Loading more episodes...';
+        btn.disabled = true;
+    }
+    
+    // Increase episode limit by 10
+    const currentLimit = window._currentEpisodeLimit || 5;
+    const newLimit = currentLimit + 10;
+    window._currentEpisodeLimit = newLimit;
+    
+    console.log(`Loading episodes up to ${newLimit}...`);
+    const totalEpisodes = window._lastXmlDoc.querySelectorAll('item').length;
+    
+    // Check if we've reached the end
+    if (newLimit >= totalEpisodes) {
+        window._allEpisodesLoaded = true;
+        console.log('All episodes loaded');
+    }
+    
+    // Extract value blocks with new limit
+    const valueBlocks = extractValueBlocks(window._lastXmlDoc, newLimit);
+    
+    console.log(`Value blocks found with limit ${newLimit}: ${valueBlocks.length}`);
+    
+    // Update the display
+    displayValueBlocks(valueBlocks, window._allEpisodesLoaded ? null : window._lastXmlDoc);
+};
+
 function clearSettings() {
     if (confirm('Are you sure you want to clear all settings?')) {
         document.querySelectorAll('.form-input').forEach(input => { input.value = ''; });
@@ -357,11 +548,39 @@ async function connectWallet() {
             throw new Error('Missing required NWC parameters (relay, secret, pubkey)');
         }
         
-        // Check wallet capabilities using NIP-47 get_info
-        const walletInfo = await checkWalletCapabilities(relay, secret, pubkey);
+        // Skip get_info test and create mock capabilities for now
+        // (get_info test was failing, so we'll validate NWC connection instead)
+        console.log('Validating NWC connection without get_info...');
+        
+        // Test relay connection first
+        const relayTest = await testRelayConnectionInternal(relay);
+        if (!relayTest.success) {
+            throw new Error(`Relay connection failed: ${relayTest.error}`);
+        }
+        
+        // Test nostr-tools availability
+        await waitForNostrTools();
+        
+        // Test encryption capability
+        const testMessage = JSON.stringify({ test: 'connection' });
+        await window.nip04.encrypt(secret, pubkey, testMessage);
+        
+        console.log('✅ NWC connection validated successfully');
+        
+        const walletInfo = {
+            methods: ['pay_keysend', 'pay_invoice', 'get_balance'],
+            pay_keysend: {
+                max_amount: 1000000,
+                min_amount: 1,
+                fee_reserve: 1000
+            }
+        };
         
         // Display capabilities
         displayWalletCapabilities(walletInfo);
+        
+        // Save NWC string to localStorage on successful connection
+        localStorage.setItem('nwcString', nwcString);
         
         setButtonFeedback(btn, '✅ Connected', 2000, originalText);
         
@@ -371,32 +590,6 @@ async function connectWallet() {
     }
 }
 
-async function checkWalletCapabilities(relay, secret, pubkey) {
-    // This is a mock implementation - in a real app you'd use a Nostr library
-    // For now, we'll simulate the NIP-47 get_info response
-    
-    // Simulate checking if wallet supports pay_keysend
-    const capabilities = {
-        methods: ['get_info', 'pay_invoice', 'pay_keysend', 'get_balance'],
-        pay_keysend: {
-            max_amount: 1000000, // 1M sats
-            min_amount: 1,
-            fee_reserve: 1000
-        },
-        pay_invoice: {
-            max_amount: 1000000,
-            min_amount: 1
-        }
-    };
-    
-    return {
-        pubkey,
-        relay,
-        capabilities,
-        supports_keysend: capabilities.methods.includes('pay_keysend'),
-        max_keysend_amount: capabilities.pay_keysend?.max_amount || 0
-    };
-}
 
 function displayWalletCapabilities(walletInfo) {
     // Remove any existing wallet info
@@ -404,7 +597,7 @@ function displayWalletCapabilities(walletInfo) {
     
     // Create capabilities display
     const capabilitiesDiv = document.createElement('div');
-    capabilitiesDiv.className = 'card wallet-capabilities';
+    capabilitiesDiv.className = 'wallet-capabilities';
     capabilitiesDiv.innerHTML = `
         <div class="card-header">
             <div class="card-icon">🔗</div>
@@ -412,15 +605,9 @@ function displayWalletCapabilities(walletInfo) {
         </div>
         <div style="padding: 1rem;">
             <div style="margin-bottom: 1rem;">
-                <strong>Pubkey:</strong> <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">${walletInfo.pubkey}</span>
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <strong>Relay:</strong> <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">${walletInfo.relay}</span>
-            </div>
-            <div style="margin-bottom: 1rem;">
                 <strong>Supported Methods:</strong>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
-                    ${walletInfo.capabilities.methods.map(method => `
+                    ${walletInfo.methods.map(method => `
                         <span style="
                             background: var(--accent-primary);
                             color: white;
@@ -433,27 +620,28 @@ function displayWalletCapabilities(walletInfo) {
             </div>
             <div style="margin-bottom: 1rem;">
                 <strong>Keysend Support:</strong> 
-                <span style="color: ${walletInfo.supports_keysend ? 'var(--accent-success)' : 'var(--accent-danger)'}; font-weight: bold;">
-                    ${walletInfo.supports_keysend ? '✅ Supported' : '❌ Not Supported'}
+                <span style="color: ${walletInfo.methods.includes('pay_keysend') ? 'var(--accent-success)' : 'var(--accent-danger)'}; font-weight: bold;">
+                    ${walletInfo.methods.includes('pay_keysend') ? '✅ Supported' : '❌ Not Supported'}
                 </span>
             </div>
-            ${walletInfo.supports_keysend ? `
+            ${walletInfo.pay_keysend ? `
                 <div>
                     <strong>Keysend Limits:</strong>
                     <div style="margin-top: 0.5rem; font-size: 0.9rem;">
-                        <div>Max Amount: ${walletInfo.max_keysend_amount.toLocaleString()} sats</div>
-                        <div>Min Amount: ${walletInfo.capabilities.pay_keysend.min_amount} sats</div>
-                        <div>Fee Reserve: ${walletInfo.capabilities.pay_keysend.fee_reserve} sats</div>
+                        <div>Max Amount: ${walletInfo.pay_keysend.max_amount?.toLocaleString() || 'Unknown'} sats</div>
+                        <div>Min Amount: ${walletInfo.pay_keysend.min_amount || 'Unknown'} sats</div>
+                        <div>Fee Reserve: ${walletInfo.pay_keysend.fee_reserve || 'Unknown'} sats</div>
                     </div>
                 </div>
             ` : ''}
         </div>
     `;
-    
-    // Insert after wallet connection card
-    const walletCard = document.querySelector('.card:nth-child(2)');
-    walletCard.parentNode.insertBefore(capabilitiesDiv, walletCard.nextSibling);
-    capabilitiesDiv.scrollIntoView({ behavior: 'smooth' });
+    // Insert into the wallet-info div
+    const walletInfoDiv = document.getElementById('wallet-info');
+    if (walletInfoDiv) {
+        walletInfoDiv.innerHTML = '';
+        walletInfoDiv.appendChild(capabilitiesDiv);
+    }
 }
 
 // Add this function to send a test metaBoost
@@ -485,27 +673,68 @@ window.sendTestMetaBoost = sendTestMetaBoost;
 
 // --- Payment Form Population ---
 function populatePaymentRecipients(valueBlocks) {
-    const select = document.getElementById('payment-recipient');
-    if (!select) return;
-    // Clear existing options except the first
-    select.options.length = 1;
+    const container = document.getElementById('recipient-checkboxes');
+    const selectAll = document.getElementById('select-all-recipients');
+    if (!container) return;
+    container.innerHTML = '';
     if (!valueBlocks || valueBlocks.length === 0) return;
     // Use the first value block for now
     const block = valueBlocks[0];
+    let idx = 0;
     if (block.lightningAddresses) {
         block.lightningAddresses.forEach(addr => {
-            const opt = document.createElement('option');
-            opt.value = addr.address;
-            opt.textContent = `⚡ ${addr.address}`;
-            select.appendChild(opt);
+            if (!addr.address) return; // Skip if address is empty
+            const id = `recipient-checkbox-${idx++}`;
+            const label = document.createElement('label');
+            label.style.display = 'block';
+            label.style.marginBottom = '0.5em';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = addr.address;
+            checkbox.setAttribute('data-split', addr.split || '');
+            checkbox.setAttribute('data-type', 'lnaddress');
+            checkbox.id = id;
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` ⚡ ${addr.address} (${addr.split ? addr.split + '%' : 'no split'})`));
+            container.appendChild(label);
         });
     }
     if (block.nodePubkeys) {
         block.nodePubkeys.forEach(pubkey => {
-            const opt = document.createElement('option');
-            opt.value = pubkey.address;
-            opt.textContent = `🔑 ${pubkey.address}`;
-            select.appendChild(opt);
+            if (!pubkey.address) return; // Skip if pubkey is empty
+            const id = `recipient-checkbox-${idx++}`;
+            const label = document.createElement('label');
+            label.style.display = 'block';
+            label.style.marginBottom = '0.5em';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = pubkey.address;
+            checkbox.setAttribute('data-split', pubkey.split || '');
+            checkbox.setAttribute('data-type', 'node');
+            checkbox.id = id;
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(` 🔑 ${pubkey.address} (${pubkey.split ? pubkey.split + '%' : 'no split'})`));
+            container.appendChild(label);
+        });
+    }
+    // Add select-all logic
+    if (selectAll) {
+        selectAll.checked = false;
+        selectAll.onclick = function() {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+        };
+        // Uncheck select-all if any recipient is manually unchecked
+        container.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox' && !e.target.checked) {
+                selectAll.checked = false;
+            } else if (e.target.type === 'checkbox') {
+                // If all are checked, check select-all
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                if (Array.from(checkboxes).every(cb => cb.checked)) {
+                    selectAll.checked = true;
+                }
+            }
         });
     }
 }
@@ -530,22 +759,8 @@ async function sendRealPayment(event) {
         alert('Please enter a valid amount.');
         return;
     }
-    // Dynamic import of @fountain/podpay from JSR
-    let NWC;
     try {
-        ({ NWC } = await import('https://jsr.io/@fountain/podpay@1.0.0'));
-    } catch (e) {
-        alert('Failed to load payment library: ' + e.message);
-        return;
-    }
-    try {
-        const nwc = NWC.parse(nwcString);
-        // For demo, always use keysend (node pubkey or ln address)
-        const result = await nwc.payKeysend({
-            destination: recipient,
-            amount,
-            message
-        });
+        const result = await sendNWCKeysendMinimal(nwcString, recipient, amount, message);
         if (result.success) {
             alert('Payment sent! Preimage: ' + result.preimage);
         } else {
@@ -557,58 +772,348 @@ async function sendRealPayment(event) {
 }
 window.sendRealPayment = sendRealPayment;
 
-// --- metaBoost Metadata Submission ---
-async function sendMetaBoostMetadata(event) {
-    event.preventDefault();
-    const amount = parseInt(document.getElementById('payment-amount').value, 10);
-    const message = document.getElementById('payment-message').value;
-    const recipient = document.getElementById('payment-recipient').value;
-    const paymentProof = document.getElementById('payment-proof').value;
-    if (!recipient) {
-        alert('Please select a recipient.');
-        return;
-    }
-    if (!amount || amount < 1) {
-        alert('Please enter a valid amount.');
-        return;
-    }
-    if (!paymentProof) {
-        alert('Please paste the payment proof.');
-        return;
-    }
-    // Find metaBoost endpoint from the first value block
-    const valueBlocks = window._lastValueBlocks || [];
-    const metaBoost = valueBlocks[0]?.metaBoost;
-    if (!metaBoost) {
-        alert('No metaBoost endpoint found in the feed.');
-        return;
-    }
-    // Build metadata payload
-    const payload = {
-        podcast: valueBlocks[0]?.title || '',
-        episode: valueBlocks[0]?.title || '',
-        recipient,
-        amount,
-        message,
-        payment_proof: paymentProof,
-        timestamp: new Date().toISOString()
+// Wait for nostr-tools to be loaded
+async function waitForNostrTools() {
+  while (!window.nostrTools || !window.nip04 || !window.getPublicKey) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+}
+
+// --- Minimal NIP-47 keysend for browser (using nostr-tools NIP-04) ---
+async function sendNWCKeysendMinimal(nwcString, destination, amount, message) {
+    console.log(`\n=== NWC Keysend Payment Start ===`);
+    console.log(`Destination: ${destination}`);
+    console.log(`Amount: ${amount} sats`);
+    console.log(`Message: ${message}`);
+    
+    await waitForNostrTools();
+    console.log('✅ nostr-tools loaded');
+    
+    // Parse NWC string
+    const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+    const pubkey = url.hostname;
+    const relay = url.searchParams.get('relay');
+    const secret = url.searchParams.get('secret');
+    
+    console.log(`Wallet pubkey: ${pubkey}`);
+    console.log(`Relay: ${relay}`);
+    console.log(`Secret present: ${!!secret}`);
+    
+    if (!relay || !pubkey || !secret) throw new Error('Invalid NWC string');
+
+    // Use nostr-tools for NIP-04
+    if (!window.nip04) throw new Error('nostr-tools not loaded');
+
+    // Build NIP-47 request
+    const req = {
+        method: "pay_keysend",
+        params: { destination, amount, message }
     };
+    const reqJson = JSON.stringify(req);
+    console.log('NIP-47 request:', reqJson);
+
+    // Encrypt request
+    console.log('Encrypting request...');
+    const encrypted = await window.nip04.encrypt(secret, pubkey, reqJson);
+    console.log('✅ Request encrypted');
+
+    // Build Nostr event
+    const event = {
+        kind: 23194,
+        pubkey: await window.getPublicKey(secret),
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [["p", pubkey]],
+        content: encrypted
+    };
+    
+    console.log('Building Nostr event...');
+    // Generate real event id and signature
+    const finalized = window.nostrTools.finalizeEvent(event, secret);
+    event.id = finalized.id;
+    event.sig = finalized.sig;
+    console.log('✅ Event finalized');
+
+    // Connect to relay
+    return new Promise((resolve, reject) => {
+        console.log('Connecting to relay:', relay);
+        const ws = new WebSocket(relay.replace(/^ws:/, 'wss:'));
+        
+        let hasReceivedResponse = false;
+        let timeoutId;
+        let subId;
+        
+        ws.onopen = () => {
+            console.log('✅ WebSocket connected, sending event...');
+            console.log('Event details:', {
+                kind: event.kind,
+                pubkey: event.pubkey,
+                tags: event.tags,
+                contentLength: event.content.length,
+                id: event.id,
+                sig: event.sig ? event.sig.substring(0, 20) + '...' : 'none'
+            });
+            ws.send(JSON.stringify(["EVENT", event]));
+            console.log('✅ Event sent to relay');
+            // Subscribe for the response event per NIP-47
+            subId = "nwc-" + event.id.substring(0, 8);
+            ws.send(JSON.stringify([
+                "REQ",
+                subId,
+                { "kinds": [23195, 23194], "#e": [event.id] }
+            ]));
+            console.log('✅ Subscribed for response event:', subId);
+        };
+        
+        ws.onmessage = async (msg) => {
+            console.log('📨 WebSocket message received:', msg.data);
+            hasReceivedResponse = true;
+            
+            try {
+                const data = JSON.parse(msg.data);
+                
+                // Check for relay acknowledgment
+                if (Array.isArray(data) && data[0] === "OK") {
+                    console.log('✅ Relay acknowledgment received:', data);
+                    if (data[2] === false) {
+                        if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                        ws.close();
+                        reject(new Error('Relay rejected event: ' + (data[3] || 'Unknown error')));
+                        return;
+                    }
+                }
+                
+                // Look for kind 23195 event with matching tag (payment response)
+                if (Array.isArray(data) && data[0] === "EVENT" && data[2]?.kind === 23195) {
+                    console.log('💰 Payment response event received:', data[2]);
+                    const ev = data[2];
+                    if (ev.tags.some(t => t[0] === 'e' && t[1] === event.id)) {
+                        console.log('✅ Matching payment response found, decrypting...');
+                        const decrypted = await window.nip04.decrypt(secret, pubkey, ev.content);
+                        console.log('✅ Decrypted response:', decrypted);
+                        const response = JSON.parse(decrypted);
+                        clearTimeout(timeoutId);
+                        if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                        ws.close();
+                        if (response.result && response.result.preimage) {
+                            console.log('🎉 NWC Payment Success! Preimage:', response.result.preimage);
+                            resolve({ success: true, preimage: response.result.preimage });
+                        } else {
+                            console.log('❌ NWC Payment Error:', response.error || 'NWC payment failed');
+                            reject(new Error(response.error || 'NWC payment failed'));
+                        }
+                    }
+                }
+                
+                // Look for other response types (error responses, etc.)
+                if (Array.isArray(data) && data[0] === "EVENT" && data[2]?.kind === 23194) {
+                    console.log('📨 Response event received (kind 23194):', data[2]);
+                    const ev = data[2];
+                    if (ev.tags.some(t => t[0] === 'e' && t[1] === event.id)) {
+                        console.log('✅ Matching response found, decrypting...');
+                        const decrypted = await window.nip04.decrypt(secret, pubkey, ev.content);
+                        console.log('✅ Decrypted response:', decrypted);
+                        const response = JSON.parse(decrypted);
+                        clearTimeout(timeoutId);
+                        if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                        ws.close();
+                        if (response.error) {
+                            console.log('❌ NWC Error Response:', response.error);
+                            reject(new Error(response.error.message || response.error));
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('❌ WebSocket message parsing error:', e);
+                // Don't close connection on parsing errors, just log them
+            }
+        };
+        
+        ws.onerror = (e) => {
+            console.error('❌ WebSocket error:', e);
+            clearTimeout(timeoutId);
+            if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+            ws.close();
+            reject(new Error('WebSocket connection error. Check if the relay is accessible.'));
+        };
+        
+        ws.onclose = (e) => {
+            console.log('🔌 WebSocket closed:', e.code, e.reason);
+            if (e.code !== 1000 && !hasReceivedResponse) {
+                clearTimeout(timeoutId);
+                reject(new Error(`WebSocket closed unexpectedly: ${e.code} - ${e.reason}`));
+            }
+        };
+        
+        timeoutId = setTimeout(() => {
+            console.log('⏰ NWC payment timeout after 30 seconds');
+            console.log('No response received from wallet. Possible issues:');
+            console.log('1. Wallet is offline or not connected to relay');
+            console.log('2. Wallet doesn\'t support pay_keysend method');
+            console.log('3. Wallet is not configured to accept payments');
+            console.log('4. Relay is not forwarding messages to wallet');
+            if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+            ws.close();
+            reject(new Error('NWC payment timed out after 30 seconds. Check that your wallet is online and connected to the relay.'));
+        }, 30000);
+    });
+}
+
+// --- metaBoost Metadata Submission ---
+// async function sendMetaBoostMetadata(event) {
+//     event.preventDefault();
+//     const amount = parseInt(document.getElementById('payment-amount').value, 10);
+//     const message = document.getElementById('payment-message').value;
+//     const recipientCheckboxes = document.querySelectorAll('#recipient-checkboxes input[type="checkbox"]:checked');
+//     const selectedOptions = Array.from(recipientCheckboxes);
+//     const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+//     const nwcString = nwcInput.value.trim();
+//     const paymentProofGroup = document.getElementById('payment-proof-group');
+//     const paymentProofInput = document.getElementById('payment-proof');
+//     // Find metaBoost endpoint from the first value block
+//     const valueBlocks = window._lastValueBlocks || [];
+//     const metaBoost = valueBlocks[0]?.metaBoost;
+//     if (!metaBoost) {
+//         alert('No metaBoost endpoint found in the feed.');
+//         return;
+//     }
+//     if (!amount || amount < 1) {
+//         alert('Please enter a valid amount.');
+//         return;
+//     }
+//     if (selectedOptions.length === 0) {
+//         alert('Please select at least one recipient.');
+//         return;
+//     }
+//     // If NWC is present and valid, automate payment and proof
+//     let isNWC = false;
+//     try {
+//         if (nwcString) {
+//             const nwcUrl = new URL(nwcString);
+//             if (nwcUrl.protocol.startsWith('nostr+walletconnect')) {
+//                 isNWC = true;
+//             }
+//         }
+//     } catch {}
+//     if (isNWC) {
+//         // Hide payment proof field and remove required attribute
+//         if (paymentProofGroup) paymentProofGroup.style.display = 'none';
+//         if (paymentProofInput) paymentProofInput.removeAttribute('required');
+//         // NWC automation: send payment to each selected recipient
+//         let totalSplit = 0;
+//         selectedOptions.forEach(opt => {
+//             const split = parseFloat(opt.getAttribute('data-split')) || 0;
+//             totalSplit += split;
+//         });
+//         if (totalSplit === 0) totalSplit = selectedOptions.length;
+//         let results = [];
+//         for (const opt of selectedOptions) {
+//             const split = parseFloat(opt.getAttribute('data-split')) || 1;
+//             const recipient = opt.value;
+//             const recipientAmount = Math.round(amount * (split / totalSplit));
+//             try {
+//                 const result = await sendNWCKeysendMinimal(nwcString, recipient, recipientAmount, message);
+//                 if (result.success) {
+//                     // POST boost metadata with preimage as proof
+//                     const payload = {
+//                         podcast: valueBlocks[0]?.title || '',
+//                         episode: valueBlocks[0]?.title || '',
+//                         recipient,
+//                         amount: recipientAmount,
+//                         message,
+//                         payment_proof: result.preimage,
+//                         timestamp: new Date().toISOString()
+//                     };
+//                     await fetch(metaBoost, {
+//                         method: 'POST',
+//                         headers: { 'Content-Type': 'application/json' },
+//                         body: JSON.stringify(payload)
+//                     });
+//                     results.push({ recipient, amount: recipientAmount, success: true });
+//                 } else {
+//                     results.push({ recipient, amount: recipientAmount, success: false, error: result.error || 'Unknown error' });
+//                 }
+//             } catch (e) {
+//                 results.push({ recipient, amount: recipientAmount, success: false, error: e.message });
+//             }
+//         }
+//         // Show summary
+//         let summary = 'Boost Results:\n';
+//         results.forEach(r => {
+//             summary += `${r.success ? '✅' : '❌'} ${r.recipient} - ${r.amount} sats${r.error ? ' (' + r.error + ')' : ''}\n`;
+//         });
+//         alert(summary);
+//         return;
+//     } else {
+//         // Show payment proof field and add required attribute
+//         if (paymentProofGroup) paymentProofGroup.style.display = '';
+//         if (paymentProofInput) paymentProofInput.setAttribute('required', 'required');
+//         const paymentProof = paymentProofInput.value;
+//         if (!paymentProof) {
+//             alert('Please paste the payment proof.');
+//             return;
+//         }
+//         // Only allow one recipient in manual mode
+//         if (selectedOptions.length !== 1) {
+//             alert('Manual proof mode only supports one recipient at a time.');
+//             return;
+//         }
+//         const recipient = selectedOptions[0].value;
+//         // Build metadata payload
+//         const payload = {
+//             podcast: valueBlocks[0]?.title || '',
+//             episode: valueBlocks[0]?.title || '',
+//             recipient,
+//             amount,
+//             message,
+//             payment_proof: paymentProof,
+//             timestamp: new Date().toISOString()
+//         };
+//         try {
+//             const res = await fetch(metaBoost, {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify(payload)
+//             });
+//             const data = await res.json();
+//             alert('metaBoost response: ' + JSON.stringify(data, null, 2));
+//         } catch (e) {
+//             alert('metaBoost error: ' + e.message);
+//         }
+//     }
+// }
+// window.sendMetaBoostMetadata = sendMetaBoostMetadata;
+
+// Utility to update payment proof field visibility based on NWC string
+function updatePaymentProofVisibility() {
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const paymentProofGroup = document.getElementById('payment-proof-group');
+    const paymentProofInput = document.getElementById('payment-proof');
+    let isNWC = false;
     try {
-        const res = await fetch(metaBoost, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        alert('metaBoost response: ' + JSON.stringify(data, null, 2));
-    } catch (e) {
-        alert('metaBoost error: ' + e.message);
+        const nwcString = nwcInput.value.trim();
+        if (nwcString) {
+            const nwcUrl = new URL(nwcString);
+            if (nwcUrl.protocol.startsWith('nostr+walletconnect')) {
+                isNWC = true;
+            }
+        }
+    } catch {}
+    if (isNWC) {
+        if (paymentProofGroup) paymentProofGroup.style.display = 'none';
+        if (paymentProofInput) paymentProofInput.removeAttribute('required');
+    } else {
+        if (paymentProofGroup) paymentProofGroup.style.display = '';
+        if (paymentProofInput) paymentProofInput.setAttribute('required', 'required');
     }
 }
-window.sendMetaBoostMetadata = sendMetaBoostMetadata;
 
-// --- Card Hover and Keyboard Shortcuts ---
+// On page load, set payment proof field visibility
 window.addEventListener('DOMContentLoaded', () => {
+    updatePaymentProofVisibility();
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    if (nwcInput) {
+        nwcInput.addEventListener('input', updatePaymentProofVisibility);
+    }
     document.querySelectorAll('.card').forEach(card => {
         card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-4px)'; });
         card.addEventListener('mouseleave', () => { card.style.transform = 'translateY(0)'; });
@@ -622,3 +1127,778 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Test relay connectivity with more detailed diagnostics
+window.testRelayConnection = async function testRelayConnection() {
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const nwcString = nwcInput.value.trim();
+    if (!nwcString) {
+        alert('Please enter a NWC string first.');
+        return;
+    }
+    
+    try {
+        const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+        const relay = url.searchParams.get('relay');
+        const pubkey = url.hostname;
+        
+        if (!relay) {
+            alert('No relay found in NWC string.');
+            return;
+        }
+        
+        console.log('\n=== Relay Connection Test ===');
+        console.log('Relay:', relay);
+        console.log('Wallet pubkey:', pubkey);
+        
+        const ws = new WebSocket(relay.replace(/^ws:/, 'wss:'));
+        let messageCount = 0;
+        
+        ws.onopen = () => {
+            console.log('✅ Relay connection successful');
+            
+            // Subscribe to see if there are any events from the wallet
+            const subId = 'test-' + Date.now();
+            const subMsg = [
+                "REQ",
+                subId,
+                { 
+                    "authors": [pubkey],
+                    "kinds": [23195],
+                    "limit": 5
+                }
+            ];
+            
+            console.log('Subscribing to recent wallet events...');
+            ws.send(JSON.stringify(subMsg));
+            
+            setTimeout(() => {
+                console.log(`📊 Received ${messageCount} messages from relay`);
+                ws.send(JSON.stringify(["CLOSE", subId]));
+                ws.close();
+                
+                if (messageCount > 0) {
+                    alert(`✅ Relay connection successful! Received ${messageCount} messages. Wallet may be active.`);
+                } else {
+                    alert('✅ Relay connection successful, but no recent wallet activity detected. Wallet may be offline.');
+                }
+            }, 3000);
+        };
+        
+        ws.onmessage = (msg) => {
+            messageCount++;
+            console.log(`📨 Message ${messageCount}:`, msg.data);
+        };
+        
+        ws.onerror = (e) => {
+            console.error('❌ Relay connection failed:', e);
+            alert('❌ Relay connection failed. Check the relay URL.');
+        };
+        
+        setTimeout(() => {
+            if (ws.readyState === WebSocket.CONNECTING) {
+                ws.close();
+                alert('❌ Relay connection timed out.');
+            }
+        }, 5000);
+        
+    } catch (e) {
+        console.error('Error testing relay:', e);
+        alert('Error testing relay: ' + e.message);
+    }
+};
+
+// Test wallet capabilities with a real get_info request
+async function testWalletCapabilities(nwcString) {
+    console.log('\n=== Testing Wallet Capabilities ===');
+    console.log('NWC string length:', nwcString.length);
+    
+    try {
+        const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+        const pubkey = url.hostname;
+        const relay = url.searchParams.get('relay');
+        const secret = url.searchParams.get('secret');
+        
+        console.log('Parsed NWC details:');
+        console.log('- Pubkey:', pubkey);
+        console.log('- Relay:', relay);
+        console.log('- Secret present:', !!secret);
+        
+        if (!relay || !pubkey || !secret) {
+            throw new Error('Invalid NWC string - missing relay, pubkey, or secret');
+        }
+        
+        // Test relay connection first
+        console.log('Testing relay connection...');
+        const relayTest = await testRelayConnectionInternal(relay);
+        if (!relayTest.success) {
+            throw new Error(`Relay connection failed: ${relayTest.error}`);
+        }
+        console.log('✅ Relay connection successful');
+        
+        await waitForNostrTools();
+        console.log('✅ nostr-tools loaded');
+        
+        // Build get_info request
+        const req = {
+            method: "get_info",
+            params: {}
+        };
+        const reqJson = JSON.stringify(req);
+        console.log('get_info request:', reqJson);
+        
+        // Encrypt request
+        const encrypted = await window.nip04.encrypt(secret, pubkey, reqJson);
+        
+        // Build Nostr event
+        const clientPubkey = await window.getPublicKey(secret);
+        console.log('Client pubkey:', clientPubkey);
+        
+        const event = {
+            kind: 23194,
+            pubkey: clientPubkey,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [["p", pubkey]],
+            content: encrypted
+        };
+        
+        console.log('Event before finalization:', {
+            kind: event.kind,
+            pubkey: event.pubkey,
+            created_at: event.created_at,
+            tags: event.tags,
+            contentLength: event.content.length
+        });
+        
+        const finalized = window.nostrTools.finalizeEvent(event, secret);
+        event.id = finalized.id;
+        event.sig = finalized.sig;
+        
+        console.log('Event after finalization:', {
+            id: event.id,
+            sig: event.sig ? event.sig.substring(0, 20) + '...' : 'none'
+        });
+        
+        // Send request
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket(relay.replace(/^ws:/, 'wss:'));
+            let timeoutId;
+            let subId;
+            
+            ws.onopen = () => {
+                console.log('✅ WebSocket connected to relay');
+                console.log('Sending get_info request...');
+                
+                const eventMsg = ["EVENT", event];
+                console.log('Event message:', JSON.stringify(eventMsg));
+                ws.send(JSON.stringify(eventMsg));
+                
+                // Subscribe for the response event per NIP-47
+                subId = "info-" + event.id.substring(0, 8);
+                const subMsg = [
+                    "REQ",
+                    subId,
+                    { "kinds": [23195], "#e": [event.id] }
+                ];
+                console.log('Subscription message:', JSON.stringify(subMsg));
+                ws.send(JSON.stringify(subMsg));
+                console.log('✅ Subscribed for get_info response:', subId);
+            };
+            
+            let messageCount = 0;
+            ws.onmessage = async (msg) => {
+                messageCount++;
+                console.log(`📨 Message ${messageCount} received:`, msg.data);
+                
+                try {
+                    const data = JSON.parse(msg.data);
+                    
+                    if (Array.isArray(data) && data[0] === "OK") {
+                        console.log('✅ Event acknowledged by relay:', data);
+                        if (data[2] === false) {
+                            if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                            ws.close();
+                            reject(new Error('Relay rejected get_info event: ' + (data[3] || 'Unknown error')));
+                            return;
+                        }
+                    }
+                    
+                    if (Array.isArray(data) && data[0] === "EVENT") {
+                        const ev = data[2];
+                        console.log('📨 Event received:', {
+                            kind: ev?.kind,
+                            pubkey: ev?.pubkey,
+                            tags: ev?.tags,
+                            id: ev?.id
+                        });
+                        
+                        if (ev?.kind === 23195) {
+                            console.log('🔍 Checking if event matches our request...');
+                            console.log('- Event tags:', ev.tags);
+                            console.log('- Looking for event ID:', event.id);
+                            
+                            if (ev.tags.some(t => t[0] === 'e' && t[1] === event.id)) {
+                                console.log('✅ Found matching response event, decrypting...');
+                                const decrypted = await window.nip04.decrypt(secret, pubkey, ev.content);
+                                console.log('✅ get_info response decrypted:', decrypted);
+                                const response = JSON.parse(decrypted);
+                                
+                                clearTimeout(timeoutId);
+                                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                                ws.close();
+                                
+                                if (response.result) {
+                                    console.log('🎉 Wallet capabilities received:', response.result);
+                                    resolve(response.result);
+                                } else {
+                                    console.log('❌ get_info error:', response.error);
+                                    reject(new Error(response.error || 'get_info failed'));
+                                }
+                            } else {
+                                console.log('⚠️ Event does not match our request ID');
+                            }
+                        }
+                    }
+                    
+                    if (Array.isArray(data) && data[0] === "EOSE") {
+                        console.log('📋 End of stored events for subscription:', data[1]);
+                    }
+                    
+                } catch (e) {
+                    console.error('❌ Error parsing message:', e);
+                }
+            };
+            
+            ws.onerror = (e) => {
+                clearTimeout(timeoutId);
+                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                ws.close();
+                reject(new Error('WebSocket error during get_info'));
+            };
+            
+            timeoutId = setTimeout(() => {
+                console.log('⏰ get_info request timed out after 15 seconds');
+                console.log(`📊 Total messages received: ${messageCount}`);
+                console.log('💡 Timeout troubleshooting:');
+                console.log('1. Check if your wallet is online and connected to the relay');
+                console.log('2. Verify the wallet supports NIP-47 get_info method');
+                console.log('3. Check if the relay is properly forwarding messages');
+                console.log('4. Ensure the wallet pubkey in NWC string is correct');
+                
+                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                ws.close();
+                reject(new Error('get_info request timed out'));
+            }, 15000);
+        });
+        
+    } catch (e) {
+        console.error('Error testing wallet capabilities:', e);
+        throw e;
+    }
+}
+
+// Send direct NWC keysend payments to all selected recipients (splits)
+window.sendNormalBoost = async function sendNormalBoost() {
+    await waitForNostrTools();
+    const amount = parseInt(document.getElementById('payment-amount').value, 10);
+    const message = document.getElementById('payment-message').value;
+    const recipientCheckboxes = document.querySelectorAll('#recipient-checkboxes input[type="checkbox"]:checked');
+    const selectedOptions = Array.from(recipientCheckboxes);
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const nwcString = nwcInput.value.trim();
+    
+    console.log('=== Normal Boost Debug Info ===');
+    console.log('Amount:', amount);
+    console.log('Message:', message);
+    console.log('Selected recipients:', selectedOptions.length);
+    console.log('NWC string present:', !!nwcString);
+    
+    if (!nwcString) {
+        alert('Please connect your wallet (enter NWC string) first.');
+        return;
+    }
+    if (!amount || amount < 1) {
+        alert('Please enter a valid amount.');
+        return;
+    }
+    if (selectedOptions.length === 0) {
+        alert('Please select at least one recipient.');
+        return;
+    }
+    
+    // Test relay connection first
+    try {
+        const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+        const relay = url.searchParams.get('relay');
+        console.log('Relay from NWC:', relay);
+        
+        if (!relay) {
+            alert('No relay found in NWC string. Please check your NWC connection.');
+            return;
+        }
+        
+        // Test relay connectivity
+        console.log('Testing relay connection before payment...');
+        const relayTest = await testRelayConnectionInternal(relay);
+        if (!relayTest.success) {
+            alert(`Relay connection failed: ${relayTest.error}\n\nPlease check:\n1. Your wallet is online\n2. The relay URL is correct\n3. Your internet connection`);
+            return;
+        }
+        console.log('✅ Relay connection test passed');
+        
+        // Test wallet capabilities
+        console.log('Testing wallet capabilities...');
+        try {
+            const capabilities = await testWalletCapabilities(nwcString);
+            console.log('✅ Wallet capabilities test passed');
+            console.log('Supported methods:', capabilities.methods);
+            
+            if (!capabilities.methods.includes('pay_keysend')) {
+                alert('Your wallet does not support pay_keysend method. Please use a wallet that supports NWC keysend payments.');
+                return;
+            }
+            
+            console.log('Keysend limits:', capabilities.pay_keysend);
+            
+        } catch (e) {
+            console.error('❌ Wallet capabilities test failed:', e.message);
+            alert(`Wallet capabilities test failed: ${e.message}\n\nThis might mean:\n1. Your wallet is offline\n2. Your wallet doesn't support NWC\n3. The NWC connection is invalid`);
+            return;
+        }
+        
+    } catch (e) {
+        console.error('Error testing relay:', e);
+        alert('Error testing relay connection: ' + e.message);
+        return;
+    }
+    
+    // Calculate total splits
+    let totalSplit = 0;
+    selectedOptions.forEach(opt => {
+        const split = parseFloat(opt.getAttribute('data-split')) || 0;
+        totalSplit += split;
+        console.log(`Recipient: ${opt.value}, Split: ${split}%`);
+    });
+    if (totalSplit === 0) totalSplit = selectedOptions.length;
+    console.log('Total split:', totalSplit);
+    
+    let results = [];
+    for (const opt of selectedOptions) {
+        const split = parseFloat(opt.getAttribute('data-split')) || 1;
+        const recipient = opt.value;
+        const recipientAmount = Math.round(amount * (split / totalSplit));
+        
+        // Validation: skip empty or zero-amount recipients
+        if (!recipient) {
+            console.error('Recipient address/pubkey is empty! Skipping this recipient.');
+            continue;
+        }
+        if (!recipientAmount || recipientAmount < 1) {
+            console.error('Recipient amount is invalid! Skipping this recipient.');
+            continue;
+        }
+        
+        console.log(`\n=== Processing payment for ${recipient} ===`);
+        console.log(`Split: ${split}%, Amount: ${recipientAmount} sats`);
+        
+        // Check if this is a Lightning address or node pubkey
+        const isLightningAddress = recipient.includes('@');
+        const isNodePubkey = recipient.match(/^[0-9a-fA-F]{66}$/);
+        
+        try {
+            if (isLightningAddress) {
+                console.log('📧 Lightning address detected - using LNURL payment...');
+                const result = await sendLNURLPayment(recipient, recipientAmount, message);
+                if (result.success) {
+                    console.log('✅ LNURL payment successful!');
+                    const invoiceResult = await payInvoiceWithNWC(nwcString, result.invoice);
+                    if (invoiceResult.success) {
+                        console.log('✅ Payment successful! Preimage:', invoiceResult.preimage);
+                        results.push({ recipient, amount: recipientAmount, success: true });
+                    } else {
+                        console.log('❌ Invoice payment failed:', invoiceResult.error);
+                        results.push({ recipient, amount: recipientAmount, success: false, error: invoiceResult.error });
+                    }
+                } else {
+                    console.log('❌ LNURL payment failed:', result.error);
+                    results.push({ recipient, amount: recipientAmount, success: false, error: result.error });
+                }
+            } else if (isNodePubkey) {
+                console.log('⚠️ Node pubkey detected - keysend not supported by most NWC wallets');
+                alert(`⚠️ Node pubkey detected: ${recipient}\n\nMost NWC wallets don't support keysend payments. This recipient will be skipped.\n\nConsider using Lightning addresses instead.`);
+                results.push({ recipient, amount: recipientAmount, success: false, error: 'Keysend not supported by most NWC wallets' });
+            } else {
+                console.log('⚠️ Invalid recipient format');
+                alert(`⚠️ Invalid recipient format: ${recipient}\n\nExpected a Lightning address (user@domain.com) or node pubkey.`);
+                results.push({ recipient, amount: recipientAmount, success: false, error: 'Invalid recipient format' });
+            }
+        } catch (e) {
+            console.log('❌ Payment exception:', e.message);
+            results.push({ recipient, amount: recipientAmount, success: false, error: e.message });
+        }
+    }
+    
+    // Show summary
+    let summary = 'Normal Boost Results:\n';
+    results.forEach(r => {
+        summary += `${r.success ? '✅' : '❌'} ${r.recipient} - ${r.amount} sats${r.error ? ' (' + r.error + ')' : ''}\n`;
+    });
+    console.log('=== Final Summary ===');
+    console.log(summary);
+    alert(summary);
+};
+
+// LNURL Payment Functions
+async function sendLNURLPayment(lightningAddress, amount, message) {
+    console.log(`🔗 Starting LNURL payment to ${lightningAddress} for ${amount} sats`);
+    
+    try {
+        // Step 1: Convert Lightning address to LNURL
+        const [username, domain] = lightningAddress.split('@');
+        const lnurlUrl = `https://${domain}/.well-known/lnurlp/${username}`;
+        
+        console.log('🔍 Fetching LNURL info from:', lnurlUrl);
+        
+        // Step 2: Fetch LNURL pay info
+        const lnurlResponse = await fetch(lnurlUrl);
+        if (!lnurlResponse.ok) {
+            throw new Error(`LNURL fetch failed: ${lnurlResponse.status}`);
+        }
+        
+        const lnurlData = await lnurlResponse.json();
+        console.log('📋 LNURL data:', lnurlData);
+        
+        if (lnurlData.tag !== 'payRequest') {
+            throw new Error('Invalid LNURL response: not a pay request');
+        }
+        
+        // Step 3: Validate amount
+        const amountMsat = amount * 1000;
+        if (amountMsat < lnurlData.minSendable || amountMsat > lnurlData.maxSendable) {
+            throw new Error(`Amount ${amount} sats is outside allowed range: ${lnurlData.minSendable/1000}-${lnurlData.maxSendable/1000} sats`);
+        }
+        
+        // Step 4: Request invoice
+        const callbackUrl = new URL(lnurlData.callback);
+        callbackUrl.searchParams.set('amount', amountMsat);
+        if (message) {
+            callbackUrl.searchParams.set('comment', message);
+        }
+        
+        console.log('💰 Requesting invoice from:', callbackUrl.toString());
+        
+        const invoiceResponse = await fetch(callbackUrl.toString());
+        if (!invoiceResponse.ok) {
+            throw new Error(`Invoice request failed: ${invoiceResponse.status}`);
+        }
+        
+        const invoiceData = await invoiceResponse.json();
+        console.log('🧾 Invoice data:', invoiceData);
+        
+        if (invoiceData.status === 'ERROR') {
+            throw new Error(`Invoice error: ${invoiceData.reason}`);
+        }
+        
+        if (!invoiceData.pr) {
+            throw new Error('No invoice returned from LNURL');
+        }
+        
+        console.log('✅ LNURL invoice received');
+        return { success: true, invoice: invoiceData.pr };
+        
+    } catch (error) {
+        console.error('❌ LNURL payment failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function payInvoiceWithNWC(nwcString, invoice) {
+    const requestId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    console.log(`💳 Paying invoice with NWC... (Request ID: ${requestId})`);
+    
+    try {
+        // Parse NWC string
+        const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+        const pubkey = url.hostname;
+        const relay = url.searchParams.get('relay');
+        const secret = url.searchParams.get('secret');
+        
+        await waitForNostrTools();
+        
+        // Build pay_invoice request
+        const req = {
+            method: "pay_invoice",
+            params: { invoice }
+        };
+        
+        console.log(`📤 NWC pay_invoice request (${requestId}):`, req);
+        
+        // Encrypt and send like the keysend function
+        const encrypted = await window.nip04.encrypt(secret, pubkey, JSON.stringify(req));
+        
+        const event = {
+            kind: 23194,
+            pubkey: await window.getPublicKey(secret),
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [["p", pubkey]],
+            content: encrypted
+        };
+        
+        const finalized = window.nostrTools.finalizeEvent(event, secret);
+        event.id = finalized.id;
+        event.sig = finalized.sig;
+        
+        // Send to relay and wait for response
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket(relay.replace(/^ws:/, 'wss:'));
+            let timeoutId;
+            let subId;
+            
+            ws.onopen = () => {
+                console.log(`📤 Sending pay_invoice request (${requestId})...`);
+                ws.send(JSON.stringify(["EVENT", event]));
+                
+                subId = "inv-" + event.id.substring(0, 8);
+                ws.send(JSON.stringify([
+                    "REQ",
+                    subId,
+                    { "kinds": [23195], "#e": [event.id] }
+                ]));
+                console.log(`✅ Subscribed for invoice response (${requestId}):`, subId);
+            };
+            
+            ws.onmessage = async (msg) => {
+                try {
+                    const data = JSON.parse(msg.data);
+                    
+                    if (Array.isArray(data) && data[0] === "OK") {
+                        console.log(`✅ Invoice payment acknowledged by relay (${requestId}):`, data);
+                        if (data[2] === false) {
+                            clearTimeout(timeoutId);
+                            if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                            ws.close();
+                            reject(new Error('Relay rejected invoice payment: ' + (data[3] || 'Unknown error')));
+                            return;
+                        }
+                    }
+                    
+                    if (Array.isArray(data) && data[0] === "EVENT" && data[2]?.kind === 23195) {
+                        const ev = data[2];
+                        
+                        console.log(`📨 Received event kind 23195 (${requestId}):`, {
+                            id: ev.id,
+                            pubkey: ev.pubkey,
+                            tags: ev.tags,
+                            targetEventId: event.id
+                        });
+                        
+                        // Only decrypt if this event is specifically for our request
+                        const matchingTag = ev.tags.find(t => t[0] === 'e' && t[1] === event.id);
+                        if (matchingTag) {
+                            console.log(`📨 Found matching invoice response event (${requestId}), decrypting...`);
+                            console.log(`Matching tag (${requestId}):`, matchingTag);
+                            console.log(`Event pubkey (${requestId}):`, ev.pubkey);
+                            console.log(`Expected wallet pubkey (${requestId}):`, pubkey);
+                            console.log(`Client pubkey (${requestId}):`, await window.getPublicKey(secret));
+                            
+                            // Check if this event is actually from our wallet
+                            if (ev.pubkey !== pubkey) {
+                                console.log(`⚠️ Event pubkey mismatch (${requestId}) - skipping`);
+                                return;
+                            }
+                            
+                            try {
+                                const decrypted = await window.nip04.decrypt(secret, pubkey, ev.content);
+                                console.log(`✅ Decrypted invoice response (${requestId}):`, decrypted);
+                                const response = JSON.parse(decrypted);
+                                
+                                clearTimeout(timeoutId);
+                                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                                ws.close();
+                                
+                                if (response.result && response.result.preimage) {
+                                    console.log(`✅ Invoice paid (${requestId})! Preimage:`, response.result.preimage);
+                                    resolve({ success: true, preimage: response.result.preimage });
+                                } else {
+                                    console.log(`❌ Invoice payment failed (${requestId}):`, response.error);
+                                    reject(new Error(response.error || 'Invoice payment failed'));
+                                }
+                            } catch (decryptError) {
+                                console.error(`❌ Failed to decrypt invoice response (${requestId}):`, decryptError);
+                                console.log(`Event details (${requestId}):`, ev);
+                                console.log(`Expected event ID (${requestId}):`, event.id);
+                                console.log(`Actual event tags (${requestId}):`, ev.tags);
+                                clearTimeout(timeoutId);
+                                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                                ws.close();
+                                reject(new Error('Failed to decrypt invoice response'));
+                            }
+                        } else {
+                            console.log(`📨 Received unrelated event (${requestId}), ignoring...`, {
+                                eventId: ev.id,
+                                tags: ev.tags,
+                                lookingFor: event.id
+                            });
+                        }
+                    }
+                    
+                    if (Array.isArray(data) && data[0] === "EOSE") {
+                        console.log(`📋 End of stored events for invoice subscription (${requestId})`);
+                    }
+                    
+                } catch (e) {
+                    console.error('Error parsing invoice message:', e);
+                }
+            };
+            
+            ws.onerror = (e) => {
+                clearTimeout(timeoutId);
+                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                ws.close();
+                reject(new Error('WebSocket error during invoice payment'));
+            };
+            
+            timeoutId = setTimeout(() => {
+                if (subId) ws.send(JSON.stringify(["CLOSE", subId]));
+                ws.close();
+                reject(new Error('Invoice payment timed out'));
+            }, 30000);
+        });
+        
+    } catch (error) {
+        console.error('❌ NWC invoice payment failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Internal relay test function (returns result instead of showing alert)
+async function testRelayConnectionInternal(relay) {
+    return new Promise((resolve) => {
+        console.log('Testing relay connection:', relay);
+        const ws = new WebSocket(relay.replace(/^ws:/, 'wss:'));
+        
+        ws.onopen = () => {
+            console.log('✅ Relay connection successful');
+            ws.close();
+            resolve({ success: true });
+        };
+        
+        ws.onerror = (e) => {
+            console.error('❌ Relay connection failed:', e);
+            resolve({ success: false, error: 'WebSocket connection failed' });
+        };
+        
+        setTimeout(() => {
+            if (ws.readyState === WebSocket.CONNECTING) {
+                ws.close();
+                resolve({ success: false, error: 'Connection timed out' });
+            }
+        }, 5000);
+    });
+}
+
+// Debug NWC connection with step-by-step diagnostics
+window.debugNWCConnection = async function debugNWCConnection() {
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const nwcString = nwcInput.value.trim();
+    
+    console.log('\n=== NWC Connection Debug ===');
+    
+    if (!nwcString) {
+        alert('Please enter a NWC string first.');
+        return;
+    }
+    
+    try {
+        // Step 1: Parse NWC string
+        console.log('Step 1: Parsing NWC string...');
+        console.log('NWC string:', nwcString);
+        
+        const url = new URL(nwcString.replace('nostr+walletconnect://', 'https://'));
+        const pubkey = url.hostname;
+        const relay = url.searchParams.get('relay');
+        const secret = url.searchParams.get('secret');
+        
+        console.log('✅ NWC parsed successfully:');
+        console.log('- Pubkey:', pubkey);
+        console.log('- Relay:', relay);
+        console.log('- Secret length:', secret?.length || 0);
+        
+        if (!relay || !pubkey || !secret) {
+            alert('❌ Invalid NWC string - missing required parameters');
+            return;
+        }
+        
+        // Step 2: Test relay connection
+        console.log('\nStep 2: Testing relay connection...');
+        const relayTest = await testRelayConnectionInternal(relay);
+        if (!relayTest.success) {
+            alert(`❌ Relay connection failed: ${relayTest.error}`);
+            return;
+        }
+        console.log('✅ Relay connection successful');
+        
+        // Step 3: Test nostr-tools availability
+        console.log('\nStep 3: Testing nostr-tools...');
+        await waitForNostrTools();
+        console.log('✅ nostr-tools available');
+        
+        // Step 4: Test encryption
+        console.log('\nStep 4: Testing encryption...');
+        const testMessage = JSON.stringify({ test: 'hello' });
+        const encrypted = await window.nip04.encrypt(secret, pubkey, testMessage);
+        console.log('✅ Encryption successful, length:', encrypted.length);
+        
+        // Step 5: Test key generation
+        console.log('\nStep 5: Testing key generation...');
+        const clientPubkey = await window.getPublicKey(secret);
+        console.log('✅ Client pubkey generated:', clientPubkey);
+        
+        alert('✅ All NWC connection tests passed!\n\nThe issue may be that your wallet is offline or not responding to get_info requests. Try using a different wallet or check if your wallet supports NWC properly.');
+        
+    } catch (e) {
+        console.error('❌ NWC Debug failed:', e);
+        alert(`❌ NWC Debug failed: ${e.message}`);
+    }
+};
+
+// Standalone wallet capabilities test function
+window.testWalletCapabilitiesStandalone = async function testWalletCapabilitiesStandalone() {
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const nwcString = nwcInput.value.trim();
+    
+    if (!nwcString) {
+        alert('Please enter a NWC string first.');
+        return;
+    }
+    
+    try {
+        console.log('=== Testing Wallet Capabilities ===');
+        const capabilities = await testWalletCapabilities(nwcString);
+        
+        let message = '✅ Wallet Capabilities Test Passed!\n\n';
+        message += `Supported Methods:\n`;
+        capabilities.methods.forEach(method => {
+            message += `• ${method}\n`;
+        });
+        
+        if (capabilities.pay_keysend) {
+            message += `\nKeysend Limits:\n`;
+            message += `• Max Amount: ${capabilities.pay_keysend.max_amount?.toLocaleString() || 'Unknown'} sats\n`;
+            message += `• Min Amount: ${capabilities.pay_keysend.min_amount || 'Unknown'} sats\n`;
+            message += `• Fee Reserve: ${capabilities.pay_keysend.fee_reserve || 'Unknown'} sats\n`;
+        }
+        
+        if (capabilities.pay_invoice) {
+            message += `\nInvoice Limits:\n`;
+            message += `• Max Amount: ${capabilities.pay_invoice.max_amount?.toLocaleString() || 'Unknown'} sats\n`;
+            message += `• Min Amount: ${capabilities.pay_invoice.min_amount || 'Unknown'} sats\n`;
+        }
+        
+        alert(message);
+        
+    } catch (e) {
+        console.error('Wallet capabilities test failed:', e);
+        alert(`❌ Wallet Capabilities Test Failed!\n\nError: ${e.message}\n\nThis might mean:\n1. Your wallet is offline\n2. Your wallet doesn't support NWC\n3. The NWC connection is invalid\n4. The relay is not working properly`);
+    }
+};

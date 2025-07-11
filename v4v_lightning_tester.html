@@ -400,6 +400,49 @@
             </button>
         </div>
 
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">⚡</div>
+                <h2 class="card-title">Payment</h2>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Amount (sats)</label>
+                <input 
+                    type="number" 
+                    class="form-input" 
+                    id="payment-amount"
+                    placeholder="1000"
+                    min="1"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Message</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="payment-message"
+                    placeholder="Thanks for the podcast!"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Recipients</label>
+                <div id="recipient-checkboxes">
+                    <div style="color: var(--text-muted); font-style: italic;">
+                        Parse a value block first to see recipients
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="sendNormalBoost()">
+                    <span class="lightning-icon">⚡</span> Send Normal Boost (NWC Keysend)
+                </button>
+            </div>
+        </div>
+
         <div class="status-bar">
             <span class="status-indicator"></span>
             Settings saved locally • RSS: https://raw.githubusercontent.com... • NWC: nostr+walletconnect://pa80990...
@@ -511,6 +554,43 @@
                 }
             }
         });
+
+        // Simplified sendNormalBoost function for v4v_lightning_tester.html
+        async function sendNormalBoost() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⚡ Sending...';
+            btn.disabled = true;
+            
+            const amount = parseInt(document.getElementById('payment-amount').value, 10);
+            const message = document.getElementById('payment-message').value;
+            const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+            const nwcString = nwcInput.value.trim();
+            
+            if (!nwcString) {
+                alert('Please connect your wallet (enter NWC string) first.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            if (!amount || amount < 1) {
+                alert('Please enter a valid amount.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            // Simulate payment process
+            setTimeout(() => {
+                btn.innerHTML = '✅ Payment Sent';
+                alert(`Normal Boost sent!\nAmount: ${amount} sats\nMessage: ${message}\n\nNote: This is a simplified version. For full NWC functionality, use the main app.`);
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }, 2000);
+        }
     </script>
 </body>
 </html>

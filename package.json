@@ -8,11 +8,17 @@
     "start": "node proxy.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "node-fetch": "^2.6.7",
-    "cors": "^2.8.5"
+    "nostr-tools": "^2.15.0"
   },
-  "keywords": ["lightning", "bitcoin", "v4v", "podcast"],
+  "keywords": [
+    "lightning",
+    "bitcoin",
+    "v4v",
+    "podcast"
+  ],
   "author": "Chad Farrow",
   "license": "MIT"
-} 
+}

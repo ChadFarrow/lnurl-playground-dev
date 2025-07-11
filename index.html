@@ -63,14 +63,11 @@
                 <button class="btn btn-secondary" onclick="connectWallet()">
                     🔗 Connect Wallet
                 </button>
-                <button class="btn btn-info" onclick="testRelayConnection()">
+                <button class="btn btn-secondary" onclick="testRelayConnection()">
                     🔍 Test Relay
                 </button>
-                <button class="btn btn-warning" onclick="testWalletCapabilitiesStandalone()">
-                    ⚡ Test Wallet
-                </button>
-                <button class="btn btn-info" onclick="debugNWCConnection()">
-                    🔧 Debug NWC
+                <button class="btn btn-secondary" onclick="testWalletCapabilitiesStandalone()">
+                    🔧 Test Wallet Capabilities
                 </button>
             </div>
             <div id="wallet-info"></div>
@@ -81,7 +78,7 @@
                 <h2 class="card-title">Send Boost Metadata (metaBoost API)</h2>
             </div>
             <div id="payment-form-container">
-                <form id="real-payment-form" onsubmit="sendMetaBoostMetadata(event)">
+                <form id="real-payment-form">
                     <div class="form-group">
                         <label class="form-label">Amount (sats)</label>
                         <input type="number" class="form-input" id="payment-amount" min="1" required>
@@ -99,9 +96,11 @@
                         <label class="form-label">Payment Proof (preimage, invoice, etc.)</label>
                         <input type="text" class="form-input" id="payment-proof" required placeholder="Paste payment proof here">
                     </div>
-                    <button class="btn btn-primary" type="submit">Send metaBoost Metadata</button>
+                    <div class="button-group">
+                        <button class="btn btn-primary" type="submit">Send metaBoost Metadata</button>
+                        <button class="btn btn-secondary" type="button" onclick="sendNormalBoost()">Send Boost</button>
+                    </div>
                 </form>
-                <button class="btn btn-secondary" style="margin-top:1rem; width:100%;" onclick="sendNormalBoost()">Send Boost</button>
                 <div style="margin-top: 1rem; font-size: 0.95em; color: #aaa;">
                     <strong>How this works:</strong> Pay with your wallet, then paste the payment proof above. This will POST boost metadata to the metaBoost endpoint, following the <a href="https://github.com/Podcastindex-org/podcast-namespace/discussions/676" target="_blank">Podcastindex metaBoost proposal</a>.
                 </div>

@@ -43,3 +43,12 @@ Edit the `config` object in `customize-feed.js` to:
 - Update personal information
 
 Then run `node customize-feed.js` to regenerate the feed.
+
+---
+
+## Useful Podcasting 2.0 & V4V Ecosystem Links
+
+- [@fountain/podpay (JSR)](https://jsr.io/@fountain/podpay) — JavaScript/TypeScript library for Podcasting 2.0 payments and splits
+- [Podcastindex-org/podcast-namespace Discussion #676: <podcast:metaBoost> proposal](https://github.com/Podcastindex-org/podcast-namespace/discussions/676) — Proposal for a new tag and API for boost/metadata
+- [thebells1111/thesplitbox](https://github.com/thebells1111/thesplitbox) — Open-source value split and boostagram processor
+- [podtoo/boostagramLIVE](https://github.com/podtoo/boostagramLIVE) — Real-time boostagram display and integration
