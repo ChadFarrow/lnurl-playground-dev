@@ -195,6 +195,8 @@ function displayValueBlocks(valueBlocks) {
         lastCard.parentNode.insertBefore(card, lastCard.nextSibling);
         lastCard = card;
     });
+    // --- Payment Form Population ---
+    populatePaymentRecipients(valueBlocks);
 }
 
 // In renderValueBlock, display metaBoost endpoint if present
@@ -478,6 +480,80 @@ async function sendTestMetaBoost(endpoint) {
 
 // Expose sendTestMetaBoost to the window for inline onclick
 window.sendTestMetaBoost = sendTestMetaBoost;
+
+// --- Payment Form Population ---
+function populatePaymentRecipients(valueBlocks) {
+    const select = document.getElementById('payment-recipient');
+    if (!select) return;
+    // Clear existing options except the first
+    select.options.length = 1;
+    if (!valueBlocks || valueBlocks.length === 0) return;
+    // Use the first value block for now
+    const block = valueBlocks[0];
+    if (block.lightningAddresses) {
+        block.lightningAddresses.forEach(addr => {
+            const opt = document.createElement('option');
+            opt.value = addr.address;
+            opt.textContent = `⚡ ${addr.address}`;
+            select.appendChild(opt);
+        });
+    }
+    if (block.nodePubkeys) {
+        block.nodePubkeys.forEach(pubkey => {
+            const opt = document.createElement('option');
+            opt.value = pubkey.address;
+            opt.textContent = `🔑 ${pubkey.address}`;
+            select.appendChild(opt);
+        });
+    }
+}
+
+// --- Real Payment Logic ---
+async function sendRealPayment(event) {
+    event.preventDefault();
+    const amount = parseInt(document.getElementById('payment-amount').value, 10);
+    const message = document.getElementById('payment-message').value;
+    const recipient = document.getElementById('payment-recipient').value;
+    const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+    const nwcString = nwcInput.value.trim();
+    if (!nwcString) {
+        alert('Please connect your wallet (enter NWC string) first.');
+        return;
+    }
+    if (!recipient) {
+        alert('Please select a recipient.');
+        return;
+    }
+    if (!amount || amount < 1) {
+        alert('Please enter a valid amount.');
+        return;
+    }
+    // Dynamic import of @fountain/podpay from JSR
+    let NWC;
+    try {
+        ({ NWC } = await import('https://jsr.io/@fountain/podpay@1.0.0'));
+    } catch (e) {
+        alert('Failed to load payment library: ' + e.message);
+        return;
+    }
+    try {
+        const nwc = NWC.parse(nwcString);
+        // For demo, always use keysend (node pubkey or ln address)
+        const result = await nwc.payKeysend({
+            destination: recipient,
+            amount,
+            message
+        });
+        if (result.success) {
+            alert('Payment sent! Preimage: ' + result.preimage);
+        } else {
+            alert('Payment failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (e) {
+        alert('Payment error: ' + e.message);
+    }
+}
+window.sendRealPayment = sendRealPayment;
 
 // --- Card Hover and Keyboard Shortcuts ---
 window.addEventListener('DOMContentLoaded', () => {
