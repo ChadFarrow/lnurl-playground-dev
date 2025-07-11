@@ -92,11 +92,19 @@ function extractValueBlocks(xmlDoc) {
             if (type === 'lnaddress' && address) lightningAddresses.push({ address, name, split });
             else if (type === 'node' && address) nodePubkeys.push({ address, name, split });
         });
-        if (lightningAddresses.length > 0 || nodePubkeys.length > 0) {
+        // Detect <podcast:metaBoost> tag
+        let metaBoost = '';
+        let metaBoostEl = valueBlock.querySelector('podcast\\:metaBoost') ||
+                          valueBlock.querySelector('metaBoost') ||
+                          valueBlock.querySelector('*[local-name()="metaBoost"]');
+        if (metaBoostEl) {
+            metaBoost = metaBoostEl.textContent;
+        }
+        if (lightningAddresses.length > 0 || nodePubkeys.length > 0 || metaBoost) {
             let title = 'Value Block';
             const parentItem = valueBlock.closest('item');
             if (parentItem) title = parentItem.querySelector('title')?.textContent || title;
-            valueBlocks.push({ title, lightningAddresses, nodePubkeys, index: index + 1 });
+            valueBlocks.push({ title, lightningAddresses, nodePubkeys, metaBoost, index: index + 1 });
         }
     });
     // Fallback: scan episode text for addresses
@@ -111,6 +119,7 @@ function extractValueBlocks(xmlDoc) {
                 title,
                 lightningAddresses: textLightningAddresses.map(addr => ({ address: addr, name: '', split: '' })),
                 nodePubkeys: textNodePubkeys.map(pubkey => ({ address: pubkey, name: '', split: '' })),
+                metaBoost: '',
                 index: valueBlocks.length + index + 1
             });
         }
@@ -125,6 +134,7 @@ function extractValueBlocks(xmlDoc) {
                 title: 'Value Block (Found in XML)',
                 lightningAddresses: lightningAddresses.map(addr => ({ address: addr, name: '', split: '' })),
                 nodePubkeys: nodePubkeys.map(pubkey => ({ address: pubkey, name: '', split: '' })),
+                metaBoost: '',
                 index: 1
             });
         }
@@ -168,6 +178,7 @@ function displayValueBlocks(valueBlocks) {
     });
 }
 
+// In renderValueBlock, display metaBoost endpoint if present
 function renderValueBlock(block, index) {
     const blockElement = document.createElement('div');
     blockElement.className = 'value-block';
@@ -196,6 +207,14 @@ function renderValueBlock(block, index) {
             <button class=\"btn btn-secondary\" style=\"font-size:1rem;padding:0.3em 1em;\" onclick=\"toggleValueBlock('${detailsId}')\">Expand</button>
         </div>
         <div id=\"${detailsId}\" style=\"display:none; margin-top:1rem;\">`;
+    if (block.metaBoost) {
+        content += `
+            <div style="margin-bottom: 1rem;">
+                <strong>metaBoost Endpoint:</strong>
+                <a href="${block.metaBoost}" target="_blank" rel="noopener noreferrer">${block.metaBoost}</a>
+            </div>
+        `;
+    }
     if (block.lightningAddresses.length > 0) {
         content += `
             <div style="margin-bottom: 1rem;">
