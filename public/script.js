@@ -94,9 +94,18 @@ function extractValueBlocks(xmlDoc) {
         });
         // Detect <podcast:metaBoost> tag
         let metaBoost = '';
+        // Try namespaced and non-namespaced
         let metaBoostEl = valueBlock.querySelector('podcast\\:metaBoost') ||
-                          valueBlock.querySelector('metaBoost') ||
-                          valueBlock.querySelector('*[local-name()="metaBoost"]');
+                          valueBlock.querySelector('metaBoost');
+        if (!metaBoostEl) {
+            // Fallback: check all children for localName === 'metaBoost'
+            for (const child of valueBlock.children) {
+                if (child.localName === 'metaBoost') {
+                    metaBoostEl = child;
+                    break;
+                }
+            }
+        }
         if (metaBoostEl) {
             metaBoost = metaBoostEl.textContent;
         }
