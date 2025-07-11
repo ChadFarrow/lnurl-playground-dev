@@ -241,7 +241,7 @@ function renderValueBlock(block, index) {
                             word-break: break-all;
                         ">
                             <div style="font-weight: bold;">${pubkey.name || 'Node Pubkey'}</div>
-                            <div>${pubkey.address}</div>
+                            <a href=\"https://amboss.space/node/${pubkey.address}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #fff; text-decoration: underline;\">${pubkey.address}</a>
                             ${pubkey.split ? `<div style=\"font-size: 0.8rem; opacity: 0.8;\">Split: ${pubkey.split}%</div>` : ''}
                         </div>
                     `).join('')}
