@@ -284,9 +284,11 @@ function displayValueBlocks(valueBlocks, xmlDoc) {
         return !seenSignatures.has(episodeSignature);
     });
     
-    // Create results container for the header only
-    const resultsContainer = document.createElement('div');
-    resultsContainer.className = 'card value-blocks-results';
+    // Remove any existing results container
+    document.querySelector('.value-blocks-results')?.remove();
+    
+    // Add results summary to the RSS Feed card
+    const rssCard = document.querySelector('.card');
     
     let episodeToggleHtml = '';
     if (xmlDoc) {
@@ -311,29 +313,36 @@ function displayValueBlocks(valueBlocks, xmlDoc) {
         showBlocksSummary = ` (${showBlockDetails})`;
     }
     
-    resultsContainer.innerHTML = `
-        <div class="card-header">
-            <div class="card-icon">📊</div>
-            <h2 class="card-title">Value Blocks Found (${valueBlocks.length})</h2>
+    // Create or update results section in RSS card
+    let resultsSection = rssCard.querySelector('.rss-results');
+    if (!resultsSection) {
+        resultsSection = document.createElement('div');
+        resultsSection.className = 'rss-results';
+        resultsSection.style.cssText = `
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        `;
+        rssCard.appendChild(resultsSection);
+    }
+    
+    resultsSection.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+            <strong>📊 Value Blocks Found: ${valueBlocks.length}</strong>
         </div>
-        <div style="padding: 1rem;">
-            <div style="margin-bottom: 0.5rem;">
-                <strong>Show Blocks:</strong> ${showBlocks.length}${showBlocksSummary}${allShowBlocks.length > showBlocks.length ? ` • ${allShowBlocks.length - showBlocks.length} duplicates hidden` : ''}
-            </div>
-            <div style="margin-bottom: 0.5rem;">
-                <strong>Episode Blocks:</strong> ${finalEpisodeBlocks.length}
-            </div>
-            ${episodeToggleHtml}
+        <div style="margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <strong>Show Blocks:</strong> ${showBlocks.length}${showBlocksSummary}${allShowBlocks.length > showBlocks.length ? ` • ${allShowBlocks.length - showBlocks.length} duplicates hidden` : ''}
         </div>
+        <div style="margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <strong>Episode Blocks:</strong> ${finalEpisodeBlocks.length}
+        </div>
+        ${episodeToggleHtml}
     `;
     
-    // Insert after RSS feed card
-    const rssCard = document.querySelector('.card');
-    rssCard.parentNode.insertBefore(resultsContainer, rssCard.nextSibling);
-    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    rssCard.scrollIntoView({ behavior: 'smooth' });
     
     // Render show value blocks first
-    let lastCard = resultsContainer;
+    let lastCard = rssCard;
     showBlocks.forEach((block, index) => {
         const card = document.createElement('div');
         card.className = 'card value-block-card';
@@ -453,6 +462,18 @@ function renderValueBlock(block, index) {
             </div>
         `;
     }
+    // Add QR code section
+    content += `
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <strong>📱 QR Codes</strong>
+                <button class="btn btn-secondary" style="padding: 0.3em 1em; font-size: 0.9rem;" onclick="generateRecipientQRs('${detailsId}', ${index})">
+                    Generate QR Codes
+                </button>
+            </div>
+            <div id="qr-code-${index}" style="margin-top: 1rem;"></div>
+        </div>
+    `;
     content += `</div>`;
     blockElement.innerHTML = content;
     return blockElement;
@@ -471,6 +492,243 @@ window.toggleValueBlock = function(detailsId) {
         if (btn) btn.textContent = 'Expand';
     }
 };
+
+window.generateRecipientQRs = function(detailsId, blockIndex) {
+    const valueBlocks = window._lastValueBlocks;
+    if (!valueBlocks || !valueBlocks[blockIndex]) {
+        console.error('Value block not found');
+        return;
+    }
+    
+    const block = valueBlocks[blockIndex];
+    const qrContainer = document.getElementById(`qr-code-${blockIndex}`);
+    
+    if (!qrContainer) {
+        console.error('QR code container not found');
+        return;
+    }
+    
+    // Clear existing QR codes
+    qrContainer.innerHTML = '<div style="color: var(--text-muted); padding: 1rem;">Generating QR codes...</div>';
+    
+    const qrCodes = [];
+    
+    // Generate QR codes for Lightning addresses
+    if (block.lightningAddresses && block.lightningAddresses.length > 0) {
+        block.lightningAddresses.forEach(addr => {
+            if (addr.address) {
+                // Add Lightning address QR code
+                qrCodes.push({
+                    type: 'Lightning Address',
+                    name: addr.name || 'Lightning Address',
+                    address: addr.address,
+                    split: addr.split,
+                    qrData: addr.address,
+                    format: 'Lightning Address'
+                });
+                
+                // Also add LNURL-pay QR code
+                const lnurlPayUrl = convertLightningAddressToLNURL(addr.address);
+                qrCodes.push({
+                    type: 'LNURL-pay',
+                    name: `${addr.name || 'Lightning Address'} (LNURL)`,
+                    address: addr.address,
+                    split: addr.split,
+                    qrData: lnurlPayUrl,
+                    format: 'LNURL-pay'
+                });
+            }
+        });
+    }
+    
+    // Generate QR codes for node pubkeys (as Lightning URIs)
+    if (block.nodePubkeys && block.nodePubkeys.length > 0) {
+        block.nodePubkeys.forEach(pubkey => {
+            if (pubkey.address) {
+                qrCodes.push({
+                    type: 'Node Pubkey',
+                    name: pubkey.name || 'Node Pubkey',
+                    address: pubkey.address,
+                    split: pubkey.split,
+                    qrData: `lightning:${pubkey.address}` // Lightning URI format
+                });
+            }
+        });
+    }
+    
+    if (qrCodes.length === 0) {
+        qrContainer.innerHTML = '<div style="color: var(--text-muted); padding: 1rem;">No Lightning addresses or node pubkeys found</div>';
+        return;
+    }
+    
+    // Generate individual QR codes
+    generateIndividualQRs(qrContainer, qrCodes, block);
+};
+
+// Convert Lightning address to LNURL-pay format
+function convertLightningAddressToLNURL(lightningAddress) {
+    // Lightning address format: user@domain.com
+    // LNURL-pay format: https://domain.com/.well-known/lnurlp/user
+    
+    const parts = lightningAddress.split('@');
+    if (parts.length !== 2) {
+        console.error('Invalid Lightning address format:', lightningAddress);
+        return lightningAddress; // Return as-is if invalid
+    }
+    
+    const [username, domain] = parts;
+    const lnurlPayUrl = `https://${domain}/.well-known/lnurlp/${username}`;
+    
+    // Encode the URL as bech32 LNURL (as per LUD-01)
+    try {
+        // For now, return the raw URL - wallets can handle both formats
+        // In a full implementation, you'd encode this as bech32 starting with 'lnurl'
+        return lnurlPayUrl;
+    } catch (error) {
+        console.error('Failed to convert to LNURL:', error);
+        return lightningAddress; // Fallback to Lightning address
+    }
+}
+
+// Generate individual QR codes for each recipient
+function generateIndividualQRs(qrContainer, qrCodes, block) {
+    qrContainer.innerHTML = '';
+    
+    // Create grid container
+    const gridContainer = document.createElement('div');
+    gridContainer.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    `;
+    
+    qrCodes.forEach((qrCode, index) => {
+        const qrCard = document.createElement('div');
+        qrCard.style.cssText = `
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        `;
+        
+        // QR code title
+        const title = document.createElement('div');
+        title.style.cssText = `
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        `;
+        title.textContent = `${qrCode.name}${qrCode.split ? ` (${qrCode.split}%)` : ''}`;
+        
+        // QR code image (centered)
+        const img = document.createElement('img');
+        const encodedData = encodeURIComponent(qrCode.qrData);
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedData}`;
+        
+        img.src = qrUrl;
+        img.alt = `QR Code for ${qrCode.name}`;
+        img.style.cssText = `
+            width: 180px;
+            height: 180px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            padding: 8px;
+            margin: 0.5rem auto;
+            display: block;
+        `;
+        
+        // Format badge (below QR code)
+        const formatBadge = document.createElement('div');
+        formatBadge.style.cssText = `
+            font-size: 0.7rem;
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin: 0.5rem auto;
+            display: inline-block;
+        `;
+        formatBadge.textContent = qrCode.format || qrCode.type;
+        
+        // Address display
+        const addressDiv = document.createElement('div');
+        addressDiv.style.cssText = `
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        `;
+        addressDiv.textContent = qrCode.address;
+        
+        // Buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.style.cssText = `
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 0.5rem;
+        `;
+        
+        // Download button
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'btn btn-primary';
+        downloadBtn.style.cssText = `
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        `;
+        downloadBtn.innerHTML = '💾';
+        downloadBtn.onclick = function() {
+            const link = document.createElement('a');
+            link.download = `${qrCode.name.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
+            link.href = qrUrl;
+            link.click();
+        };
+        
+        // Copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-secondary';
+        copyBtn.style.cssText = `
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        `;
+        copyBtn.innerHTML = '📋';
+        copyBtn.onclick = function() {
+            navigator.clipboard.writeText(qrCode.qrData).then(() => {
+                copyBtn.innerHTML = '✅';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '📋';
+                }, 2000);
+            });
+        };
+        
+        buttonsContainer.appendChild(downloadBtn);
+        buttonsContainer.appendChild(copyBtn);
+        
+        // Error handling
+        img.onerror = function() {
+            img.style.display = 'none';
+            const errorDiv = document.createElement('div');
+            errorDiv.style.color = 'var(--accent-danger)';
+            errorDiv.textContent = 'Failed to generate QR code';
+            qrCard.insertBefore(errorDiv, addressDiv);
+        };
+        
+        qrCard.appendChild(title);
+        qrCard.appendChild(img);
+        qrCard.appendChild(formatBadge);
+        qrCard.appendChild(addressDiv);
+        qrCard.appendChild(buttonsContainer);
+        
+        gridContainer.appendChild(qrCard);
+    });
+    
+    qrContainer.appendChild(gridContainer);
+}
+
 
 window.loadMoreEpisodes = function() {
     if (!window._lastXmlDoc || window._allEpisodesLoaded) return;
