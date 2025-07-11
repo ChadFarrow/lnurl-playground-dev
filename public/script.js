@@ -146,7 +146,7 @@ function extractNodePubkeys(text) {
 function displayValueBlocks(valueBlocks) {
     // Remove any existing results
     document.querySelector('.value-blocks-results')?.remove();
-    // Create results container
+    // Create results container for the header only
     const resultsContainer = document.createElement('div');
     resultsContainer.className = 'card value-blocks-results';
     resultsContainer.innerHTML = `
@@ -155,13 +155,17 @@ function displayValueBlocks(valueBlocks) {
             <h2 class="card-title">Value Blocks Found (${valueBlocks.length})</h2>
         </div>
     `;
-    valueBlocks.forEach((block, index) => {
-        resultsContainer.appendChild(renderValueBlock(block, index));
-    });
     // Insert after RSS feed card
     const rssCard = document.querySelector('.card');
     rssCard.parentNode.insertBefore(resultsContainer, rssCard.nextSibling);
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    // Render each value block as its own card
+    valueBlocks.forEach((block, index) => {
+        const card = document.createElement('div');
+        card.className = 'card value-block-card';
+        card.appendChild(renderValueBlock(block, index));
+        resultsContainer.parentNode.insertBefore(card, resultsContainer.nextSibling);
+    });
 }
 
 function renderValueBlock(block, index) {
@@ -191,8 +195,7 @@ function renderValueBlock(block, index) {
             <h3 style=\"color: var(--text-primary); margin-bottom: 0.5rem; margin-right: 1rem;\">${block.title}</h3>
             <button class=\"btn btn-secondary\" style=\"font-size:1rem;padding:0.3em 1em;\" onclick=\"toggleValueBlock('${detailsId}')\">Expand</button>
         </div>
-        <div id=\"${detailsId}\" style=\"display:none; margin-top:1rem;\">
-    `;
+        <div id=\"${detailsId}\" style=\"display:none; margin-top:1rem;\">`;
     if (block.lightningAddresses.length > 0) {
         content += `
             <div style="margin-bottom: 1rem;">
