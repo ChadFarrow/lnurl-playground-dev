@@ -186,12 +186,14 @@ function displayValueBlocks(valueBlocks) {
     const rssCard = document.querySelector('.card');
     rssCard.parentNode.insertBefore(resultsContainer, rssCard.nextSibling);
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
-    // Render each value block as its own card
+    // Render each value block as its own card, in order, after the previous card
+    let lastCard = resultsContainer;
     valueBlocks.forEach((block, index) => {
         const card = document.createElement('div');
         card.className = 'card value-block-card';
         card.appendChild(renderValueBlock(block, index));
-        resultsContainer.parentNode.insertBefore(card, resultsContainer.nextSibling);
+        lastCard.parentNode.insertBefore(card, lastCard.nextSibling);
+        lastCard = card;
     });
 }
 
