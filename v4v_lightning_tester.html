@@ -12,32 +12,26 @@
         }
 
         :root {
-            --bg-primary: #0f1419;
-            --bg-secondary: #1a2332;
-            --bg-card: #233447;
-            --bg-card-hover: #2a3f56;
-            --accent-primary: #f7931a;
-            --accent-secondary: #6366f1;
-            --accent-success: #10b981;
-            --accent-danger: #ef4444;
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-card: #333333;
+            --bg-card-hover: #3a3a3a;
+            --accent-primary: #0066cc;
+            --accent-secondary: #666666;
+            --accent-success: #008800;
+            --accent-danger: #cc3333;
             --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: #374151;
-            --shadow-glow: 0 0 20px rgba(247, 147, 26, 0.1);
-            --gradient-primary: linear-gradient(135deg, #f7931a 0%, #ff6b35 100%);
-            --gradient-secondary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --text-secondary: #cccccc;
+            --text-muted: #999999;
+            --border-color: #555555;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(247, 147, 26, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
         }
 
         .container {
@@ -52,27 +46,12 @@
             position: relative;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: var(--gradient-primary);
-            border-radius: 2px;
-        }
 
         .title {
-            font-size: 3rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin-bottom: 1rem;
-            letter-spacing: -0.02em;
         }
 
         .subtitle {
@@ -102,8 +81,6 @@
         }
 
         .theme-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
             background: var(--bg-card-hover);
         }
 
@@ -118,19 +95,8 @@
             overflow: hidden;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-primary);
-        }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             border-color: var(--accent-primary);
         }
 
@@ -144,7 +110,7 @@
         .card-icon {
             width: 24px;
             height: 24px;
-            background: var(--gradient-primary);
+            background: var(--accent-primary);
             border-radius: 6px;
             display: flex;
             align-items: center;
@@ -174,21 +140,18 @@
 
         .form-input {
             width: 100%;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 1rem;
             background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             color: var(--text-primary);
             font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: inherit;
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.1);
-            transform: translateY(-1px);
         }
 
         .form-input::placeholder {
@@ -202,77 +165,55 @@
         }
 
         .btn {
-            padding: 0.875rem 1.5rem;
+            padding: 0.75rem 1.25rem;
             border: none;
-            border-radius: 12px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            position: relative;
-            overflow: hidden;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
 
-        .btn:hover::before {
-            left: 100%;
-        }
 
         .btn-primary {
-            background: var(--gradient-primary);
+            background: var(--accent-primary);
             color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(247, 147, 26, 0.3);
+            opacity: 0.9;
         }
 
         .btn-secondary {
-            background: var(--gradient-secondary);
+            background: var(--accent-secondary);
             color: white;
         }
 
         .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            opacity: 0.9;
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: var(--accent-danger);
             color: white;
         }
 
         .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+            opacity: 0.9;
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: var(--accent-success);
             color: white;
         }
 
         .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+            opacity: 0.9;
         }
 
         .quick-test {
-            background: var(--gradient-secondary);
-            border-radius: 12px;
+            background: var(--accent-secondary);
+            border-radius: 6px;
             padding: 1.5rem;
             margin-bottom: 1rem;
         }
@@ -315,23 +256,7 @@
             overflow: hidden;
         }
 
-        .status-bar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--gradient-primary);
-            transform: translateX(-100%);
-            animation: loading 2s infinite;
-        }
 
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-            100% { transform: translateX(100%); }
-        }
 
         .status-indicator {
             display: inline-block;
@@ -340,24 +265,14 @@
             border-radius: 50%;
             background: var(--accent-success);
             margin-right: 0.5rem;
-            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
 
         .lightning-icon {
             display: inline-block;
             color: var(--accent-primary);
-            animation: flash 3s infinite;
         }
 
-        @keyframes flash {
-            0%, 90%, 100% { opacity: 1; }
-            95% { opacity: 0.5; }
-        }
 
         @media (max-width: 768px) {
             .title {
@@ -396,12 +311,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
+            background: var(--accent-secondary);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #ff8c42;
+            background: var(--accent-primary);
         }
     </style>
 </head>

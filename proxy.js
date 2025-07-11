@@ -1,25 +1,22 @@
 const express = require('express');
-const fetch = require('node-fetch');
-const cors = require('cors');
-
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3001;
 
-app.get('/proxy', async (req, res) => {
-  const url = req.query.url;
-  if (!url) return res.status(400).send('Missing url');
-  try {
-    const response = await fetch(url);
-    const contentType = response.headers.get('content-type') || 'application/xml';
-    res.set('Content-Type', contentType);
-    const body = await response.text();
-    res.send(body);
-  } catch (e) {
-    res.status(500).send('Failed to fetch: ' + e.message);
-  }
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Serve static files from public directory
+app.use(express.static('public'));
+
+// Your metaBoost endpoint
+app.post('/api/metaboost', (req, res) => {
+  console.log('Received metaBoost:', req.body);
+  // You can save to a database, file, or just respond
+  res.json({ status: 'ok', received: req.body });
 });
 
-const PORT = process.env.PORT || 3001;
+// Remove the root endpoint since we're serving static files
+
 app.listen(PORT, () => {
-  console.log(`Proxy server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 }); 
