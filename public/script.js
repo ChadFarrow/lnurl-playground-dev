@@ -197,6 +197,8 @@ function displayValueBlocks(valueBlocks) {
     });
     // --- Payment Form Population ---
     populatePaymentRecipients(valueBlocks);
+    // Store last value blocks for use in the form
+    window._lastValueBlocks = valueBlocks;
 }
 
 // In renderValueBlock, display metaBoost endpoint if present
@@ -554,6 +556,56 @@ async function sendRealPayment(event) {
     }
 }
 window.sendRealPayment = sendRealPayment;
+
+// --- metaBoost Metadata Submission ---
+async function sendMetaBoostMetadata(event) {
+    event.preventDefault();
+    const amount = parseInt(document.getElementById('payment-amount').value, 10);
+    const message = document.getElementById('payment-message').value;
+    const recipient = document.getElementById('payment-recipient').value;
+    const paymentProof = document.getElementById('payment-proof').value;
+    if (!recipient) {
+        alert('Please select a recipient.');
+        return;
+    }
+    if (!amount || amount < 1) {
+        alert('Please enter a valid amount.');
+        return;
+    }
+    if (!paymentProof) {
+        alert('Please paste the payment proof.');
+        return;
+    }
+    // Find metaBoost endpoint from the first value block
+    const valueBlocks = window._lastValueBlocks || [];
+    const metaBoost = valueBlocks[0]?.metaBoost;
+    if (!metaBoost) {
+        alert('No metaBoost endpoint found in the feed.');
+        return;
+    }
+    // Build metadata payload
+    const payload = {
+        podcast: valueBlocks[0]?.title || '',
+        episode: valueBlocks[0]?.title || '',
+        recipient,
+        amount,
+        message,
+        payment_proof: paymentProof,
+        timestamp: new Date().toISOString()
+    };
+    try {
+        const res = await fetch(metaBoost, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert('metaBoost response: ' + JSON.stringify(data, null, 2));
+    } catch (e) {
+        alert('metaBoost error: ' + e.message);
+    }
+}
+window.sendMetaBoostMetadata = sendMetaBoostMetadata;
 
 // --- Card Hover and Keyboard Shortcuts ---
 window.addEventListener('DOMContentLoaded', () => {
