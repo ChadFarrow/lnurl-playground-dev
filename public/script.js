@@ -165,6 +165,14 @@ function extractNodePubkeys(text) {
 function displayValueBlocks(valueBlocks) {
     // Remove any existing results
     document.querySelector('.value-blocks-results')?.remove();
+    // Sort so Show Value Block(s) come first
+    valueBlocks.sort((a, b) => {
+        const isShowA = a.title === 'Value Block' || a.title === 'Value Block (Found in XML)';
+        const isShowB = b.title === 'Value Block' || b.title === 'Value Block (Found in XML)';
+        if (isShowA && !isShowB) return -1;
+        if (!isShowA && isShowB) return 1;
+        return 0;
+    });
     // Create results container for the header only
     const resultsContainer = document.createElement('div');
     resultsContainer.className = 'card value-blocks-results';
