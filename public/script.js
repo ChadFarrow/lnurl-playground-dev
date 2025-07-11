@@ -228,9 +228,12 @@ function renderValueBlock(block, index) {
         <div id=\"${detailsId}\" style=\"display:none; margin-top:1rem;\">`;
     if (block.metaBoost) {
         content += `
-            <div style="margin-bottom: 1rem;">
-                <strong>metaBoost Endpoint:</strong>
-                <a href="${block.metaBoost}" target="_blank" rel="noopener noreferrer">${block.metaBoost}</a>
+            <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <div>
+                    <strong>metaBoost Endpoint:</strong>
+                    <a href="${block.metaBoost}" target="_blank" rel="noopener noreferrer">${block.metaBoost}</a>
+                </div>
+                <button class="btn btn-primary" style="padding: 0.3em 1em; font-size: 1rem;" onclick="sendTestMetaBoost('${block.metaBoost}')">Send Test Boost</button>
             </div>
         `;
     }
@@ -448,6 +451,33 @@ function displayWalletCapabilities(walletInfo) {
     walletCard.parentNode.insertBefore(capabilitiesDiv, walletCard.nextSibling);
     capabilitiesDiv.scrollIntoView({ behavior: 'smooth' });
 }
+
+// Add this function to send a test metaBoost
+async function sendTestMetaBoost(endpoint) {
+    const payload = {
+        podcast: "Test Show",
+        episode: "LNURL Testing Episode",
+        sender: "testuser@wallet.com",
+        amount: 1000,
+        message: "Great episode!",
+        payment_proof: "test-proof",
+        timestamp: new Date().toISOString()
+    };
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert('metaBoost response: ' + JSON.stringify(data, null, 2));
+    } catch (e) {
+        alert('metaBoost error: ' + e.message);
+    }
+}
+
+// Expose sendTestMetaBoost to the window for inline onclick
+window.sendTestMetaBoost = sendTestMetaBoost;
 
 // --- Card Hover and Keyboard Shortcuts ---
 window.addEventListener('DOMContentLoaded', () => {
