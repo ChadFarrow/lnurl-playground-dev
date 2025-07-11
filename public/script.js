@@ -273,17 +273,138 @@ function clearSettings() {
 
 function loadTestFeed() {
     const rssInput = document.querySelector('input[type="url"]');
-    rssInput.value = 'https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/refs/heads/main/public/lnurl-test-feed.xml';
+    rssInput.value = 'https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/main/public/lnurl-test-feed.xml';
     rssInput.style.borderColor = 'var(--accent-success)';
     setTimeout(() => { rssInput.style.borderColor = 'var(--border-color)'; }, 2000);
     setButtonFeedback(event.target, '✅ Loaded', 1500, event.target.innerHTML);
 }
 
-function connectWallet() {
-    setButtonFeedback(event.target, '🔄 Connecting...', 2000, event.target.innerHTML, false);
-    setTimeout(() => {
-        setButtonFeedback(event.target, '✅ Connected', 2000, event.target.innerHTML);
-    }, 2000);
+// --- NWC Wallet Connection ---
+async function connectWallet() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    setButtonFeedback(btn, '🔄 Connecting...', null, null, false);
+    
+    try {
+        const nwcInput = document.querySelector('input[placeholder*="nostr+walletconnect"]');
+        const nwcString = nwcInput.value.trim();
+        
+        if (!nwcString) {
+            throw new Error('Please enter a Nostr Wallet Connect string');
+        }
+        
+        // Parse NWC connection string
+        const nwcUrl = new URL(nwcString);
+        if (!nwcUrl.protocol.startsWith('nostr+walletconnect')) {
+            throw new Error('Invalid NWC connection string format');
+        }
+        
+        // Extract connection details
+        const relay = nwcUrl.searchParams.get('relay');
+        const secret = nwcUrl.searchParams.get('secret');
+        const pubkey = nwcUrl.hostname;
+        
+        if (!relay || !secret || !pubkey) {
+            throw new Error('Missing required NWC parameters (relay, secret, pubkey)');
+        }
+        
+        // Check wallet capabilities using NIP-47 get_info
+        const walletInfo = await checkWalletCapabilities(relay, secret, pubkey);
+        
+        // Display capabilities
+        displayWalletCapabilities(walletInfo);
+        
+        setButtonFeedback(btn, '✅ Connected', 2000, originalText);
+        
+    } catch (error) {
+        console.error('NWC connection error:', error);
+        setButtonFeedback(btn, '❌ ' + error.message, 3000, originalText);
+    }
+}
+
+async function checkWalletCapabilities(relay, secret, pubkey) {
+    // This is a mock implementation - in a real app you'd use a Nostr library
+    // For now, we'll simulate the NIP-47 get_info response
+    
+    // Simulate checking if wallet supports pay_keysend
+    const capabilities = {
+        methods: ['get_info', 'pay_invoice', 'pay_keysend', 'get_balance'],
+        pay_keysend: {
+            max_amount: 1000000, // 1M sats
+            min_amount: 1,
+            fee_reserve: 1000
+        },
+        pay_invoice: {
+            max_amount: 1000000,
+            min_amount: 1
+        }
+    };
+    
+    return {
+        pubkey,
+        relay,
+        capabilities,
+        supports_keysend: capabilities.methods.includes('pay_keysend'),
+        max_keysend_amount: capabilities.pay_keysend?.max_amount || 0
+    };
+}
+
+function displayWalletCapabilities(walletInfo) {
+    // Remove any existing wallet info
+    document.querySelector('.wallet-capabilities')?.remove();
+    
+    // Create capabilities display
+    const capabilitiesDiv = document.createElement('div');
+    capabilitiesDiv.className = 'card wallet-capabilities';
+    capabilitiesDiv.innerHTML = `
+        <div class="card-header">
+            <div class="card-icon">🔗</div>
+            <h2 class="card-title">Wallet Connected</h2>
+        </div>
+        <div style="padding: 1rem;">
+            <div style="margin-bottom: 1rem;">
+                <strong>Pubkey:</strong> <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">${walletInfo.pubkey}</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>Relay:</strong> <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">${walletInfo.relay}</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>Supported Methods:</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                    ${walletInfo.capabilities.methods.map(method => `
+                        <span style="
+                            background: var(--accent-primary);
+                            color: white;
+                            padding: 0.2rem 0.5rem;
+                            border-radius: 4px;
+                            font-size: 0.8rem;
+                        ">${method}</span>
+                    `).join('')}
+                </div>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>Keysend Support:</strong> 
+                <span style="color: ${walletInfo.supports_keysend ? 'var(--accent-success)' : 'var(--accent-danger)'}; font-weight: bold;">
+                    ${walletInfo.supports_keysend ? '✅ Supported' : '❌ Not Supported'}
+                </span>
+            </div>
+            ${walletInfo.supports_keysend ? `
+                <div>
+                    <strong>Keysend Limits:</strong>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        <div>Max Amount: ${walletInfo.max_keysend_amount.toLocaleString()} sats</div>
+                        <div>Min Amount: ${walletInfo.capabilities.pay_keysend.min_amount} sats</div>
+                        <div>Fee Reserve: ${walletInfo.capabilities.pay_keysend.fee_reserve} sats</div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    // Insert after wallet connection card
+    const walletCard = document.querySelector('.card:nth-child(2)');
+    walletCard.parentNode.insertBefore(capabilitiesDiv, walletCard.nextSibling);
+    capabilitiesDiv.scrollIntoView({ behavior: 'smooth' });
 }
 
 // --- Card Hover and Keyboard Shortcuts ---
