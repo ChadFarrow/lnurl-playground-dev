@@ -63,6 +63,9 @@
     <li>
       <a href="/autopay">Auto Pay</a>
     </li>
+    <li>
+      <a href="/qr">⚡ Lightning Prism QR</a>
+    </li>
   </ul>
 </nav>
 

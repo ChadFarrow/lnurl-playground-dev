@@ -9,7 +9,7 @@
     albyClientId,
   } from "$lib/state.svelte.js";
 
-  let recipient = { lnaddress: "chadf@getalby.com", amount: 100 };
+  let recipient = { lnaddress: "lushnessprecious644398@getalby.com", amount: 100 };
   let invoiceRoute = `${remoteServer}/invoice?address=${recipient.lnaddress}`;
   let webhookRoute = `${remoteServer}/webhook-sync`;
   let invoice = "";

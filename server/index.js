@@ -10,6 +10,7 @@ import albyHubRoutes from "./routes/albyhub/albyHubRoutes.js";
 import splitBoxRouter from "./routes/splitbox/router.js";
 import wellknownRoutes from "./routes/wellknown/wellknownRoutes.js";
 import prismRoutes from "./routes/prism/router.js";
+import qrHandler from "./routes/qr.js";
 
 const PORT = 3000; // Server port
 const app = express();
@@ -19,7 +20,7 @@ dotenv.config();
 app.use(cookieParser());
 
 if (process.env.NODE_ENV === "development") {
-  const allowedOrigins = ["http://localhost:5173"];
+  const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "*"];
 
   app.use(
     cors({
@@ -64,6 +65,8 @@ if (process.env.ALBY_JWT && process.env.ALBY_JWT !== "this is a random 36 charac
 }
 
 app.use("/albyhub", albyHubRoutes());
+
+app.get("/qr", cors({ origin: "http://localhost:5173" }), qrHandler);
 
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
 
