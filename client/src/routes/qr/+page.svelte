@@ -91,10 +91,9 @@
         <div class="info">
           <p><strong>Amount:</strong> {amount} sats</p>
           <p><strong>Recipient:</strong> lushnessprecious644398@getalby.com (TheSplitBox)</p>
-          <p><strong>Splits to 8 recipients:</strong></p>
+          <p><strong>Splits from RSS feed value block:</strong></p>
           <ul>
-            <li>15% each → chadf@getalby.com, chadf@strike.me, chadf@btcpay.podtards.com</li>
-            <li>15% each → Zeus, Primal, MyNode</li>
+            <li>15% each → Alby, Strike, BTCPay, Zeus, Primal, MyNode</li>
             <li>5% each → Wolf, Podcast Index</li>
           </ul>
         </div>

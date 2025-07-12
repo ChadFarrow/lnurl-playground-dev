@@ -101,56 +101,32 @@ async function sendLightningPayment(recipient, amountSats, nwcConfig) {
     const clientPrivkey = secret;
     const clientPubkey = getPublicKey(clientPrivkey);
 
-    // Create invoice request first
-    const invoiceRequest = {
-      method: "make_invoice",
-      params: {
-        amount: amountSats * 1000, // Convert to msats
-        description: `Split payment to ${recipient}`
-      },
-      id: crypto.randomUUID()
-    };
-
-    // Encrypt and send invoice request
-    const encryptedInvoiceContent = await nip04.encrypt(clientPrivkey, walletPubkey, JSON.stringify(invoiceRequest));
-    const invoiceEvent = finalizeEvent({
-      kind: 23194,
-      created_at: Math.floor(Date.now() / 1000),
-      tags: [["p", walletPubkey]],
-      content: encryptedInvoiceContent,
-    }, clientPrivkey);
-
-    await relay.publish(invoiceEvent);
-
-    // Wait for invoice response
-    const invoiceResponse = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error("Invoice timeout")), 15000);
+    // First, get invoice from the recipient's Lightning address
+    let invoice;
+    if (recipient.includes('@')) {
+      // Lightning address - use LNURL to get invoice from recipient
+      const [name, server] = recipient.split("@");
+      const paymentUrl = `https://${server}/.well-known/lnurlp/${name}`;
       
-      const sub = relay.subscribe([{
-        kinds: [23195],
-        authors: [walletPubkey],
-        "#p": [clientPubkey],
-        since: Math.floor(Date.now() / 1000) - 5
-      }], {
-        onevent(responseEvent) {
-          clearTimeout(timeout);
-          sub.close();
-          resolve(responseEvent);
-        }
-      });
-    });
-
-    const decryptedInvoiceResponse = await nip04.decrypt(clientPrivkey, walletPubkey, invoiceResponse.content);
-    const invoiceData = JSON.parse(decryptedInvoiceResponse);
-    
-    if (invoiceData.error) {
-      throw new Error(invoiceData.error.message || "Invoice creation failed");
+      const res = await fetch(paymentUrl);
+      const data = await res.json();
+      
+      if (!data.callback) {
+        throw new Error("Callback URL missing in LNURLP response");
+      }
+      
+      const invoiceRes = await fetch(
+        `${data.callback}?amount=${amountSats * 1000}`
+      );
+      const invoiceData = await invoiceRes.json();
+      invoice = invoiceData.pr;
+      
+      console.log(`Got invoice from ${recipient}: ${invoice}`);
+    } else {
+      throw new Error("Node payments not supported via NWC in this implementation");
     }
 
-    const invoice = invoiceData.result.invoice;
-    console.log(`Created invoice for ${recipient}: ${invoice}`);
-
-    // Now pay the invoice
+    // Now pay the external invoice using NWC
     const paymentRequest = {
       method: "pay_invoice", 
       params: { invoice },
@@ -220,6 +196,12 @@ function webhookSync(storeMetadata) {
       const data = req.body;
       console.log("Webhook received:", data);
 
+      // Only process incoming payments, not outgoing split payments
+      if (data.type === 'outgoing' || data.state === 'SETTLED' && data.type === 'outgoing') {
+        console.log("Skipping outgoing payment webhook");
+        return res.json({ success: true, reason: "Outgoing payment ignored" });
+      }
+
       // Handle both old format (payment_request) and new NWC format (preimage only)
       let preimage = data.preimage || data.payment_preimage;
       let invoice = data.payment_request;
@@ -232,10 +214,9 @@ function webhookSync(storeMetadata) {
         if (invoice) {
           storedPayment = await storeMetadata.getByInvoice(invoice);
         } else {
-          // For NWC payments, we need to find by ID or other means
-          // Let's get all payments and find the most recent one
-          const allPayments = await storeMetadata.getAll();
-          storedPayment = allPayments[allPayments.length - 1]; // Get the most recent
+          // For webhooks without invoice, skip processing split payments
+          console.log("No invoice in webhook - likely a split payment, skipping");
+          return res.json({ success: true, reason: "No invoice provided" });
         }
 
         if (storedPayment) {
@@ -250,12 +231,54 @@ function webhookSync(storeMetadata) {
 
           const { metadata, id, parentAddress } = storedPayment;
           
-          // Get the splits configuration
-          const settings = await storeMetadata.fetchSettings(parentAddress);
-          console.log("Settings for", parentAddress, ":", settings);
+          // Get splits directly from RSS feed URL since we have it
+          console.log("Getting splits from RSS feed for metadata:", metadata);
+          let rssFeeds = [];
           
-          if (settings && settings.splits) {
-            console.log("Processing splits:", settings.splits);
+          if (metadata.url) {
+            try {
+              const feedUrl = metadata.url;
+              console.log("Fetching RSS feed directly from:", feedUrl);
+              
+              const response = await fetch(feedUrl);
+              const feedText = await response.text();
+              
+              // Parse RSS feed to extract value recipients
+              const { parse } = await import("fast-xml-parser");
+              const parserOptions = {
+                attributeNamePrefix: "@_",
+                ignoreAttributes: false,
+                ignoreNameSpace: false,
+              };
+              
+              const feedData = parse(feedText, parserOptions);
+              const channel = feedData.rss.channel;
+              
+              // Get value recipients from channel level
+              const valueRecipients = channel["podcast:value"]?.["podcast:valueRecipient"];
+              console.log("Found value recipients:", valueRecipients);
+              
+              if (valueRecipients && Array.isArray(valueRecipients)) {
+                rssFeeds = valueRecipients.map(recipient => ({
+                  address: recipient["@_address"],
+                  name: recipient["@_name"],
+                  split: parseFloat(recipient["@_split"]),
+                  type: recipient["@_type"]
+                }));
+              }
+              
+              console.log("Parsed RSS feed splits:", rssFeeds);
+            } catch (error) {
+              console.error("Error parsing RSS feed:", error);
+              rssFeeds = [];
+            }
+          } else {
+            console.log("No RSS feed URL in metadata, falling back to getSplits");
+            rssFeeds = await getSplits({ metadata });
+          }
+          
+          if (rssFeeds && rssFeeds.length > 0) {
+            console.log("Processing RSS feed splits:", rssFeeds);
             
             // Calculate split amounts
             const totalSats = Math.floor(metadata.value_msat_total / 1000);
@@ -263,6 +286,7 @@ function webhookSync(storeMetadata) {
             
             // Determine payment method
             const { NWC_CONNECTION_STRING } = process.env;
+            const settings = await storeMetadata.fetchSettings(parentAddress);
             const { ALBY_ACCESS_TOKEN } = settings; // Get Alby token from settings
             
             let paymentMethod = "none";
@@ -289,17 +313,18 @@ function webhookSync(storeMetadata) {
               console.log("⚠️ No payment method configured - simulating payments only");
             }
             
+            // Convert RSS feed splits to the format expected by payment functions
+            let validSplits = rssFeeds.map(split => ({
+              address: split.address,
+              name: split.name,
+              percentage: split.split,
+              type: split.type === 'node' ? 'node' : 'lnaddress'
+            }));
+            
             // Filter splits based on payment method
-            let validSplits = [];
-            if (paymentMethod === "nwc") {
-              // NWC can handle most Lightning addresses
-              validSplits = settings.splits.filter(split => 
-                split.address.includes('@') || // Lightning addresses
-                split.address.match(/^[0-9a-fA-F]{66}$/) // Node pubkeys
-              );
-            } else if (paymentMethod === "alby") {
-              // Alby API can handle most addresses
-              validSplits = settings.splits.filter(split => 
+            if (paymentMethod === "nwc" || paymentMethod === "alby") {
+              // Both can handle Lightning addresses and node pubkeys
+              validSplits = validSplits.filter(split => 
                 split.address.includes('@') || // Lightning addresses
                 split.address.match(/^[0-9a-fA-F]{66}$/) // Node pubkeys
               );
@@ -357,8 +382,14 @@ function webhookSync(storeMetadata) {
               }
             }
             
-            // Add simulated results for other recipients
-            const otherSplits = settings.splits.filter(split => 
+            // Add simulated results for other recipients  
+            const allRSSFeeds = rssFeeds.map(split => ({
+              address: split.address,
+              name: split.name,
+              percentage: split.split,
+              type: split.type === 'node' ? 'node' : 'lnaddress'
+            }));
+            const otherSplits = allRSSFeeds.filter(split => 
               !validSplits.some(valid => valid.address === split.address)
             );
             
@@ -395,7 +426,7 @@ function webhookSync(storeMetadata) {
               message: `Real payments: ${realPayments} sent, ${failedPayments} failed, ${simulatedPayments} simulated`
             });
           } else {
-            res.json({ success: false, reason: "No splits configuration found" });
+            res.json({ success: false, reason: "No RSS feed splits found" });
           }
         } else {
           res.json({ success: false, reason: "Payment not found in store" });
