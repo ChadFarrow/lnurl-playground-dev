@@ -5,7 +5,7 @@
 
   import tlv from "./tlv.js";
 
-  let recipient = { lnaddress: "steven@getalby.com", amount: 100 };
+  let recipient = { lnaddress: "lushnessprecious644398@getalby.com", amount: 100 };
   let boostagram = "Boost";
   let invoice = "";
   let qrCodeCanvas;

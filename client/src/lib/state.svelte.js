@@ -1,11 +1,11 @@
 import { dev } from "$app/environment";
 
 export const remoteServer = dev
-  ? "http://localhost:3000"
+  ? "http://Chads-Mac-mini.local:3000"
   : "https://thesplitbox.com";
 export const albyClientId = "hzopQVxGtD";
 export const albyRedirectUrl = dev
-  ? "http://localhost:5173"
+  ? "http://Chads-Mac-mini.local:4000"
   : "https://thesplitbox.com";
 
 export const user = $state({

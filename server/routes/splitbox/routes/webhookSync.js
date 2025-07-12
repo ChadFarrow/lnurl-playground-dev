@@ -5,6 +5,7 @@ import { finalizeEvent, generateSecretKey, getPublicKey, nip04 } from "nostr-too
 import { Relay } from "nostr-tools/relay";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config();
 
@@ -16,9 +17,82 @@ function parseNWCConnectionString(connectionString) {
   return { walletPubkey, secret, relayUrl };
 }
 
+// New function to send payments via Alby API
+async function sendAlbyPayment(recipient, amountSats, accessToken) {
+  try {
+    console.log(`Sending ${amountSats} sats to ${recipient} via Alby API`);
+    
+    // Check if it's a Lightning address or node pubkey
+    if (recipient.includes('@')) {
+      // Lightning address - use LNURL
+      const [name, server] = recipient.split("@");
+      const paymentUrl = `https://${server}/.well-known/lnurlp/${name}`;
+      
+      const res = await fetch(paymentUrl);
+      const data = await res.json();
+      
+      if (!data.callback) {
+        throw new Error("Callback URL missing in LNURLP response");
+      }
+      
+      const invoiceRes = await fetch(
+        `${data.callback}?amount=${amountSats * 1000}`
+      );
+      const invoiceData = await invoiceRes.json();
+      const invoice = invoiceData.pr;
+      
+      const paymentRes = await axios.post(
+        "https://api.getalby.com/payments/bolt11",
+        { invoice },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      
+      return {
+        recipient,
+        amount_sats: amountSats,
+        status: "paid",
+        payment_hash: paymentRes.data.payment_hash,
+        preimage: paymentRes.data.preimage
+      };
+    } else {
+      // Node pubkey - use keysend
+      const record = {
+        destination: recipient,
+        amount: amountSats,
+      };
+      
+      const paymentRes = await axios.post(
+        "https://api.getalby.com/payments/keysend",
+        record,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      
+      return {
+        recipient,
+        amount_sats: amountSats,
+        status: "paid",
+        payment_hash: paymentRes.data.payment_hash,
+        preimage: paymentRes.data.preimage
+      };
+    }
+  } catch (error) {
+    console.error(`❌ Alby payment failed to ${recipient}:`, error.message);
+    return {
+      recipient,
+      amount_sats: amountSats,
+      status: "failed",
+      error: error.message
+    };
+  }
+}
+
 async function sendLightningPayment(recipient, amountSats, nwcConfig) {
   try {
-    console.log(`Sending ${amountSats} sats to ${recipient}`);
+    console.log(`Sending ${amountSats} sats to ${recipient} via NWC`);
     
     const { walletPubkey, secret, relayUrl } = nwcConfig;
     
@@ -183,27 +257,55 @@ function webhookSync(storeMetadata) {
           if (settings && settings.splits) {
             console.log("Processing splits:", settings.splits);
             
-            // Get NWC configuration
-            const { NWC_CONNECTION_STRING } = process.env;
-            if (!NWC_CONNECTION_STRING) {
-              throw new Error("NWC connection not configured");
-            }
-            
-            const nwcConfig = parseNWCConnectionString(NWC_CONNECTION_STRING);
-            
             // Calculate split amounts
             const totalSats = Math.floor(metadata.value_msat_total / 1000);
             console.log(`Total payment: ${totalSats} sats`);
             
-            // Filter out Lightning addresses that are not real Lightning addresses for now
-            // Focus on your addresses that we know work
-            const validSplits = settings.splits.filter(split => 
-              split.address.includes('@getalby.com') || 
-              split.address.includes('@strike.me') ||
-              split.address.includes('@btcpay.podtards.com')
-            );
+            // Determine payment method
+            const { NWC_CONNECTION_STRING } = process.env;
+            const { ALBY_ACCESS_TOKEN } = settings; // Get Alby token from settings
             
-            console.log(`Sending real payments to ${validSplits.length} recipients...`);
+            let paymentMethod = "none";
+            let nwcConfig = null;
+            let albyToken = null;
+            
+            if (NWC_CONNECTION_STRING) {
+              try {
+                nwcConfig = parseNWCConnectionString(NWC_CONNECTION_STRING);
+                paymentMethod = "nwc";
+                console.log("Using NWC for payments");
+              } catch (error) {
+                console.error("Failed to parse NWC connection string:", error.message);
+              }
+            }
+            
+            if (ALBY_ACCESS_TOKEN && !nwcConfig) {
+              albyToken = ALBY_ACCESS_TOKEN;
+              paymentMethod = "alby";
+              console.log("Using Alby API for payments");
+            }
+            
+            if (paymentMethod === "none") {
+              console.log("⚠️ No payment method configured - simulating payments only");
+            }
+            
+            // Filter splits based on payment method
+            let validSplits = [];
+            if (paymentMethod === "nwc") {
+              // NWC can handle most Lightning addresses
+              validSplits = settings.splits.filter(split => 
+                split.address.includes('@') || // Lightning addresses
+                split.address.match(/^[0-9a-fA-F]{66}$/) // Node pubkeys
+              );
+            } else if (paymentMethod === "alby") {
+              // Alby API can handle most addresses
+              validSplits = settings.splits.filter(split => 
+                split.address.includes('@') || // Lightning addresses
+                split.address.match(/^[0-9a-fA-F]{66}$/) // Node pubkeys
+              );
+            }
+            
+            console.log(`Sending real payments to ${validSplits.length} recipients using ${paymentMethod}...`);
             
             // Send real Lightning payments to each recipient
             const splitResults = [];
@@ -214,7 +316,22 @@ function webhookSync(storeMetadata) {
                 console.log(`Processing payment: ${amountSats} sats to ${split.address}`);
                 
                 try {
-                  const paymentResult = await sendLightningPayment(split.address, amountSats, nwcConfig);
+                  let paymentResult;
+                  
+                  if (paymentMethod === "nwc") {
+                    paymentResult = await sendLightningPayment(split.address, amountSats, nwcConfig);
+                  } else if (paymentMethod === "alby") {
+                    paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
+                  } else {
+                    // Simulate payment
+                    paymentResult = {
+                      recipient: split.address,
+                      amount_sats: amountSats,
+                      status: "simulated",
+                      error: "No payment method configured"
+                    };
+                  }
+                  
                   splitResults.push({
                     recipient: split.address,
                     name: split.name,
@@ -242,9 +359,7 @@ function webhookSync(storeMetadata) {
             
             // Add simulated results for other recipients
             const otherSplits = settings.splits.filter(split => 
-              !split.address.includes('@getalby.com') && 
-              !split.address.includes('@strike.me') &&
-              !split.address.includes('@btcpay.podtards.com')
+              !validSplits.some(valid => valid.address === split.address)
             );
             
             for (const split of otherSplits) {
@@ -264,17 +379,20 @@ function webhookSync(storeMetadata) {
             await storeMetadata.updateById(id, { 
               completedPayments: splitResults,
               splits_processed: true,
-              real_payments_sent: validSplits.length
+              real_payments_sent: validSplits.length,
+              payment_method_used: paymentMethod
             });
 
             const realPayments = splitResults.filter(r => r.status === "paid").length;
             const failedPayments = splitResults.filter(r => r.status === "failed").length;
+            const simulatedPayments = splitResults.filter(r => r.status === "simulated").length;
 
             res.json({ 
               success: true,
               id: id,
               completedPayments: splitResults,
-              message: `Real payments: ${realPayments} sent, ${failedPayments} failed, ${otherSplits.length} simulated`
+              payment_method: paymentMethod,
+              message: `Real payments: ${realPayments} sent, ${failedPayments} failed, ${simulatedPayments} simulated`
             });
           } else {
             res.json({ success: false, reason: "No splits configuration found" });

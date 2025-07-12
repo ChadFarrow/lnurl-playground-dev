@@ -20,7 +20,7 @@ dotenv.config();
 app.use(cookieParser());
 
 if (process.env.NODE_ENV === "development") {
-  const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "*"];
+  const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:4000", "http://localhost:4001", "http://Chads-Mac-mini.local:4000", "http://chads-mac-mini.local:4000", "*"];
 
   app.use(
     cors({
@@ -57,16 +57,13 @@ app.use(
 );
 
 let tempTokens = {};
-// Only mount Alby routes if credentials are properly configured
-if (process.env.ALBY_JWT && process.env.ALBY_JWT !== "this is a random 36 character string to encode the alby refresh token") {
-  app.use("/alby", albyRoutes(tempTokens));
-} else {
-  console.log("⚠️  Alby routes not mounted - credentials not configured");
-}
+// Mount Alby routes for development (with placeholder credentials)
+app.use("/alby", albyRoutes(tempTokens));
+console.log("✅ Alby routes mounted for development");
 
 app.use("/albyhub", albyHubRoutes());
 
-app.get("/qr", cors({ origin: "http://localhost:5173" }), qrHandler);
+app.get("/qr", cors({ origin: ["http://localhost:5173", "http://localhost:4000", "http://localhost:4001"] }), qrHandler);
 
 app.use("/.well-known", cors({ origin: "*" }), wellknownRoutes);
 

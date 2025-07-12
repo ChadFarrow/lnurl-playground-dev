@@ -25,7 +25,7 @@
           metadata: {
             podcast: "Lightning Prism Test",
             episode: "QR Code Test",
-            guid: "lnurl-test-feed",
+            guid: "9fe51a32-e08d-5ab7-9540-22a25c6bc2bf",
             episode_guid: "QR001",
             ts: 10,
             speed: "1",

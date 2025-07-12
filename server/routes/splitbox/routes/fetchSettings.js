@@ -1,6 +1,6 @@
 import getAddressFromCookies from "../functions/settings/getAddressFromCookies.js";
 
-async function fetchSettings(storeMetadata) {
+function fetchSettings(storeMetadata) {
   return async (req, res) => {
     let address = await getAddressFromCookies(req);
 

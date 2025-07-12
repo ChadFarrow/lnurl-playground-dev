@@ -2,7 +2,7 @@ const inMemoryMetaStore = [];
 const inMemoryUserStore = [
   {
     address: "lushnessprecious644398@getalby.com", // TheSplitBox receiving address (NWC wallet)
-    approvedGuids: ["58183156-a6ae-5e36-8875-a1be2ab691bd", "v4v-lightning-tester", "lnurl-test-feed"],
+    approvedGuids: ["58183156-a6ae-5e36-8875-a1be2ab691bd", "v4v-lightning-tester", "lnurl-test-feed", "9fe51a32-e08d-5ab7-9540-22a25c6bc2bf"],
     splits: [
       { address: "chadf@getalby.com", percentage: 15, name: "Chad - Alby", type: "lnaddress" },
       { address: "chadf@strike.me", percentage: 15, name: "Chad - Strike", type: "lnaddress" },
