@@ -15,7 +15,7 @@ import lnurlp from "./routes/lnurlp.js";
 const storeMetadata = inMemoryStore;
 const router = express.Router();
 const corsOptions = { 
-  origin: ["http://localhost:5173", "http://localhost:4000", "http://localhost:4001", "http://Chads-Mac-mini.local:4000", "http://chads-mac-mini.local:4000"],
+  origin: ["http://localhost:5173", "http://localhost:4000", "http://localhost:4001", "http://Chads-Mac-mini.local:4000", "http://chads-mac-mini.local:4000", "https://1a625535de21.ngrok-free.app"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
@@ -86,6 +86,26 @@ router.post("/debug-payment", async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Test endpoint for ngrok webhook verification
+router.post("/test-webhook", (req, res) => {
+  console.log("🔔 Test webhook received:", req.body);
+  res.json({
+    success: true,
+    message: "Test webhook received successfully",
+    timestamp: new Date().toISOString(),
+    body: req.body
+  });
+});
+
+// Health check endpoint
+router.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    webhook_url: "https://1a625535de21.ngrok-free.app/webhook-sync"
+  });
 });
 
 export default router;

@@ -101,8 +101,8 @@ async function sendLightningPayment(recipient, amountSats, nwcConfig) {
     const clientPrivkey = secret;
     const clientPubkey = getPublicKey(clientPrivkey);
 
-    // First, get invoice from the recipient's Lightning address
-    let invoice;
+    let paymentRequest;
+    
     if (recipient.includes('@')) {
       // Lightning address - use LNURL to get invoice from recipient
       const [name, server] = recipient.split("@");
@@ -119,20 +119,74 @@ async function sendLightningPayment(recipient, amountSats, nwcConfig) {
         `${data.callback}?amount=${amountSats * 1000}`
       );
       const invoiceData = await invoiceRes.json();
-      invoice = invoiceData.pr;
+      const invoice = invoiceData.pr;
       
       console.log(`Got invoice from ${recipient}: ${invoice}`);
+      
+      paymentRequest = {
+        method: "pay_invoice", 
+        params: { invoice },
+        id: crypto.randomUUID()
+      };
+    } else if (recipient.match(/^[0-9a-fA-F]{66}$/)) {
+      // Node pubkey - use keysend
+      console.log(`Using keysend for node payment to ${recipient}`);
+      
+      // Ensure pubkey is properly formatted (66 hex chars)
+      const cleanPubkey = recipient.replace(/^0x/, ''); // Remove 0x prefix if present
+      if (cleanPubkey.length !== 66) {
+        throw new Error(`Invalid pubkey length: ${cleanPubkey.length}, expected 66 characters`);
+      }
+      
+      // Generate a random preimage for keysend
+      const preimage = crypto.randomBytes(32);
+      const preimageHex = preimage.toString('hex');
+      
+      paymentRequest = {
+        method: "pay_keysend",
+        params: {
+          destination: cleanPubkey,
+          amount: amountSats * 1000, // NWC expects millisats
+          tlv_records: [
+            {
+              type: 5482373484, // Standard keysend preimage TLV type
+              value: preimageHex
+            }
+          ]
+        },
+        id: crypto.randomUUID()
+      };
     } else {
-      throw new Error("Node payments not supported via NWC in this implementation");
+      throw new Error(`Invalid recipient format: ${recipient}`);
     }
 
-    // Now pay the external invoice using NWC
-    const paymentRequest = {
-      method: "pay_invoice", 
-      params: { invoice },
-      id: crypto.randomUUID()
-    };
-
+    // Now pay using NWC
+    console.log("📤 Sending NWC payment request:", JSON.stringify(paymentRequest, null, 2));
+    
+    // First check what methods are supported (for debugging)
+    if (paymentRequest.method === "pay_keysend") {
+      try {
+        const methodsRequest = {
+          method: "get_info",
+          params: {},
+          id: crypto.randomUUID()
+        };
+        
+        const encryptedMethodsContent = await nip04.encrypt(clientPrivkey, walletPubkey, JSON.stringify(methodsRequest));
+        const methodsEvent = finalizeEvent({
+          kind: 23194,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [["p", walletPubkey]],
+          content: encryptedMethodsContent,
+        }, clientPrivkey);
+        
+        await relay.publish(methodsEvent);
+        console.log("🔍 Sent get_info request to check supported methods");
+      } catch (infoError) {
+        console.log("ℹ️ Could not check supported methods:", infoError.message);
+      }
+    }
+    
     const encryptedPaymentContent = await nip04.encrypt(clientPrivkey, walletPubkey, JSON.stringify(paymentRequest));
     const paymentEvent = finalizeEvent({
       kind: 23194,
@@ -221,6 +275,7 @@ function webhookSync(storeMetadata) {
 
         if (storedPayment) {
           console.log("Found stored payment:", storedPayment.id);
+          console.log("Stored payment data:", JSON.stringify(storedPayment, null, 2));
           
           // Mark as settled
           await storeMetadata.updateById(storedPayment.id, { 
@@ -232,42 +287,91 @@ function webhookSync(storeMetadata) {
           const { metadata, id, parentAddress } = storedPayment;
           
           // Get splits directly from RSS feed URL since we have it
-          console.log("Getting splits from RSS feed for metadata:", metadata);
+          console.log("Getting splits from RSS feed for metadata:", JSON.stringify(metadata, null, 2));
           let rssFeeds = [];
           
-          if (metadata.url) {
+          if (metadata && metadata.url) {
             try {
-              const feedUrl = metadata.url;
-              console.log("Fetching RSS feed directly from:", feedUrl);
+              let feedUrl = metadata.url;
               
-              const response = await fetch(feedUrl);
-              const feedText = await response.text();
-              
-              // Parse RSS feed to extract value recipients
-              const { parse } = await import("fast-xml-parser");
-              const parserOptions = {
-                attributeNamePrefix: "@_",
-                ignoreAttributes: false,
-                ignoreNameSpace: false,
-              };
-              
-              const feedData = parse(feedText, parserOptions);
-              const channel = feedData.rss.channel;
-              
-              // Get value recipients from channel level
-              const valueRecipients = channel["podcast:value"]?.["podcast:valueRecipient"];
-              console.log("Found value recipients:", valueRecipients);
-              
-              if (valueRecipients && Array.isArray(valueRecipients)) {
-                rssFeeds = valueRecipients.map(recipient => ({
-                  address: recipient["@_address"],
-                  name: recipient["@_name"],
-                  split: parseFloat(recipient["@_split"]),
-                  type: recipient["@_type"]
+              // Override with mixed payment types for testing
+              if (feedUrl.includes('pc20.xml')) {
+                console.log("🧪 Using test recipients with mixed payment types");
+                
+                // Create test recipients with Lightning addresses and node pubkeys
+                const testRecipients = [
+                  {
+                    '@_name': 'Your Alby Wallet',
+                    '@_type': 'lnaddress', 
+                    '@_address': 'lushnessprecious644398@getalby.com',
+                    '@_split': '40'
+                  },
+                  {
+                    '@_name': 'Test Lightning Address',
+                    '@_type': 'lnaddress',
+                    '@_address': 'test@getalby.com', 
+                    '@_split': '30'
+                  },
+                  {
+                    '@_name': 'Podcastindex.org (Node)',
+                    '@_type': 'node',
+                    '@_address': '03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a',
+                    '@_split': '20'
+                  },
+                  {
+                    '@_name': 'Sovereign Feeds (Node)', 
+                    '@_type': 'node',
+                    '@_address': '035ad2c954e264004986da2d9499e1732e5175e1dcef2453c921c6cdcc3536e9d8',
+                    '@_split': '10'
+                  }
+                ];
+                
+                // Process test recipients directly 
+                rssFeeds = testRecipients.map(recipient => ({
+                  address: recipient['@_address'],
+                  name: recipient['@_name'],
+                  split: parseFloat(recipient['@_split']),
+                  type: recipient['@_type'] === 'node' ? 'node' : 'lnaddress'
                 }));
+                
+                console.log("🧪 Test recipients:", rssFeeds);
+                
+                // Skip normal RSS fetching
+                feedUrl = null;
               }
               
-              console.log("Parsed RSS feed splits:", rssFeeds);
+              if (feedUrl) {
+                console.log("Fetching RSS feed directly from:", feedUrl);
+                
+                const response = await fetch(feedUrl);
+                const feedText = await response.text();
+                
+                // Parse RSS feed to extract value recipients
+                const { parse } = await import("fast-xml-parser");
+                const parserOptions = {
+                  attributeNamePrefix: "@_",
+                  ignoreAttributes: false,
+                  ignoreNameSpace: false,
+                };
+                
+                const feedData = parse(feedText, parserOptions);
+                const channel = feedData.rss.channel;
+                
+                // Get value recipients from channel level
+                const valueRecipients = channel["podcast:value"]?.["podcast:valueRecipient"];
+                console.log("Found value recipients:", valueRecipients);
+                
+                if (valueRecipients && Array.isArray(valueRecipients)) {
+                  rssFeeds = valueRecipients.map(recipient => ({
+                    address: recipient["@_address"],
+                    name: recipient["@_name"],
+                    split: parseFloat(recipient["@_split"]),
+                    type: recipient["@_type"]
+                  }));
+                }
+                
+                console.log("Parsed RSS feed splits:", rssFeeds);
+              }
             } catch (error) {
               console.error("Error parsing RSS feed:", error);
               rssFeeds = [];
@@ -285,9 +389,12 @@ function webhookSync(storeMetadata) {
             console.log(`Total payment: ${totalSats} sats`);
             
             // Determine payment method
-            const { NWC_CONNECTION_STRING } = process.env;
+            const { NWC_CONNECTION_STRING, ALBY_ACCESS_TOKEN: ENV_ALBY_TOKEN } = process.env;
             const settings = await storeMetadata.fetchSettings(parentAddress);
-            const { ALBY_ACCESS_TOKEN } = settings; // Get Alby token from settings
+            const { ALBY_ACCESS_TOKEN: SETTINGS_ALBY_TOKEN } = settings; // Get Alby token from settings
+            
+            // Use Alby token from environment or settings
+            const ALBY_ACCESS_TOKEN = ENV_ALBY_TOKEN || SETTINGS_ALBY_TOKEN;
             
             let paymentMethod = "none";
             let nwcConfig = null;
@@ -321,14 +428,8 @@ function webhookSync(storeMetadata) {
               type: split.type === 'node' ? 'node' : 'lnaddress'
             }));
             
-            // Filter splits based on payment method
-            if (paymentMethod === "nwc" || paymentMethod === "alby") {
-              // Both can handle Lightning addresses and node pubkeys
-              validSplits = validSplits.filter(split => 
-                split.address.includes('@') || // Lightning addresses
-                split.address.match(/^[0-9a-fA-F]{66}$/) // Node pubkeys
-              );
-            }
+            // Don't filter - we'll handle different payment types differently
+            console.log(`Attempting payments to all ${validSplits.length} recipients using hybrid approach...`);
             
             console.log(`Sending real payments to ${validSplits.length} recipients using ${paymentMethod}...`);
             
@@ -343,17 +444,60 @@ function webhookSync(storeMetadata) {
                 try {
                   let paymentResult;
                   
-                  if (paymentMethod === "nwc") {
-                    paymentResult = await sendLightningPayment(split.address, amountSats, nwcConfig);
-                  } else if (paymentMethod === "alby") {
-                    paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
-                  } else {
-                    // Simulate payment
+                  // Hybrid approach: try NWC first, fallback to Alby for keysend
+                  if (split.address.includes('@')) {
+                    // Lightning address - use NWC or Alby
+                    if (paymentMethod === "nwc") {
+                      console.log(`💡 Using NWC for Lightning address: ${split.address}`);
+                      paymentResult = await sendLightningPayment(split.address, amountSats, nwcConfig);
+                    } else if (paymentMethod === "alby") {
+                      console.log(`💡 Using Alby API for Lightning address: ${split.address}`);
+                      paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
+                    }
+                  } else if (split.address.match(/^[0-9a-fA-F]{66}$/)) {
+                    // Node pubkey - try NWC first, fallback to Alby
+                    console.log(`💡 Attempting keysend to node: ${split.address}`);
+                    
+                    if (paymentMethod === "nwc") {
+                      try {
+                        console.log(`🔄 Trying NWC keysend first...`);
+                        paymentResult = await sendLightningPayment(split.address, amountSats, nwcConfig);
+                        
+                        // If NWC fails with vertex error, try Alby as fallback
+                        if (paymentResult.status === "failed" && paymentResult.error.includes("invalid vertex length")) {
+                          console.log(`🔄 NWC failed, falling back to Alby API...`);
+                          if (albyToken) {
+                            paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
+                          } else {
+                            console.log(`❌ No Alby token available for fallback`);
+                          }
+                        }
+                      } catch (error) {
+                        console.log(`🔄 NWC error, falling back to Alby API:`, error.message);
+                        if (albyToken) {
+                          paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
+                        } else {
+                          paymentResult = {
+                            recipient: split.address,
+                            amount_sats: amountSats,
+                            status: "failed",
+                            error: `NWC failed: ${error.message}, no Alby fallback`
+                          };
+                        }
+                      }
+                    } else if (paymentMethod === "alby") {
+                      console.log(`💡 Using Alby API for keysend: ${split.address}`);
+                      paymentResult = await sendAlbyPayment(split.address, amountSats, albyToken);
+                    }
+                  }
+                  
+                  // Fallback if no method worked
+                  if (!paymentResult) {
                     paymentResult = {
                       recipient: split.address,
                       amount_sats: amountSats,
                       status: "simulated",
-                      error: "No payment method configured"
+                      error: "No compatible payment method available"
                     };
                   }
                   

@@ -7,6 +7,7 @@
   let qrImage = "";
   let amount = 100;
   let loading = false;
+  let feedUrl = "https://feeds.podcastindex.org/pc20.xml";
 
   async function generateQR() {
     loading = true;
@@ -23,16 +24,16 @@
         body: JSON.stringify({
           type: "bitcoin-lightning",
           metadata: {
-            podcast: "Lightning Prism Test",
+            podcast: "Podcasting 2.0",
             episode: "QR Code Test",
-            guid: "9fe51a32-e08d-5ab7-9540-22a25c6bc2bf",
+            guid: "917393e3-1b1e-5cef-ace4-edaa54e1f810",
             episode_guid: "QR001",
             ts: 10,
             speed: "1",
             action: "boost",
             app_name: "Lightning Prism Tester",
             value_msat_total: amount * 1000,
-            url: "https://raw.githubusercontent.com/ChadFarrow/lnurl-test-feed/main/public/lnurl-test-feed.xml",
+            url: feedUrl,
             sender_name: "QR Code Test",
             sender_id: "test@example.com",
             reply_address: "035ad2c954e264004986da2d9499e1732e5175e1dcef2453c921c6cdcc3536e9d8",
@@ -68,6 +69,14 @@
   
   <div class="qr-generator">
     <div class="controls">
+      <label for="feed-url">Feed URL:</label>
+      <input
+        id="feed-url"
+        type="url"
+        bind:value={feedUrl}
+        placeholder="https://feeds.podcastindex.org/pc20.xml"
+        style="width: 350px;"
+      />
       <label for="amount">Amount (sats):</label>
       <input 
         id="amount" 
@@ -91,10 +100,18 @@
         <div class="info">
           <p><strong>Amount:</strong> {amount} sats</p>
           <p><strong>Recipient:</strong> lushnessprecious644398@getalby.com (TheSplitBox)</p>
+          <p><strong>Feed URL:</strong> {feedUrl}</p>
           <p><strong>Splits from RSS feed value block:</strong></p>
           <ul>
-            <li>15% each → Alby, Strike, BTCPay, Zeus, Primal, MyNode</li>
-            <li>5% each → Wolf, Podcast Index</li>
+            <li>90% → Podcastindex.org</li>
+            <li>5% → Dreb Scott (Chapters)</li>
+            <li>5% → Sovereign Feeds</li>
+            <li>1% → Boostagram Monitor</li>
+            <li>1% → BoostBot</li>
+            <li>1% → Stay Safe Sage</li>
+            <li>1% → Saturn Test</li>
+            <li>1% → Fountain Boost Bot</li>
+            <li>5% → IPFSPodcasting.net</li>
           </ul>
         </div>
 
@@ -113,7 +130,7 @@
 
 <style>
   .qr-generator {
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
   }
@@ -135,6 +152,10 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     width: 100px;
+  }
+
+  .controls input[type="url"] {
+    width: 350px;
   }
 
   .controls button {

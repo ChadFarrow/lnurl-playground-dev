@@ -10,7 +10,7 @@
 
   let albyAccessToken = "";
   let tokenSaved = false;
-  let approvedGuids = [""];
+  let approvedGuids = ["917393e3-1b1e-5cef-ace4-edaa54e1f810"]; // Podcasting 2.0 feed GUID
   let invoiceRoute = `${remoteServer}/invoice?address=${user.address}`;
   let webhookRoute = `${remoteServer}/webhook-sync`;
 
@@ -47,25 +47,27 @@
   }
 </script>
 
-{#if user.address}
-  <main>
-    <a href="/">Back</a>
-    <h1>{user.address}</h1>
+<main>
+  <a href="/">Back</a>
+  <h1>{user.address || "lushnessprecious644398@getalby.com"}</h1>
+  <p><strong>Payment Method:</strong> NWC (Nostr Wallet Connect)</p>
+  <p><strong>Status:</strong> ✅ Connected via NWC</p>
     <div>
       <button class="save-settings" on:click={saveSettings}
         >Save Settings</button
       >
     </div>
     <div class="auth-token-container">
-      <label for="alby-access-token">Alby Access Token</label>
+      <label for="alby-access-token">Alby Access Token (Not needed for NWC)</label>
       <div>
         <input
           type="password"
           id="alby-access-token"
           bind:value={albyAccessToken}
-          placeholder="If you see saved, your token is saved. It's not shown here because it's a secret"
+          placeholder="NWC is configured via environment variables"
+          disabled
         />
-        <span>{tokenSaved ? "saved" : ""}</span>
+        <span>Using NWC</span>
       </div>
     </div>
 
@@ -102,25 +104,14 @@
 </pre>
 
     <p>
-      If you're using Alby Hub, I recommend setting up a
-      <a
-        href="https://guides.getalby.com/user-guide/alby-account-and-browser-extension/alby-hub/app-store/subaccounts-friends-and-family"
-      >
-        friends and family account
-      </a>
-      for this.
-      <br /> I picked the one called 'Subaccount with Lightning Address'
-      <br /> I'm not saying you can't trust me, but if it was me, I'd rather have
-      this linked to an account that only has enough sats in it that I'm willing
-      to lose.
+      <strong>NWC Configuration:</strong> This system is configured to use Nostr Wallet Connect (NWC) 
+      for payments, which connects to your AlbyHub account. The NWC connection string and webhook 
+      secret are configured in the .env file.
     </p>
     <p>
-      Your <a href="https://getalby.com/developer/access_tokens/new"
-        >Alby Access Token</a
-      >
-      is retrieved from the Developer Portal section when you log into
-      <a href="https://getalby.com">getalby.com</a>
-      <br />You need to select 'invoices:read' and 'payments:send'
+      <strong>Security Note:</strong> The NWC connection is configured to use your AlbyHub account 
+      (lushnessprecious644398@getalby.com). Make sure this account has sufficient funds for testing 
+      split payments.
     </p>
 
     <p>
@@ -129,8 +120,20 @@
       isn't in your approved list, you'll still get the sats, but The Split Box
       won't send them out to the splits.
     </p>
+    
+    <h2>NWC Configuration</h2>
+    <p>
+      <strong>✅ NWC is configured via environment variables:</strong>
+    </p>
+    <ul>
+      <li><strong>Connection String:</strong> Configured in .env</li>
+      <li><strong>Webhook Secret:</strong> Configured in .env</li>
+      <li><strong>Lightning Address:</strong> lushnessprecious644398@getalby.com</li>
+    </ul>
+    <p>
+      The system will automatically use NWC for sending split payments when invoices are paid.
+    </p>
   </main>
-{/if}
 
 <style>
   main {

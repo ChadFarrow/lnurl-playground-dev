@@ -19,35 +19,16 @@
   });
 
   async function loadAlby() {
-    user.address = "";
+    // For NWC, we'll use the lightning address from the environment
+    // This bypasses the Alby OAuth requirement
+    user.address = "lushnessprecious644398@getalby.com";
+    
+    // Clean up any OAuth code from URL if present
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     if (code) {
-      try {
-        const res = await fetch(
-          `${remoteServer}/alby/auth?code=${code}&redirect_uri=${albyRedirectUrl}`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await res.json();
-        user.address = data.lightning_address;
-
-        const url = new URL(window.location);
-        url.searchParams.delete("code");
-        goto(url.pathname + url.search, { replaceState: true });
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      try {
-        const res = await fetch(`${remoteServer}/alby/refresh`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-
-        user.address = data.lightning_address;
-      } catch (err) {}
+      url.searchParams.delete("code");
+      goto(url.pathname + url.search, { replaceState: true });
     }
   }
 </script>
@@ -55,7 +36,7 @@
 <nav>
   <ul>
     <li>
-      <a href={albyLoginUrl}>Log In With Alby</a>
+      <a href="/settings">Settings</a>
     </li>
     <li>
       <a href="/invoice-demo">Invoice Demo</a>
@@ -72,12 +53,36 @@
 <slot />
 
 <style>
+  nav {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
+  }
   ul {
     display: flex;
     justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0 2rem;
   }
-
   li {
     list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+  }
+  a:hover, a:focus {
+    background: #f7931a22;
+    color: #f7931a;
   }
 </style>
