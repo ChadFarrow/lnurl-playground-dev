@@ -1,24 +1,27 @@
 {
   "version": 2,
-  "buildCommand": "cd thesplitbox/client && npm run build",
-  "outputDirectory": "thesplitbox/client/dist",
-  "functions": {
-    "thesplitbox/server/index.js": {
-      "runtime": "@vercel/node@18"
+  "builds": [
+    {
+      "src": "thesplitbox/client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build",
+        "outputDirectory": "dist"
+      }
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/thesplitbox/server/index.js"
-    },
-    {
-      "src": "/webhook-sync",
-      "dest": "/thesplitbox/server/index.js"
+      "dest": "/api/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/thesplitbox/client/dist/$1"
     }
   ]
 }
