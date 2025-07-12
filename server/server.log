@@ -1,0 +1,3 @@
+The Split Box is running on http://localhost:3000
+JWT verify error:  Cannot read properties of undefined (reading 'access_token')
+JWT verify error:  Cannot read properties of undefined (reading 'access_token')

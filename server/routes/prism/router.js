@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import mongoStore from "../../stores/mongo/store.js";
+import inMemoryStore from "../../stores/inMemoryStore.js";
 
 import webhook from "./webhook.js";
 import getPrismWebhook from "./getwebhook.js";
 
-const storeMetadata = mongoStore;
+const storeMetadata = inMemoryStore;
 const router = express.Router();
 const corsOptions = { origin: "*" };
 

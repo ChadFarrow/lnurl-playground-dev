@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import auth from "./auth.js";
 import refresh from "./refresh.js";
 import boost from "./boost.js";
@@ -11,6 +12,13 @@ import bodyParser from "body-parser";
 const router = express.Router();
 
 const albyRoutes = (tempTokens) => {
+  const corsOptions = {
+    origin: "http://localhost:5173",
+    credentials: true
+  };
+
+  router.use(cors(corsOptions));
+  
   router.use((req, res, next) => {
     req.tempTokens = tempTokens;
     next();

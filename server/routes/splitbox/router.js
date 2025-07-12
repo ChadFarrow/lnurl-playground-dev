@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import mongoStore from "../../stores/mongo/store.js";
+import inMemoryStore from "../../stores/inMemoryStore.js";
 
 //routes
 import invoice from "./routes/invoice.js";
@@ -11,27 +11,32 @@ import fetchSettings from "./routes/fetchSettings.js";
 import getById from "./routes/getById.js";
 import lnurlp from "./routes/lnurlp.js";
 
-const storeMetadata = mongoStore;
+const storeMetadata = inMemoryStore;
 const router = express.Router();
-const corsOptions = { origin: "*" };
+const corsOptions = { 
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+};
 
-async function handle(fn, req, res) {
-  const handler = await fn(storeMetadata);
+// Apply CORS to all routes
+router.use(cors(corsOptions));
+
+function handle(fn, req, res) {
+  const handler = fn(storeMetadata);
   handler(req, res);
 }
 
-router.options("/invoice", cors(corsOptions)); // Preflight
-router.post("/invoice", cors(corsOptions), (req, res) =>
+router.post("/invoice", (req, res) =>
   handle(invoice, req, res)
 );
 
-router.options("/webhook-sync", cors(corsOptions)); // Preflight
-router.post("/webhook-sync", cors(corsOptions), (req, res) =>
+router.post("/webhook-sync", (req, res) =>
   handle(webhookSync, req, res)
 );
 
-router.options("/webhook-async", cors(corsOptions)); // Preflight
-router.post("/webhook-async", cors(corsOptions), (req, res) =>
+router.post("/webhook-async", (req, res) =>
   handle(webhookAsync, req, res)
 );
 
@@ -49,7 +54,7 @@ router.get("/metadata/:id", async (req, res) => {
   res.json(data);
 });
 
-router.get("/lnurlp/:address/callback", cors(corsOptions), async (req, res) =>
+router.get("/lnurlp/:address/callback", async (req, res) =>
   handle(lnurlp, req, res)
 );
 

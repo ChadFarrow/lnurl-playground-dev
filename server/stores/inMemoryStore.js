@@ -1,5 +1,20 @@
 const inMemoryMetaStore = [];
-const inMemoryUserStore = [];
+const inMemoryUserStore = [
+  {
+    address: "chadf@getalby.com", // Primary address from your feed
+    approvedGuids: ["58183156-a6ae-5e36-8875-a1be2ab691bd", "v4v-lightning-tester", "lnurl-test-feed"],
+    splits: [
+      { address: "chadf@getalby.com", percentage: 15, name: "Alby", type: "lnaddress" },
+      { address: "chadf@strike.me", percentage: 15, name: "Strike", type: "lnaddress" },
+      { address: "chadf@btcpay.podtards.com", percentage: 15, name: "BTCPay", type: "lnaddress" },
+      { address: "eagerheron90@zeusnuts.com", percentage: 15, name: "Zeus Cashu", type: "lnaddress" },
+      { address: "cobaltfly1@primal.net", percentage: 15, name: "Primal", type: "lnaddress" },
+      { address: "032870511bfa0309bab3ca1832ead69eed848a4abddbc4d50e55bb2157f9525e51", percentage: 15, name: "My Node", type: "node" },
+      { address: "03ecb3ee55ba6324d40bea174de096dc9134cb35d990235723b37ae9b5c49f4f53", percentage: 5, name: "The Wolf", type: "node" },
+      { address: "03ae9f91a0cb8ff43840e3c322c4c61f019d8c1c3cea15a25cfc425ac605e61a4a", percentage: 5, name: "Podcast Index", type: "node" }
+    ]
+  }
+];
 
 const storeMetadata = {
   add: (metadata) => {

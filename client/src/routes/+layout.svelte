@@ -13,6 +13,8 @@
 
   onMount(async () => {
     albyLoginUrl = `https://getalby.com/oauth?client_id=${albyClientId}&response_type=code&redirect_uri=${albyRedirectUrl}&scope=account:read%20balance:read%20payments:send%20invoices:read`;
+    console.log('Alby Client ID:', albyClientId);
+    console.log('Alby Login URL:', albyLoginUrl);
     await loadAlby();
   });
 
@@ -54,6 +56,12 @@
   <ul>
     <li>
       <a href={albyLoginUrl}>Log In With Alby</a>
+    </li>
+    <li>
+      <a href="/invoice-demo">Invoice Demo</a>
+    </li>
+    <li>
+      <a href="/autopay">Auto Pay</a>
     </li>
   </ul>
 </nav>

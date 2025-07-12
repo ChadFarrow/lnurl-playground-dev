@@ -9,7 +9,7 @@
     albyClientId,
   } from "$lib/state.svelte.js";
 
-  let recipient = { lnaddress: "thesplitbox@getalby.com", amount: 100 };
+  let recipient = { lnaddress: "chadf@getalby.com", amount: 100 };
   let invoiceRoute = `${remoteServer}/invoice?address=${recipient.lnaddress}`;
   let webhookRoute = `${remoteServer}/webhook-sync`;
   let invoice = "";
@@ -57,7 +57,7 @@
 
   async function sendSats(invoice) {
     try {
-      const res = await fetch(`${remoteServer}/alby/pay-invoice`, {
+      const res = await fetch(`${remoteServer}/albyhub/pay-invoice`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -116,13 +116,14 @@
 </script>
 
 <main>
-  {#if user.address}
-    <a href="/">Back</a>
-    <h1>Split Box Autopay Demo</h1>
+  <a href="/">Back</a>
+  <h1>Split Box Autopay Demo</h1>
 
-    <h2>Paying from {user.address}</h2>
+  <div class="info">
+    <p>This demo will create an invoice and pay it through your AlbyHub</p>
+  </div>
 
-    <div class="autopay">
+  <div class="autopay">
       <div class="recipient">
         <label for="boost-amount">Amount (sats):</label>
         <input
@@ -180,7 +181,6 @@
 
     <h2>Simulated Payload to The Split Box</h2>
     <p>{JSON.stringify(payload, null, 2)}</p>
-  {/if}
 </main>
 
 <style>

@@ -6,6 +6,11 @@ function invoice(storeMetadata) {
     const { address } = req.query;
 
     const payload = req.body;
+    
+    if (!payload || !payload.metadata) {
+      return res.status(400).json({ error: "Invalid payload or missing metadata" });
+    }
+    
     const tlv = payload.metadata;
 
     delete tlv.name;
@@ -20,9 +25,13 @@ function invoice(storeMetadata) {
 
     // process TLV from the POST, if there's a feedGuid, then do the rest.
     let settings = await storeMetadata.fetchSettings(address);
+    if (!settings) {
+      return res.status(400).json({ error: "No settings found for this address" });
+    }
+    
     if (tlv.guid) {
       //check to see if tlv has a guid that's allowed to send sats. Prevents storing undesired data.
-      if (settings.approvedGuids.find((v) => v === tlv.guid)) {
+      if (settings.approvedGuids && settings.approvedGuids.find((v) => v === tlv.guid)) {
         try {
           const metaID = uuidv4();
           const invoice = await getInvoice(address, tlv.value_msat_total);
