@@ -1,0 +1,12 @@
+{
+  "task.allowAutomaticTasks": "on",
+  "terminal.integrated.env.osx": {
+    "PATH": "${env:PATH}:/usr/local/bin:/opt/homebrew/bin"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/*.log": true
+  }
+}
